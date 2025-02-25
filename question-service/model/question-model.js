@@ -15,6 +15,7 @@ const QuestionModelSchema = new Schema({
   category: {
     type: [String],
     required: true,
+    set: (arr) => arr.map(str => str.trim().toLowerCase()),
   },
   complexity: {
     type: String,
