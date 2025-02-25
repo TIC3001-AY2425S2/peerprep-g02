@@ -27,6 +27,10 @@ export async function findQuestionByComplexity(complexity) {
   return QuestionModel.find({ complexity });
 }
 
+export async function findQuestionById(questionId) {
+  return QuestionModel.findById(questionId);
+}
+
 export async function findAllQuestions() {
   return QuestionModel.find();
 }
@@ -50,7 +54,8 @@ export async function updateQuestionById(QuestionId, title, description, categor
         complexity,
       },
     },
-    { new: true },  // return the updated question
+    { new: true,               // return the updated document
+      runValidators: true },   // run validators on update
   );
 }
 
