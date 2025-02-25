@@ -31,6 +31,14 @@ export async function findAllQuestions() {
   return QuestionModel.find();
 }
 
+export async function findDistinctCategory() {
+  return QuestionModel.distinct("category");
+}
+
+export async function findDistinctComplexity() {
+  return QuestionModel.distinct("complexity");
+}
+
 export async function updateQuestionById(QuestionId, title, description, category, complexity) {
   return QuestionModel.findByIdAndUpdate(
     QuestionId,
