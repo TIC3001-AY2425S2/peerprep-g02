@@ -13,7 +13,7 @@ const QuestionModelSchema = new Schema({
     required: true,
   },
   category: {
-    type: String,
+    type: [String],
     required: true,
   },
   complexity: {
@@ -22,7 +22,13 @@ const QuestionModelSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now, // Setting default to the current date/time
+    default: Date.now,
+    required: true,
+  },
+  modifiedAt: {
+    type: Date,
+    default: Date.now,
+    required: true,
   },
 });
 
