@@ -62,3 +62,9 @@ export async function updateQuestionById(QuestionId, title, description, categor
 export async function deleteQuestionById(questionId) {
   return QuestionModel.findByIdAndDelete(questionId);
 }
+
+// check if a question has this category-complexity combination
+export async function checkCategoryComplexityExists(category, complexity) {
+  const exists = await QuestionModel.exists({ category, complexity });
+  return !!exists;  // convert to boolean
+}
