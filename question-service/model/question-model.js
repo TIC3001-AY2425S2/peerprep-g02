@@ -20,6 +20,8 @@ const QuestionModelSchema = new Schema({
   complexity: {
     type: String,
     required: true,
+    trim: true,
+    lowercase: true,
   },
   createdAt: {
     type: Date,
