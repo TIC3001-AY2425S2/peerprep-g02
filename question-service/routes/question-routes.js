@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   createQuestion,
+  deleteQuestion,
   updateQuestion,
 } from "../controller/question-controller.js";
 
@@ -17,6 +18,6 @@ router.post("/", createQuestion);
 
 router.patch("/:id", updateQuestion);
 
-// router.delete("/:id", verifyAccessToken, verifyIsOwnerOrAdmin, deleteUser);
+router.delete("/:id", deleteQuestion);
 
 export default router;

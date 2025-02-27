@@ -78,3 +78,18 @@ export async function updateQuestion(req, res) {
     return res.status(500).json({ message: "Unknown error when updating question!" });
   }
 }
+
+export async function deleteQuestion(req, res) {
+  try {
+    const questionId = req.params.id;
+    if (!isValidObjectId(questionId)) {
+      return res.status(404).json({ message: `Question ${questionId} not found` });
+    }
+
+    const deletedQuestion = await _deleteQuestionById(questionId);
+    return res.status(200).json({ message: `Deleted question ${questionId} successfully`, data: deletedQuestion });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when deleting question!" });
+  }
+}
