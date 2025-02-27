@@ -3,8 +3,6 @@ import {
   createQuestion as _createQuestion,
   deleteQuestionById as _deleteQuestionById,
   findAllQuestions as _findAllQuestions,
-  findQuestionByCategory as _findQuestionByCategory,
-  findQuestionByComplexity as _findQuestionByComplexity,
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
   updateQuestionById as _updateQuestionById,
