@@ -3,18 +3,18 @@ import express from "express";
 import {
   createQuestion,
   deleteQuestion,
+  getAllQuestions,
+  getQuestion,
   updateQuestion,
 } from "../controller/question-controller.js";
 
-// import { verifyAccessToken, verifyIsAdmin, verifyIsOwnerOrAdmin } from "../middleware/basic-access-control.js";
-
 const router = express.Router();
 
-// router.get("/", verifyAccessToken, verifyIsAdmin, getAllUsers);
+router.get("/", getAllQuestions);
 
 router.post("/", createQuestion);
 
-// router.get("/:id", verifyAccessToken, verifyIsOwnerOrAdmin, getUser);
+router.get("/:id", getQuestion);
 
 router.patch("/:id", updateQuestion);
 
