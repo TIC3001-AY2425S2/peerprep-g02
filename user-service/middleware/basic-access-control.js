@@ -20,7 +20,7 @@ export function verifyAccessToken(req, res, next) {
       return res.status(401).json({ message: "Authentication failed" });
     }
 
-    req.user = { id: dbUser.id, username: dbUser.username, email: dbUser.email, isAdmin: dbUser.isAdmin };
+    req.user = { id: dbUser.id, displayname: dbUser.displayname, email: dbUser.email, isAdmin: dbUser.isAdmin };
     next();
   });
 }

@@ -6,30 +6,28 @@ import {
   findAllUsers as _findAllUsers,
   findUserByEmail as _findUserByEmail,
   findUserById as _findUserById,
-  findUserByUsername as _findUserByUsername,
-  findUserByUsernameOrEmail as _findUserByUsernameOrEmail,
   updateUserById as _updateUserById,
   updateUserPrivilegeById as _updateUserPrivilegeById,
 } from "../model/repository.js";
 
 export async function createUser(req, res) {
   try {
-    const { username, email, password } = req.body;
-    if (username && email && password) {
-      const existingUser = await _findUserByUsernameOrEmail(username, email);
+    const { displayname, email, password } = req.body;
+    if (displayname && email && password) {
+      const existingUser = await _findUserByEmail(email);
       if (existingUser) {
-        return res.status(409).json({ message: "username or email already exists" });
+        return res.status(409).json({ message: "email already exists" });
       }
 
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
-      const createdUser = await _createUser(username, email, hashedPassword);
+      const createdUser = await _createUser(displayname, email, hashedPassword);
       return res.status(201).json({
-        message: `Created new user ${username} successfully`,
+        message: `Created new user ${displayname} successfully`,
         data: formatUserResponse(createdUser),
       });
     } else {
-      return res.status(400).json({ message: "username and/or email and/or password are missing" });
+      return res.status(400).json({ message: "displayname and/or email and/or password are missing" });
     }
   } catch (err) {
     console.error(err);
@@ -69,8 +67,8 @@ export async function getAllUsers(req, res) {
 
 export async function updateUser(req, res) {
   try {
-    const { username, email, password } = req.body;
-    if (username || email || password) {
+    const { displayname, email, password } = req.body;
+    if (displayname || email || password) {
       const userId = req.params.id;
       if (!isValidObjectId(userId)) {
         return res.status(404).json({ message: `User ${userId} not found` });
@@ -79,12 +77,8 @@ export async function updateUser(req, res) {
       if (!user) {
         return res.status(404).json({ message: `User ${userId} not found` });
       }
-      if (username || email) {
-        let existingUser = await _findUserByUsername(username);
-        if (existingUser && existingUser.id !== userId) {
-          return res.status(409).json({ message: "username already exists" });
-        }
-        existingUser = await _findUserByEmail(email);
+      if (email) {
+        const existingUser = await _findUserByEmail(email);
         if (existingUser && existingUser.id !== userId) {
           return res.status(409).json({ message: "email already exists" });
         }
@@ -95,13 +89,13 @@ export async function updateUser(req, res) {
         const salt = bcrypt.genSaltSync(10);
         hashedPassword = bcrypt.hashSync(password, salt);
       }
-      const updatedUser = await _updateUserById(userId, username, email, hashedPassword);
+      const updatedUser = await _updateUserById(userId, displayname, email, hashedPassword);
       return res.status(200).json({
         message: `Updated data for user ${userId}`,
         data: formatUserResponse(updatedUser),
       });
     } else {
-      return res.status(400).json({ message: "No field to update: username and email and password are all missing!" });
+      return res.status(400).json({ message: "No field to update: displayname and email and password are all missing!" });
     }
   } catch (err) {
     console.error(err);
@@ -159,7 +153,7 @@ export async function deleteUser(req, res) {
 export function formatUserResponse(user) {
   return {
     id: user.id,
-    username: user.username,
+    displayname: user.displayname,
     email: user.email,
     isAdmin: user.isAdmin,
     createdAt: user.createdAt,

@@ -3,10 +3,9 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const UserModelSchema = new Schema({
-  username: {
+  displayname: {
     type: String,
     required: true,
-    unique: true,
   },
   email: {
     type: String,
@@ -19,7 +18,7 @@ const UserModelSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now, // Setting default to the current date/time
+    default: Date.now,
   },
   isAdmin: {
     type: Boolean,
