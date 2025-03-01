@@ -1,7 +1,7 @@
 db = db.getSiblingDB('peerprep-g02');
 
-db.createCollection('usermodel');
-db.usermodel.insertMany([
+db.createCollection('usermodels');
+db.usermodels.insertMany([
     {
         username: "adminuser",
         email: "email@domain.com",
@@ -15,7 +15,7 @@ db.usermodel.createIndex({ username: 1 }, { unique: true });
 
 print("Users successfully initialized");
 
-db.createCollection('questionmodel');
+db.createCollection('questionmodels');
 const encodedData = [
     {
         title: "UmV2ZXJzZSBhIFN0cmluZw==",
@@ -188,6 +188,6 @@ const decodedData = encodedData.map(q => ({
     modifiedAt: q.modifiedAt
 }));
 
-db.questionmodel.insertMany(decodedData);
+db.questionmodels.insertMany(decodedData);
 
 print(`${decodedData.length} questions successfully initialized`);
