@@ -23,7 +23,7 @@ import React from 'react';
 import { getQuestion, createQuestion, deleteQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 // TODO: Have a better way to do create and update question page since the differences are small
-const QuestionsView = () => {
+const ManageQuestionsView = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -196,4 +196,4 @@ const QuestionsView = () => {
 
 // TODO: Add role based access to this page
 // export default withRoleBasedAccess(QuestionCreateView, 'question', 'update');
-export default QuestionsView;
+export default ManageQuestionsView;
