@@ -1,4 +1,4 @@
-import { isValidObjectId } from "mongoose";
+import { isValidObjectId } from 'mongoose';
 import {
   createQuestion as _createQuestion,
   deleteQuestionById as _deleteQuestionById,
@@ -6,7 +6,7 @@ import {
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
   updateQuestionById as _updateQuestionById,
-} from "../model/repository.js";
+} from '../model/repository.js';
 
 export async function createQuestion(req, res) {
   try {
@@ -14,7 +14,7 @@ export async function createQuestion(req, res) {
     if (title && description && category && complexity) {
       const existingQuestion = await _findQuestionByTitle(title);
       if (existingQuestion) {
-        return res.status(409).json({ message: "Question already exists" });
+        return res.status(409).json({ message: 'Question already exists' });
       }
 
       const createdQuestion = await _createQuestion(title, description, category, complexity);
@@ -23,11 +23,13 @@ export async function createQuestion(req, res) {
         data: createdQuestion,
       });
     } else {
-      return res.status(400).json({ message: "title and/or description and/or category and/or complexity are missing" });
+      return res
+        .status(400)
+        .json({ message: 'title and/or description and/or category and/or complexity are missing' });
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Unknown error when creating new question!" });
+    return res.status(500).json({ message: 'Unknown error when creating new question!' });
   }
 }
 
@@ -46,17 +48,17 @@ export async function getQuestion(req, res) {
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Unknown error when getting question!" });
+    return res.status(500).json({ message: 'Unknown error when getting question!' });
   }
 }
 
 export async function getAllQuestions(req, res) {
   try {
     const questions = await _findAllQuestions();
-    return res.status(200).json({ message: "Found all questions", data: questions });
+    return res.status(200).json({ message: 'Found all questions', data: questions });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Unknown error when getting all questions!" });
+    return res.status(500).json({ message: 'Unknown error when getting all questions!' });
   }
 }
 
@@ -73,7 +75,7 @@ export async function updateQuestion(req, res) {
     return res.status(200).json({ message: `Updated question ${questionId} successfully`, data: updatedQuestion });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Unknown error when updating question!" });
+    return res.status(500).json({ message: 'Unknown error when updating question!' });
   }
 }
 
@@ -88,6 +90,6 @@ export async function deleteQuestion(req, res) {
     return res.status(200).json({ message: `Deleted question ${questionId} successfully`, data: deletedQuestion });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Unknown error when deleting question!" });
+    return res.status(500).json({ message: 'Unknown error when deleting question!' });
   }
 }

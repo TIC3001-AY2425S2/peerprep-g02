@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "prettier": "prettier --write \"./**/*.{ts,js,html,scss,css,tsx}\"",
+    "postinstall": "cd frontend && npm install && cd ../user-service && npm install && cd ../question-service && npm install && cd .. && npm run prettier -s"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.2",
+    "prettier-plugin-organize-imports": "^4.1.0"
+  }
+}
