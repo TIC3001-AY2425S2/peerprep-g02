@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Button,
   Container,
@@ -6,29 +7,75 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Paper,
   TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import NavBar from '../../../components/navbar';
 import api from '../../../api';
 import { toast } from 'react-toastify';
-
+import React from 'react';
+import { getQuestion, createQuestion, deleteQuestion } from '../../../hooks/question/question';
+import { Question } from '../../../types/questions';
 // TODO: Have a better way to do create and update question page since the differences are small
-const QuestionCreateView = () => {
-  // TODO: Retrieve all questions from question service
-  const initialQuestions = [
-    { id: 1, title: 'Question #1', difficulty: 'Easy', topic: 'Trees' },
-    { id: 2, title: 'Question #2', difficulty: 'Easy', topic: 'Arrays' },
-    { id: 3, title: 'Question #3', difficulty: 'Medium', topic: 'LinkedList' },
-    { id: 4, title: 'Question #4', difficulty: 'Medium', topic: 'Algorithm' },
-    { id: 5, title: 'Question #5', difficulty: 'Hard', topic: 'DataStructures' },
-  ];
+const QuestionsView = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [listHeight, setListHeight] = useState(600);
 
-  const [questions, setQuestions] = useState(initialQuestions);
+  useEffect(() => {
+    setListHeight(window.innerHeight || 600);
+  }, []);
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await getQuestion();
+        setQuestions(response);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
 
+    fetchQuestions();
+    console.log("Updated Questions State:", questions);
+  }, []);
+  useEffect(() => {
+    console.log("Updated Questions:", questions);
+  }, [questions]);
+  function renderQuestion(props: ListChildComponentProps ) {
+    const { index, style } = props;
+    const question = questions[index];
+    if (!question) return null;
+    return (
+      <ListItem key={question._id} component="div" alignItems="flex-start" style={style}>
+        <ListItemButton>
+          <ListItemAvatar>
+            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+          </ListItemAvatar>
+          <ListItemText
+            primary={`Question ${question._id}`}
+            secondary={
+              <React.Fragment>
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{ color: 'text.primary', display: 'inline' }}
+                >
+                  {question.complexity} - {question.category.join(", ")}
+                </Typography>
+              </React.Fragment>
+            }
+          />
+        
+        </ListItemButton>
+        
+      </ListItem>
+    );
+  }
   const [formData, setFormData] = useState({
     title: undefined,
     description: undefined,
@@ -65,85 +112,97 @@ const QuestionCreateView = () => {
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
-      <Box maxWidth="lg" sx={{ display: 'flex', mx: '10%', py: '10%' }}>
-        <Paper sx={{ width: '100%', p: 2, mr: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Question List
-            <IconButton sx={{ float: 'right' }}>Add</IconButton>
-          </Typography>
-          <List>
-            {questions.map((q) => (
-              <ListItem key={q.id} divider>
-                <ListItemText primary={q.title} secondary={`${q.difficulty}, ${q.topic}`} />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-        <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
+      <Box sx={{ display: 'flex', flexDirection: 'row'}}>
+      {/* Left side: List of Questions */}
+      <Box
+        sx={{
+          width: '100%',
+          height: '100vh', // Subtract the header height if needed
+          maxWidth: { xs: '100%', sm: 360 }, // Responsive width
+          bgcolor: 'background.paper',
+          boxShadow: 3,
+          p: 1,
+        }}
+      >
+        <FixedSizeList
+          height={600}
+          width="100%"
+          itemSize={60}
+          itemCount={22}
+          overscanCount={5}
         >
-          <Typography component="h1" variant="h5">
+          {renderQuestion}
+        </FixedSizeList>
+      </Box>
+
+      {/* Right side: Form for adding new question */}
+      <Box
+        sx={{
+          px: 2,
+          position: 'sticky',
+          width: '100%',
+          bgcolor: 'background.paper',
+          boxShadow: 3,
+          p: 3,
+        }}
+      >
+        <Typography component="h1" variant="h5" align="center">
+          Add Question
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="title"
+            label="Title"
+            name="title"
+            type="text"
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            multiline
+            id="description"
+            label="Description"
+            name="description"
+            type="text"
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            multiline
+            id="category"
+            label="Category"
+            name="category"
+            type="text"
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            multiline
+            id="complexity"
+            label="Complexity"
+            name="complexity"
+            type="text"
+            onChange={handleChange}
+          />
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Add Question
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="title"
-              label="Title"
-              name="title"
-              type="text"
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              multiline
-              id="description"
-              label="Description"
-              name="description"
-              type="text"
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              multiline
-              id="category"
-              label="Category"
-              name="category"
-              type="text"
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              multiline
-              id="complexity"
-              label="Complexity"
-              name="complexity"
-              type="text"
-              onChange={handleChange}
-            />
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-              Add Question
-            </Button>
-          </Box>
+          </Button>
         </Box>
       </Box>
+    </Box>
     </Container>
   );
 };
 
 // TODO: Add role based access to this page
 // export default withRoleBasedAccess(QuestionCreateView, 'question', 'update');
-export default QuestionCreateView;
+export default QuestionsView;
