@@ -4,6 +4,10 @@ import { Question, QuestionDeleteData, QuestionPatchData, QuestionPostData } fro
 
 const URL = '/questions';
 
+export async function getAll(): Promise<AxiosResponse<Question[]>> {
+  return questionClientApi.get(`${URL}`);
+}
+
 export async function create(data: QuestionPostData): Promise<AxiosResponse<Question>> {
   return questionClientApi.post(`${URL}`, data);
 }

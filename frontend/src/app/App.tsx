@@ -8,6 +8,7 @@ import Landing from '../pages/Landing';
 import QuestionCreateView from '../pages/Question/Create';
 import QuestionUpdateView from '../pages/Question/Update';
 import './App.css';
+import QuestionView from '../pages/Question/QuestionView'; // Added import
 
 // Routes is for routing of pages
 const ActiveApp: React.FC = () => {
@@ -22,6 +23,7 @@ const ActiveApp: React.FC = () => {
 
           {/* TODO: Add user profile management */}
           {/* TODO: Add user logout */}
+          <Route path="/manage/question" element={<QuestionView />} />
           <Route path="/manage/question/create" element={<QuestionCreateView />} />
           <Route path="/manage/question/update" element={<QuestionUpdateView />} />
 
