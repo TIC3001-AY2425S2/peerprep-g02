@@ -25,39 +25,30 @@ import { Question } from '../../../types/questions';
 // TODO: Have a better way to do create and update question page since the differences are small
 const QuestionsView = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [listHeight, setListHeight] = useState(600);
-
-  useEffect(() => {
-    setListHeight(window.innerHeight || 600);
-  }, []);
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await getQuestion();
         setQuestions(response);
+        console.log("Fetched questions! ", response);
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
     };
-
     fetchQuestions();
-    console.log("Updated Questions State:", questions);
   }, []);
-  useEffect(() => {
-    console.log("Updated Questions:", questions);
-  }, [questions]);
   function renderQuestion(props: ListChildComponentProps ) {
     const { index, style } = props;
     const question = questions[index];
     if (!question) return null;
     return (
-      <ListItem key={question._id} component="div" alignItems="flex-start" style={style}>
+      <ListItem key={index} component="div" alignItems="flex-start" style={style}>
         <ListItemButton>
           <ListItemAvatar>
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
           </ListItemAvatar>
           <ListItemText
-            primary={`Question ${question._id}`}
+            primary={`Question ${index+1}`}
             secondary={
               <React.Fragment>
                 <Typography
@@ -125,10 +116,10 @@ const QuestionsView = () => {
         }}
       >
         <FixedSizeList
-          height={600}
+          height={window.innerHeight}
           width="100%"
-          itemSize={60}
-          itemCount={22}
+          itemSize={80}
+          itemCount={questions.length}
           overscanCount={5}
         >
           {renderQuestion}

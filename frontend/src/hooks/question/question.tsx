@@ -11,16 +11,10 @@ export const createQuestion = async (data: QuestionPostData): Promise<Question> 
   }
 };
 
-export const getQuestion = async (data?: String): Promise<Question[]> => {
+export const getQuestion = async (ids?: String): Promise<Question[]> => {
   try {
-    if (data) {
-      const response = await api.questions.get(data);
-      return response.data;
-    }
-    else {
-      const response = await api.questions.get();
-      return response.data;
-    }
+    const response = ids ? await api.questions.get(ids) : await api.questions.get();
+    return response.data.data;
   } catch (error) {
     console.error('Error getting question: ', error);
     throw error;
