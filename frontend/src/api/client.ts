@@ -15,14 +15,6 @@ const questionClient = axios.create({
   headers: { Accept: 'application/json' },
 });
 
-export const userClientApi = Object.freeze({
-  get: userClient.get,
-  delete: userClient.delete,
-  post: userClient.post,
-  put: userClient.put,
-  patch: userClient.patch,
-});
-
 export const questionClientApi = Object.freeze({
   get: questionClient.get,
   delete: questionClient.delete,

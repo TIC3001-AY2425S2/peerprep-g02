@@ -1,10 +1,9 @@
 import { CssBaseline } from '@mui/material';
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
-import { isLoggedIn } from '../localStorage';
 import Landing from '../pages/Landing';
 import ManageQuestionsView from '../pages/Question/Manage';
 import QuestionUpdateView from '../pages/Question/Update';
@@ -19,16 +18,13 @@ const ActiveApp: React.FC = () => {
         <CssBaseline />
         <Routes>
           {/* TODO: Add route to login */}
-          <Route path="/" element={isLoggedIn() ? '' : <Navigate to="/login" />} />
-          <Route path="/login" element={<Landing />} />
+          <Route path="/" element={<Landing />} />
 
           {/* TODO: consolidate both create and update question page into 1 */}
           <Route path="/manage/question" element={<ManageQuestionsView />} />
           <Route path="/manage/question/update" element={<QuestionUpdateView />} />
           {/* TODO: Add user profile management */}
-          {/*<Route path="/profile" element={isLoggedIn() ? <Profile /> : <Navigate to="/login" />} />*/}
           {/* TODO: Add user logout */}
-          {/*<Route path="/logout" element={<Logout />} />*/}
           <Route path="*" element={<Landing />} />
         </Routes>
       </div>

@@ -5,15 +5,12 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { getUser } from '../../localStorage';
 
 export default function NavBar() {
   const loggedIn = false;
-  const user = getUser();
-  const title = loggedIn ? `Welcome, ${user?.username}!` : '';
+  const title = loggedIn ? `Welcome, some user!` : '';
 
   // TODO: Fix styling and add admin buttons
-  // Buttons when the user is logged in
   const buttons = (
     <div>
       <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
@@ -23,7 +20,7 @@ export default function NavBar() {
         <Link to="/Profile">My Profile</Link>
       </Button>
       <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/logout ">Sing out</Link>
+        <Link to="/logout ">Sign out</Link>
       </Button>
     </div>
   );
