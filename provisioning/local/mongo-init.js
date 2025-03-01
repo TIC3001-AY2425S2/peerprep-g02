@@ -11,7 +11,7 @@ db.usermodels.insertMany([
     }
 ]);
 
-db.usermodel.createIndex({ username: 1 }, { unique: true });
+db.usermodels.createIndex({ username: 1 }, { unique: true });
 
 print("Users successfully initialized");
 
