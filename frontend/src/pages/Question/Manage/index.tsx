@@ -6,7 +6,6 @@ import { Question } from '../../../types/questions';
 import QuestionList from './ManageQuestionlist';
 import QuestionForm from './QuestionForm';
 
-// TODO: Have a better way to do create and update question page since the differences are small
 const ManageQuestionsView = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
