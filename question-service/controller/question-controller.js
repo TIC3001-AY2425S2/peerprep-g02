@@ -23,7 +23,6 @@ export async function createQuestion(req, res) {
         data: createdQuestion,
       });
     } else {
-      console.error(res.status);
       return res
         .status(400)
         .json({ message: 'title and/or description and/or category and/or complexity are missing' });
@@ -45,7 +44,6 @@ export async function getQuestion(req, res) {
     if (!question) {
       return res.status(404).json({ message: `Question ${questionId} not found` });
     } else {
-      console.error("someone got the question!");
       return res.status(200).json({ message: `Found question`, data: question });
     }
   } catch (err) {

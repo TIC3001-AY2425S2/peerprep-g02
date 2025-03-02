@@ -22,6 +22,6 @@ export async function update(data: QuestionPatchData): Promise<AxiosResponse<Que
 }
 
 export async function remove(data: QuestionDeleteData): Promise<AxiosResponse<Question>> {
-  return questionClientApi.delete(`${URL}/${data._id}`, { data });
+  return questionClientApi.delete(`${URL}/delete`, { data });
 }
 
