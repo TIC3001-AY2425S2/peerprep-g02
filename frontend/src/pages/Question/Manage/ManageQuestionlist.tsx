@@ -1,7 +1,6 @@
 // src/components/question-list/QuestionList.tsx
-import { Avatar, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from '@mui/material';
-import StarIcon from '@mui/icons-material/Star'; // import StarIcon 
-import React from 'react';
+import StarIcon from '@mui/icons-material/Star'; // import StarIcon
+import { ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { Question } from '../../../types/questions';
 
@@ -19,52 +18,52 @@ const QuestionList = ({ questions, selectedId, onQuestionSelect }: QuestionListP
 
     return (
       <ListItem key={index} component="div" alignItems="flex-start" style={style}>
-        <ListItemButton 
+        <ListItemButton
           onClick={() => onQuestionSelect && onQuestionSelect(question)}
           selected={selectedId === question._id} // add selected state prop
           sx={{
             '&:hover': { backgroundColor: 'action.hover' },
             '&.Mui-selected': { backgroundColor: 'action.selected' },
             py: 1, // padding y-axis 8px
-            px: 2  // padding x-axis 16px
+            px: 2, // padding x-axis 16px
           }}
         >
           <ListItemAvatar>
             {/* amend Avatar to star */}
-            <StarIcon 
-              sx={{ 
+            <StarIcon
+              sx={{
                 color: selectedId === question._id ? '#ffeb3b' : '#9e9e9e', //on select yellow, not grey
-              }} 
+              }}
             />
           </ListItemAvatar>
           <ListItemText
-            primary={           <Typography
-              variant="body1"
-              sx={{
-                fontWeight: 'medium',
-                whiteSpace: 'nowrap', // not wrap
-                overflow: 'hidden', // hide overflow content
-                textOverflow: 'ellipsis', //show ellipsis
-                maxWidth: '200px', // max width
-              }}
-            >
-              {question.title}
-            </Typography>}
+            primary={
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 'medium',
+                  whiteSpace: 'nowrap', // not wrap
+                  overflow: 'hidden', // hide overflow content
+                  textOverflow: 'ellipsis', //show ellipsis
+                  maxWidth: '200px', // max width
+                }}
+              >
+                {question.title}
+              </Typography>
+            }
             secondary={
-              
-           <Typography
+              <Typography
                 variant="body2"
                 sx={{
                   color: 'text.secondary',
-                  whiteSpace: 'nowrap', 
-                  overflow: 'hidden', 
-                  textOverflow: 'ellipsis', 
-                  maxWidth: '200px', 
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '200px',
                 }}
               >
                 {`${question.complexity} - ${question.category.join(', ')}`}
               </Typography>
-              
             }
           />
         </ListItemButton>

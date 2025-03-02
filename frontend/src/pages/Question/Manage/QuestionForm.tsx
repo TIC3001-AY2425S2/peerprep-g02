@@ -1,11 +1,11 @@
 // src/components/question-form/QuestionForm.tsx
-import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import { createQuestion, deleteQuestion, updateQuestion, getQuestionByTitle } from '../../../hooks/question/question';
-import { Question } from '../../../types/questions';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { createQuestion, deleteQuestion, getQuestionByTitle, updateQuestion } from '../../../hooks/question/question';
+import { Question } from '../../../types/questions';
 
 interface QuestionFormProps {
   onSubmit: (formData: any) => void;
@@ -73,7 +73,6 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
   };
 
   const handleDelete = async () => {
-    // console.log(initialData);
     try {
       const payload = {
         ...formData,
@@ -105,25 +104,25 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         value={formData.title}
       />
       <TextField
-          margin="normal"
-          required
-          fullWidth
-          multiline
-          minRows={4}
-          maxRows={8}
-          id="description"
-          label="Description"
-          name="description"
-          type="text"
-          onChange={handleChange}
-          value={formData.description}
-          sx={{ 
-            '& .MuiInputBase-root': {
-              overflow: 'auto',
-              maxHeight: '300px'
-            }
-          }}
-        />
+        margin="normal"
+        required
+        fullWidth
+        multiline
+        minRows={4}
+        maxRows={8}
+        id="description"
+        label="Description"
+        name="description"
+        type="text"
+        onChange={handleChange}
+        value={formData.description}
+        sx={{
+          '& .MuiInputBase-root': {
+            overflow: 'auto',
+            maxHeight: '300px',
+          },
+        }}
+      />
       <TextField
         margin="normal"
         required
@@ -151,36 +150,36 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
           <MenuItem value="hard">Hard</MenuItem>
         </Select>
       </FormControl>
-      <Box 
-        sx={{ 
-          display: 'flex', 
+      <Box
+        sx={{
+          display: 'flex',
           gap: '20%',
           justifyContent: 'center',
           mt: 3,
-          mb: 2
+          mb: 2,
         }}
       >
-        <Button 
-          type="submit" 
-          variant="contained" 
-          sx={{ 
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{
             width: '20%',
             minWidth: 120,
-            flexShrink: 0
+            flexShrink: 0,
           }}
         >
           {initialData ? 'Update' : 'Create'}
         </Button>
-        
+
         {initialData && (
-          <Button 
+          <Button
             type="button"
-            variant="contained" 
+            variant="contained"
             color="error"
-            sx={{ 
+            sx={{
               width: '20%',
               minWidth: 120,
-              flexShrink: 0
+              flexShrink: 0,
             }}
             onClick={handleDelete}
           >

@@ -1,9 +1,23 @@
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import GroupIcon from '@mui/icons-material/Group';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import { Box, Button, Container, Grid, Paper, Typography } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Container,
+  Grid, Pagination,
+  Paper,
+  Typography,
+} from '@mui/material';
 import NavBar from '../../components/navbar';
+import React, { useEffect, useState } from 'react';
+import { getQuestion } from '../../hooks/question/question';
+import { Question } from '../../types/questions';
 
 const stats = [
   { icon: <EmojiEmotionsIcon fontSize="large" />, label: 'Happy Customers', value: '250+' },
@@ -13,6 +27,24 @@ const stats = [
 ];
 
 const Landing = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentQuestions = questions.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Load questions on component mount
+  useEffect(() => {
+    getQuestion()
+      .then((data: Question[]) => setQuestions(data))
+      .catch((err) => console.error('Error fetching questions:', err));
+  }, []);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
@@ -48,6 +80,38 @@ const Landing = () => {
           <Button variant="contained" size="large">
             Register
           </Button>
+        </Box>
+        {/* Accordion Section */}
+        <Box sx={{ mt: 4, textAlign: 'left' }}>
+          <Typography variant="h6" gutterBottom>
+            Question List
+          </Typography>
+          {currentQuestions .map((question) => (
+            <Accordion key={question._id}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="subtitle1">{question.title}</Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ backgroundColor: '#f5f5f5' }}>
+                <Typography variant="body2" gutterBottom sx={{ whiteSpace: 'pre-line' }}>
+                  {question.description}
+                </Typography>
+                <Typography variant="caption" display="block">
+                  Categories: {question.category.join(', ')}
+                </Typography>
+                <Typography variant="caption" display="block">
+                  Complexity: {question.complexity}
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Pagination
+              count={Math.ceil(questions.length / itemsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
         </Box>
       </Box>
     </Container>

@@ -1,4 +1,4 @@
-import { Box, Container, Pagination, Paper, Typography, Button } from '@mui/material';
+import { Box, Button, Container, Pagination, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import NavBar from '../../../components/navbar';
 import { getQuestion } from '../../../hooks/question/question';
@@ -16,20 +16,18 @@ const ManageQuestionsView = () => {
   useEffect(() => {
     getQuestion()
       .then((data: Question[]) => setQuestions(data))
-      .catch(err => console.error('Error fetching questions:', err));
+      .catch((err) => console.error('Error fetching questions:', err));
   }, []);
 
   // Handler when a new question is added
   const handleQuestionAdded = (newQuestion: Question) => {
-    setQuestions(prev => [...prev, newQuestion]);
+    setQuestions((prev) => [...prev, newQuestion]);
     setSelectedQuestion(newQuestion);
   };
 
   // Handler when a question is updated
   const handleQuestionUpdated = (updatedQuestion: Question) => {
-    setQuestions(prev =>
-      prev.map(q => (q._id === updatedQuestion._id ? updatedQuestion : q))
-    );
+    setQuestions((prev) => prev.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q)));
     setSelectedQuestion(updatedQuestion);
   };
 
@@ -44,8 +42,8 @@ const ManageQuestionsView = () => {
           display: 'flex',
           flexDirection: 'row',
           gap: '3%',
-          p: '1.6%', // margin around the container
-          height: 'calc(100vh - 128px)' // 100% - height of the navbar
+          p: '1.6%',
+          height: 'calc(100vh - 128px)',
         }}
       >
         {/* left container */}
@@ -56,7 +54,7 @@ const ManageQuestionsView = () => {
             p: 2,
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           <Box
@@ -64,25 +62,21 @@ const ManageQuestionsView = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              mb: 2
+              mb: 2,
             }}
           >
             <Typography variant="h6">Question List</Typography>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setSelectedQuestion(null)}
-            >
+            <Button variant="contained" size="small" onClick={() => setSelectedQuestion(null)}>
               Add New
             </Button>
           </Box>
 
           <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <QuestionList
+            <QuestionList
               questions={paginatedQuestions}
-              selectedId={selectedQuestion?._id} // pass selectedId to QuestionList
+              selectedId={selectedQuestion?._id}
               onQuestionSelect={setSelectedQuestion}
-          />
+            />
           </Box>
 
           {/* page component */}
@@ -91,7 +85,7 @@ const ManageQuestionsView = () => {
               pt: 2,
               borderTop: '1px solid #eee',
               display: 'flex',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
           >
             <Pagination
@@ -112,7 +106,7 @@ const ManageQuestionsView = () => {
             p: 3,
             bgcolor: 'background.paper',
             boxShadow: 3,
-            borderRadius: 1
+            borderRadius: 1,
           }}
         >
           <QuestionForm
