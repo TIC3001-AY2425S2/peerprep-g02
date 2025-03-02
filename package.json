@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "prettier": "prettier --write \"./**/*.{ts,js,html,scss,css,tsx}\"",
-    "postinstall": "cd frontend && npm install && cd ../user-service && npm install && cd ../question-service && npm install && cd .. && npm run prettier -s"
+    "prettier": "prettier --write \"./**/*.{ts,js,html,scss,css,tsx}\""
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2"
