@@ -127,7 +127,6 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         margin="normal"
         required
         fullWidth
-        multiline
         id="category"
         label="Category"
         name="category"

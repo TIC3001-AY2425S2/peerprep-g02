@@ -73,7 +73,7 @@ const QuestionList = ({ questions, selectedId, onQuestionSelect }: QuestionListP
 
   return (
     <FixedSizeList
-      height={window.innerHeight}
+      height={800}
       width="100%"
       itemSize={80}
       itemCount={questions.length}
