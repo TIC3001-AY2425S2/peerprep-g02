@@ -10,6 +10,7 @@ const questionClient = axios.create({
 
 export const questionClientApi = Object.freeze({
   get: questionClient.get,
+  getByTitle: questionClient.get,
   delete: questionClient.delete,
   post: questionClient.post,
   put: questionClient.put,

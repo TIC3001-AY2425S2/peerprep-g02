@@ -54,6 +54,22 @@ export async function getQuestion(req, res) {
   }
 }
 
+export async function getQuestionByTitle(req, res) {
+  try {
+    const questionTitle = req.params.title;
+    const question = await _findQuestionByTitle(questionTitle);
+    if (!question) {
+      return res.status(404).json({ message: `Question ${questionTitle} not found` });
+    } else {
+      console.error('someone got the question!');
+      return res.status(200).json({ message: `Found question`, data: question });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Unknown error when getting question!' });
+  }
+}
+
 export async function getAllQuestions(req, res) {
   try {
     const questions = await _findAllQuestions();

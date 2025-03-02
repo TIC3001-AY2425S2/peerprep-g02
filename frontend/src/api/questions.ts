@@ -13,6 +13,10 @@ export async function get(data?: String): Promise<AxiosResponse<any>> {
   return questionClientApi.get(url);
 }
 
+export async function getByTitle(data?: String): Promise<AxiosResponse<any>> {
+  return questionClientApi.getByTitle(`${URL}/title/${data}`);
+}
+
 export async function update(data: QuestionPatchData): Promise<AxiosResponse<Question>> {
   return questionClientApi.patch(`${URL}/${data._id}`, data);
 }

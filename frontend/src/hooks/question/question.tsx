@@ -21,6 +21,16 @@ export const getQuestion = async (ids?: String): Promise<Question[]> => {
   }
 };
 
+export const getQuestionByTitle = async (title: String): Promise<Question> => {
+  try {
+    const response = await api.questions.getByTitle(title);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error getting question: ', error);
+    throw error;
+  }
+};
+
 export const updateQuestion = async (data: QuestionPatchData): Promise<Question> => {
   try {
     const response = await api.questions.update(data);

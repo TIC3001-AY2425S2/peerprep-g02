@@ -5,6 +5,7 @@ import {
   deleteQuestion,
   getAllQuestions,
   getQuestion,
+  getQuestionByTitle,
   updateQuestion,
 } from '../controller/question-controller.js';
 
@@ -15,6 +16,8 @@ router.get('/', getAllQuestions);
 router.post('/', createQuestion);
 
 router.get('/:id', getQuestion);
+
+router.get('/title/:title', getQuestionByTitle);
 
 router.patch('/:id', updateQuestion);
 
