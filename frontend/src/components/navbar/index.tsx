@@ -4,7 +4,7 @@ import Container from '@mui/material/Container';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function NavBar() {
   const loggedIn = false;
@@ -24,6 +24,11 @@ export default function NavBar() {
       </Button>
     </div>
   );
+  
+  const navigate = useNavigate();
+  const goToLanding = () => {
+    navigate('/');
+  };
 
   return (
     <Container disableGutters maxWidth={false}>
@@ -35,7 +40,7 @@ export default function NavBar() {
         sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
       >
         <Toolbar sx={{ flexWrap: 'wrap' }}>
-          <Typography variant="h5" color="inherit" noWrap sx={{ flexGrow: 1, textAlign: 'left' }}>
+          <Typography variant="h5" onClick={goToLanding} color="inherit" noWrap sx={{ flexGrow: 1, textAlign: 'left' }}>
             PeerPrep Hub {title}
           </Typography>
           {buttons}
