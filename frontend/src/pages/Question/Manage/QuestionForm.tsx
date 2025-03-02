@@ -2,8 +2,9 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createQuestion, updateQuestion } from '../../../hooks/question/question';
+import { createQuestion, deleteQuestion, updateQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
+import { useNavigate } from 'react-router-dom';
 
 interface QuestionFormProps {
   onSubmit: (formData: any) => void;
@@ -12,6 +13,7 @@ interface QuestionFormProps {
 
 const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
   const [formData, setFormData] = useState({
+    _id: initialData?._id || '',
     title: initialData?.title || '',
     description: initialData?.description || '',
     category: initialData?.category ? initialData.category.join(', ') : '',
@@ -20,6 +22,7 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
 
   useEffect(() => {
     const data = {
+      _id: initialData ? initialData._id : '',
       title: initialData ? initialData.title : '',
       description: initialData ? initialData.description : '',
       category: initialData ? initialData.category.join(', ') : '',
@@ -56,6 +59,23 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
       }
     } catch (error) {
       toast.error(`Error creating question: ${error.response?.data?.message}`);
+    }
+  };
+
+  const navigate = useNavigate();
+  const handleDelete = async () => {
+    console.log(initialData);
+    try {
+      const payload = {
+        ...formData,
+        _id: initialData._id,
+      };
+      await deleteQuestion(payload);
+      toast.success(`Question deleted successfully`);
+      navigate(0);
+    } catch (error) {
+      console.error('Error deleting question:', error.response?.data?.message);
+      toast.error(` Error deleting question ${error.response?.data?.message}`);
     }
   };
 
@@ -111,10 +131,14 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         onChange={handleChange}
         value={formData.complexity}
       />
-      {/* TODO: Add a show delete button here based on initialData */}
       <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
         {initialData ? 'Update Question' : 'Add Question'}
       </Button>
+      {initialData && (
+        <Button type="button" fullWidth variant="contained" color="error" sx={{ mt: 3, mb: 2 }} onClick={handleDelete}>
+          Delete Question
+        </Button>
+      )}
     </Box>
   );
 };

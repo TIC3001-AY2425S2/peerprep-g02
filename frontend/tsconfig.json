@@ -17,7 +17,6 @@
     "jsx": "react-jsx",
     "useUnknownInCatchVariables": false,
     "strictNullChecks": false,
-    "transformIgnorePatterns": true,
     "noImplicitAny": false
   },
   "include": ["./src", "./config/declarations.d.ts"],
