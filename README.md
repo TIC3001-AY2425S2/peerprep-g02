@@ -56,5 +56,3 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 3. Start the Frontend service with `npm start`.
 4. If the server starts successfully, you will see a "You can now view frontend in the browser." message.
 5. Navigate to http://localhost:3000
-
-### Complete Question Service Guide: [Question Service Guide](./question-service/README.md)
