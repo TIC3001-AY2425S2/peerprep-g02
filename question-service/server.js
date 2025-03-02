@@ -3,7 +3,7 @@ import http from 'http';
 import index from './index.js';
 import { connectToDB } from './model/repository.js';
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8001;
 
 const server = http.createServer(index);
 
@@ -12,7 +12,7 @@ await connectToDB()
     console.log('MongoDB Connected!');
 
     server.listen(port);
-    console.log('User service server listening on http://localhost:' + port);
+    console.log('Question service server listening on http://localhost:' + port);
   })
   .catch((err) => {
     console.error('Failed to connect to DB');

@@ -1,8 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 
-import authRoutes from './routes/auth-routes.js';
-import userRoutes from './routes/user-routes.js';
+import questionRoutes from './routes/question-routes.js';
 
 const app = express();
 
@@ -27,13 +26,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/users', userRoutes);
-app.use('/auth', authRoutes);
+app.use('/questions', questionRoutes);
 
 app.get('/', (req, res, next) => {
   console.log('Sending Greetings!');
   res.json({
-    message: 'Hello World from user-service',
+    message: 'Hello World from question-service',
   });
 });
 
