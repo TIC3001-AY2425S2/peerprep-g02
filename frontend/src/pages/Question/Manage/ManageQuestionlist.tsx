@@ -24,7 +24,9 @@ const QuestionList = ({ questions, selectedId, onQuestionSelect }: QuestionListP
           selected={selectedId === question._id} // add selected state prop
           sx={{
             '&:hover': { backgroundColor: 'action.hover' },
-            '&.Mui-selected': { backgroundColor: 'action.selected' }
+            '&.Mui-selected': { backgroundColor: 'action.selected' },
+            py: 1, // padding y-axis 8px
+            px: 2  // padding x-axis 16px
           }}
         >
           <ListItemAvatar>
@@ -36,13 +38,33 @@ const QuestionList = ({ questions, selectedId, onQuestionSelect }: QuestionListP
             />
           </ListItemAvatar>
           <ListItemText
-            primary={`${question.title}`}
+            primary={           <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 'medium',
+                whiteSpace: 'nowrap', // not wrap
+                overflow: 'hidden', // hide overflow content
+                textOverflow: 'ellipsis', //show ellipsis
+                maxWidth: '200px', // max width
+              }}
+            >
+              {question.title}
+            </Typography>}
             secondary={
-              <React.Fragment>
-                <Typography component="span" variant="body2" sx={{ color: 'text.primary', display: 'inline' }}>
-                  {question.complexity} - {question.category.join(', ')}
-                </Typography>
-              </React.Fragment>
+              
+           <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  whiteSpace: 'nowrap', 
+                  overflow: 'hidden', 
+                  textOverflow: 'ellipsis', 
+                  maxWidth: '200px', 
+                }}
+              >
+                {`${question.complexity} - ${question.category.join(', ')}`}
+              </Typography>
+              
             }
           />
         </ListItemButton>
