@@ -9,12 +9,8 @@ export async function create(data: QuestionPostData): Promise<AxiosResponse<Ques
 }
 
 export async function get(data?: String): Promise<AxiosResponse<any>> {
-  if (data) {
-    return questionClientApi.get(`${URL}/${data}`);
-  }
-  else {
-    return questionClientApi.get(`${URL}`);
-  }
+ const url = data ? `${URL}/${data}` : `${URL}`;
+ return questionClientApi.get(url);
 }
 
 export async function update(data: QuestionPatchData): Promise<AxiosResponse<Question>> {
