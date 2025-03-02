@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
-import { questionClientApi } from './client';
 import { Question, QuestionDeleteData, QuestionPatchData, QuestionPostData } from '../types/questions';
+import { questionClientApi } from './client';
 
 const URL = '/questions';
 
@@ -9,8 +9,8 @@ export async function create(data: QuestionPostData): Promise<AxiosResponse<Ques
 }
 
 export async function get(data?: String): Promise<AxiosResponse<any>> {
- const url = data ? `${URL}/${data}` : `${URL}`;
- return questionClientApi.get(url);
+  const url = data ? `${URL}/${data}` : `${URL}`;
+  return questionClientApi.get(url);
 }
 
 export async function update(data: QuestionPatchData): Promise<AxiosResponse<Question>> {
@@ -20,4 +20,3 @@ export async function update(data: QuestionPatchData): Promise<AxiosResponse<Que
 export async function remove(data: QuestionDeleteData): Promise<AxiosResponse<Question>> {
   return questionClientApi.delete(`${URL}/${data._id}`);
 }
-
