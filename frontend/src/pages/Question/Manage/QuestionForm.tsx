@@ -1,5 +1,6 @@
 // src/components/question-form/QuestionForm.tsx
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createQuestion, deleteQuestion, updateQuestion } from '../../../hooks/question/question';
@@ -35,6 +36,11 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
+
+  const handleSelectChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
@@ -98,17 +104,25 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         value={formData.title}
       />
       <TextField
-        margin="normal"
-        required
-        fullWidth
-        multiline
-        id="description"
-        label="Description"
-        name="description"
-        type="text"
-        onChange={handleChange}
-        value={formData.description}
-      />
+          margin="normal"
+          required
+          fullWidth
+          multiline
+          minRows={4}
+          maxRows={8} // 限制最大行数
+          id="description"
+          label="Description"
+          name="description"
+          type="text"
+          onChange={handleChange}
+          value={formData.description}
+          sx={{ 
+            '& .MuiInputBase-root': {
+              overflow: 'auto', // 添加滚动
+              maxHeight: '300px' // 设置最大高度
+            }
+          }}
+        />
       <TextField
         margin="normal"
         required
@@ -121,26 +135,58 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         onChange={handleChange}
         value={formData.category}
       />
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        multiline
-        id="complexity"
-        label="Complexity"
-        name="complexity"
-        type="text"
-        onChange={handleChange}
-        value={formData.complexity}
-      />
-      <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-        {initialData ? 'Update Question' : 'Add Question'}
-      </Button>
-      {initialData && (
-        <Button type="button" fullWidth variant="contained" color="error" sx={{ mt: 3, mb: 2 }} onClick={handleDelete}>
-          Delete Question
+      <FormControl fullWidth required margin="normal">
+        <InputLabel id="complexity-label">Complexity</InputLabel>
+        <Select
+          labelId="complexity-label"
+          id="complexity"
+          name="complexity"
+          label="Complexity"
+          value={formData.complexity}
+          onChange={handleSelectChange}
+        >
+          <MenuItem value="Easy">Easy</MenuItem>
+          <MenuItem value="Medium">Medium</MenuItem>
+          <MenuItem value="Hard">Hard</MenuItem>
+        </Select>
+      </FormControl>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          gap: '20%',
+          justifyContent: 'center',
+          mt: 3,
+          mb: 2
+        }}
+      >
+        <Button 
+          type="submit" 
+          variant="contained" 
+          sx={{ 
+            width: '20%',
+            minWidth: 120,
+            flexShrink: 0
+          }}
+        >
+          {initialData ? 'Update' : 'Create'}
         </Button>
-      )}
+        
+        {initialData && (
+          <Button 
+            type="button"
+            variant="contained" 
+            color="error"
+            sx={{ 
+              width: '20%',
+              minWidth: 120,
+              flexShrink: 0
+            }}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };
