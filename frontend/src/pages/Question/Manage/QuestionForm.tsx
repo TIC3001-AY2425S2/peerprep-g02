@@ -110,7 +110,7 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
           fullWidth
           multiline
           minRows={4}
-          maxRows={8} // 限制最大行数
+          maxRows={8}
           id="description"
           label="Description"
           name="description"
@@ -119,8 +119,8 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
           value={formData.description}
           sx={{ 
             '& .MuiInputBase-root': {
-              overflow: 'auto', // 添加滚动
-              maxHeight: '300px' // 设置最大高度
+              overflow: 'auto',
+              maxHeight: '300px'
             }
           }}
         />
@@ -146,9 +146,9 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
           value={formData.complexity}
           onChange={handleSelectChange}
         >
-          <MenuItem value="Easy">Easy</MenuItem>
-          <MenuItem value="Medium">Medium</MenuItem>
-          <MenuItem value="Hard">Hard</MenuItem>
+          <MenuItem value="easy">Easy</MenuItem>
+          <MenuItem value="medium">Medium</MenuItem>
+          <MenuItem value="hard">Hard</MenuItem>
         </Select>
       </FormControl>
       <Box 
