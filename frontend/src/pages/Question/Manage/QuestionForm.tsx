@@ -3,7 +3,7 @@ import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, Me
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createQuestion, deleteQuestion, updateQuestion } from '../../../hooks/question/question';
+import { createQuestion, deleteQuestion, updateQuestion, getQuestionByTitle } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,9 +62,10 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
           category: formData.category.split(',').map((cat) => cat.trim()),
         };
         await createQuestion(payload);
+        const question = await getQuestionByTitle(payload.title);
+        payload._id = question._id;
         toast.success(`Question created successfully`);
         onSubmit(payload);
-        navigate(0);
       }
     } catch (error) {
       toast.error(`Error creating question: ${error.response?.data?.message}`);
