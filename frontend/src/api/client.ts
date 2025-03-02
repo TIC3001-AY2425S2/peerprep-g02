@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const USER_BASE_URL = 'http://localhost:8080';
-const QUESTION_BASE_URL = 'http://localhost:8081';
+const USER_BASE_URL = process.env.REACT_APP_USER_BASE_URL || 'http://localhost:8080';
+const QUESTION_BASE_URL = process.env.REACT_APP_QUESTION_BASE_URL || 'http://localhost:8081';
 
 const userClient = axios.create({
   baseURL: USER_BASE_URL,
