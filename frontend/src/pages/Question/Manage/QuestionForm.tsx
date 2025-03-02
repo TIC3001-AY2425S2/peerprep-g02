@@ -31,6 +31,8 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
     setFormData(data);
   }, [initialData]);
 
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
@@ -56,15 +58,15 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
         await createQuestion(payload);
         toast.success(`Question created successfully`);
         onSubmit(payload);
+        navigate(0);
       }
     } catch (error) {
       toast.error(`Error creating question: ${error.response?.data?.message}`);
     }
   };
 
-  const navigate = useNavigate();
   const handleDelete = async () => {
-    console.log(initialData);
+    // console.log(initialData);
     try {
       const payload = {
         ...formData,
