@@ -14,10 +14,7 @@ export default function NavBar() {
   const buttons = (
     <div>
       <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/manage/question/create">Create Questions</Link>
-      </Button>
-      <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/manage/question/update">Update Questions</Link>
+        <Link to="/manage/question">Manage Questions</Link>
       </Button>
       <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
         <Link to="/Profile">My Profile</Link>

@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
 import Landing from '../pages/Landing';
-import QuestionCreateView from '../pages/Question/Create';
+import ManageQuestionsView from '../pages/Question/Manage';
 import QuestionUpdateView from '../pages/Question/Update';
 import './App.css';
 
@@ -20,11 +20,11 @@ const ActiveApp: React.FC = () => {
           {/* TODO: Add route to login */}
           <Route path="/" element={<Landing />} />
 
+          {/* TODO: consolidate both create and update question page into 1 */}
+          <Route path="/manage/question" element={<ManageQuestionsView />} />
+          <Route path="/manage/question/update" element={<QuestionUpdateView />} />
           {/* TODO: Add user profile management */}
           {/* TODO: Add user logout */}
-          <Route path="/manage/question/create" element={<QuestionCreateView />} />
-          <Route path="/manage/question/update" element={<QuestionUpdateView />} />
-
           <Route path="*" element={<Landing />} />
         </Routes>
       </div>
