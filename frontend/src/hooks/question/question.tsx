@@ -1,5 +1,5 @@
 import api from '../../api';
-import { Question,QuestionDeleteData,QuestionPostData,QuestionPatchData } from '../../types/questions';
+import { Question, QuestionDeleteData, QuestionPatchData, QuestionPostData } from '../../types/questions';
 
 export const createQuestion = async (data: QuestionPostData): Promise<Question> => {
   try {
@@ -20,7 +20,6 @@ export const getQuestion = async (ids?: String): Promise<Question[]> => {
     throw error;
   }
 };
-
 
 export const updateQuestion = async (data: QuestionPatchData): Promise<Question> => {
   try {

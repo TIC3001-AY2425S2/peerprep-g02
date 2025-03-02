@@ -6,7 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
 import Landing from '../pages/Landing';
 import ManageQuestionsView from '../pages/Question/Manage';
-import QuestionUpdateView from '../pages/Question/Update';
 import './App.css';
 
 // Routes is for routing of pages
@@ -22,7 +21,6 @@ const ActiveApp: React.FC = () => {
 
           {/* TODO: consolidate both create and update question page into 1 */}
           <Route path="/manage/question" element={<ManageQuestionsView />} />
-          <Route path="/manage/question/update" element={<QuestionUpdateView />} />
           {/* TODO: Add user profile management */}
           {/* TODO: Add user logout */}
           <Route path="*" element={<Landing />} />
