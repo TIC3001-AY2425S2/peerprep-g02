@@ -78,10 +78,11 @@ const ManageQuestionsView = () => {
           </Box>
 
           <Box sx={{ flex: 1, overflow: 'auto' }}>
-            <QuestionList
+          <QuestionList
               questions={paginatedQuestions}
+              selectedId={selectedQuestion?._id} // pass selectedId to QuestionList
               onQuestionSelect={setSelectedQuestion}
-            />
+          />
           </Box>
 
           {/* page component */}
