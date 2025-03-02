@@ -1,7 +1,7 @@
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
-import GroupIcon from '@mui/icons-material/Group';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import GroupIcon from '@mui/icons-material/Group';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import {
   Accordion,
@@ -10,12 +10,13 @@ import {
   Box,
   Button,
   Container,
-  Grid, Pagination,
+  Grid,
+  Pagination,
   Paper,
   Typography,
 } from '@mui/material';
-import NavBar from '../../components/navbar';
 import React, { useEffect, useState } from 'react';
+import NavBar from '../../components/navbar';
 import { getQuestion } from '../../hooks/question/question';
 import { Question } from '../../types/questions';
 
@@ -86,7 +87,7 @@ const Landing = () => {
           <Typography variant="h6" gutterBottom>
             Question List
           </Typography>
-          {currentQuestions .map((question) => (
+          {currentQuestions.map((question) => (
             <Accordion key={question._id}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="subtitle1">{question.title}</Typography>

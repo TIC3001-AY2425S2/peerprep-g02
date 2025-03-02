@@ -13,18 +13,12 @@ export default function NavBar() {
   // TODO: Fix styling and add admin buttons
   const buttons = (
     <div>
-      <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/manage/question">Manage Questions</Link>
-      </Button>
-      <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/Profile">My Profile</Link>
-      </Button>
-      <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-        <Link to="/logout ">Sign out</Link>
+      <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
+        Manage Questions
       </Button>
     </div>
   );
-  
+
   const navigate = useNavigate();
   const goToLanding = () => {
     navigate('/');
@@ -40,7 +34,13 @@ export default function NavBar() {
         sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
       >
         <Toolbar sx={{ flexWrap: 'wrap' }}>
-          <Typography variant="h5" onClick={goToLanding} color="inherit" noWrap sx={{ flexGrow: 1, textAlign: 'left' }}>
+          <Typography
+            variant="h5"
+            onClick={goToLanding}
+            color="inherit"
+            noWrap
+            sx={{ flexGrow: 1, textAlign: 'left', cursor: 'pointer' }}
+          >
             PeerPrep Hub {title}
           </Typography>
           {buttons}
