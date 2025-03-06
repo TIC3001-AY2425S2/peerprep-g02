@@ -2,17 +2,17 @@
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createQuestion, deleteQuestion, getQuestionByTitle, updateQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 
 interface QuestionFormProps {
   onSubmit: (formData: any) => void;
+  onDelete?: (deletedQuestion: any) => void;
   initialData?: Question;
 }
 
-const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
+const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) => {
   const [formData, setFormData] = useState({
     _id: initialData?._id || '',
     title: initialData?.title || '',
@@ -31,8 +31,6 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
     };
     setFormData(data);
   }, [initialData]);
-
-  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -80,7 +78,9 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
       };
       await deleteQuestion(payload);
       toast.success(`Question deleted successfully`);
-      navigate(0);
+      if (onDelete) {
+        onDelete(payload);
+      }
     } catch (error) {
       console.error('Error deleting question:', error.response?.data?.message);
       toast.error(` Error deleting question ${error.response?.data?.message}`);

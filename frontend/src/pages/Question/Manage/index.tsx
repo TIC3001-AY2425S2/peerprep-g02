@@ -31,6 +31,11 @@ const ManageQuestionsView = () => {
     setSelectedQuestion(updatedQuestion);
   };
 
+  const handleQuestionDeleted = (deletedQuestion: Question) => {
+    setQuestions((prev) => prev.filter((q) => q._id !== deletedQuestion._id));
+    setSelectedQuestion(null);
+  }
+
   // Calculate paginated questions
   const paginatedQuestions = questions.slice((page - 1) * pageSize, page * pageSize);
 
@@ -111,6 +116,7 @@ const ManageQuestionsView = () => {
         >
           <QuestionForm
             onSubmit={selectedQuestion ? handleQuestionUpdated : handleQuestionAdded}
+            onDelete={handleQuestionDeleted}
             initialData={selectedQuestion || undefined}
           />
         </Box>
