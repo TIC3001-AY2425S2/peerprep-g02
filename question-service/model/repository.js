@@ -1,12 +1,9 @@
-import QuestionModel from "./question-model.js";
-import "dotenv/config";
-import { connect } from "mongoose";
+import 'dotenv/config';
+import { connect } from 'mongoose';
+import QuestionModel from './question-model.js';
 
 export async function connectToDB() {
-  let mongoDBUri =
-    process.env.ENV === "PROD"
-      ? process.env.DB_CLOUD_URI
-      : process.env.DB_LOCAL_URI;
+  let mongoDBUri = process.env.ENV === 'PROD' ? process.env.DB_CLOUD_URI : process.env.DB_LOCAL_URI;
 
   await connect(mongoDBUri);
 }
@@ -36,11 +33,11 @@ export async function findAllQuestions() {
 }
 
 export async function findDistinctCategory() {
-  return QuestionModel.distinct("category");
+  return QuestionModel.distinct('category');
 }
 
 export async function findDistinctComplexity() {
-  return QuestionModel.distinct("complexity");
+  return QuestionModel.distinct('complexity');
 }
 
 export async function updateQuestionById(QuestionId, title, description, category, complexity) {
@@ -54,8 +51,10 @@ export async function updateQuestionById(QuestionId, title, description, categor
         complexity,
       },
     },
-    { new: true,               // return the updated document
-      runValidators: true },   // run validators on update
+    {
+      new: true, // return the updated document
+      runValidators: true,
+    }, // run validators on update
   );
 }
 
@@ -66,5 +65,5 @@ export async function deleteQuestionById(questionId) {
 // check if a question has this category-complexity combination
 export async function checkCategoryComplexityExists(category, complexity) {
   const exists = await QuestionModel.exists({ category, complexity });
-  return !!exists;  // convert to boolean
+  return !!exists; // convert to boolean
 }
