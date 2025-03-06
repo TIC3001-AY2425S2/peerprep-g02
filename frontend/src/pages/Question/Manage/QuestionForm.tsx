@@ -9,10 +9,11 @@ import { Question } from '../../../types/questions';
 
 interface QuestionFormProps {
   onSubmit: (formData: any) => void;
+  onDelete?: (deletedQuestion: any) => void;
   initialData?: Question;
 }
 
-const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
+const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) => {
   const [formData, setFormData] = useState({
     _id: initialData?._id || '',
     title: initialData?.title || '',
@@ -80,7 +81,9 @@ const QuestionForm = ({ onSubmit, initialData }: QuestionFormProps) => {
       };
       await deleteQuestion(payload);
       toast.success(`Question deleted successfully`);
-      navigate(0);
+      if (onDelete) {
+        onDelete(payload);
+      }
     } catch (error) {
       console.error('Error deleting question:', error.response?.data?.message);
       toast.error(` Error deleting question ${error.response?.data?.message}`);
