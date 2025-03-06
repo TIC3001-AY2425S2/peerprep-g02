@@ -2,7 +2,6 @@
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createQuestion, deleteQuestion, getQuestionByTitle, updateQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
@@ -32,8 +31,6 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
     };
     setFormData(data);
   }, [initialData]);
-
-  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
