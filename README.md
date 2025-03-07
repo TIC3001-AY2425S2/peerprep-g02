@@ -64,14 +64,14 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 # Docker
 ## Run everything at once
 `cd provisioning` then `docker compose up` to run everything at once.
-* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using `docker logs -f <container id>` above
+* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time)
 
 ## Running services individually in docker
 1. From project root `cd provisioning/local/` then `docker compose up` to start local mongodb
 2. From project root `cd user-service/provisioning/local` then `docker compose up` to start user service
 3. From project root `cd question-service/provisioning/local` then `docker compose up` to start question service
 4. From project root `cd frontend/provisioning/local` then `docker compose up` to start frontend service
-* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using `docker logs -f <container id>` above.
+* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time).
 
 ## Mongodb express (UI to view models)
 1. Navigate to localhost:8099
