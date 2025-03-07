@@ -84,7 +84,8 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 `docker image ls`
 ### Start/Stop containers
 `docker compose <up/down>` in the `provisioning/local` folder.
-* You will lose all your data since the data isn't saved if you docker compoose down. Use `ctrl+c` to "pause" the container
+* You will lose all your data since the data isn't saved if you docker compose down. Use `ctrl+c` to "pause" the container
+* To reset, just `docker compose down` then `docker compose up` again.
 ### View all containers
 `docker container ls`
 * From here you can get container information such as container id 
