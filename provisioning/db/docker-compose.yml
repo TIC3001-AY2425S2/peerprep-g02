@@ -23,3 +23,5 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_PORT: 27017
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
+      # MongoExpress default credentials
+      # username: admin, password: pass

@@ -3,7 +3,18 @@ import { connect } from 'mongoose';
 import QuestionModel from './question-model.js';
 
 export async function connectToDB() {
-  let mongoDBUri = process.env.ENV === 'PROD' ? process.env.DB_CLOUD_URI : process.env.DB_LOCAL_URI;
+  let mongoDBUri;
+
+  switch (process.env.ENV) {
+    case 'PROD':
+      mongoDBUri = process.env.DB_CLOUD_URI;
+      break;
+    case 'DOCKER':
+      mongoDBUri = process.env.DB_DOCKER_URI;
+      break;
+    default:
+      mongoDBUri = process.env.DB_LOCAL_URI;
+  }
 
   await connect(mongoDBUri);
 }

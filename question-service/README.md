@@ -7,9 +7,11 @@
 # For PROD env
 DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
-DB_LOCAL_URI=<CONNECTION_STRING>
+DB_LOCAL_URI=mongodb://admin:password@127.0.0.1:8098/peerprep-g02?authSource=admin
+# For DOCKER env
+DB_DOCKER_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
 PORT=8001
-# Possible values: PROD or LOCAL
+# Possible values: PROD or LOCAL or DOCKER
 ENV=PROD
 
 # Secret for creating JWT signature
