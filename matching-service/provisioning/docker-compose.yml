@@ -1,0 +1,10 @@
+services:
+  matchign-service:
+    # Automatically build the image with latest tag
+    build: ./..
+    image: matching-service
+    container_name: matching-service
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./../.env

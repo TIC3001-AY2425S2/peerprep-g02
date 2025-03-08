@@ -23,3 +23,8 @@ services:
     extends:
       file: ./../frontend/provisioning/docker-compose.yml
       service: frontend
+
+  rabbitmq:
+    extends:
+      file: db/docker-compose.yml
+      service: rabbitmq

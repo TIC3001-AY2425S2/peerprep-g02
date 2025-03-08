@@ -25,3 +25,14 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
       # MongoExpress default credentials
       # username: admin, password: pass
+
+  rabbitmq:
+    image: rabbitmq:4.0.3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMPQ port
+      - "15672:15672" # Management port
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: pass
+
