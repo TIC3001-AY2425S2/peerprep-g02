@@ -67,10 +67,10 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 * Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time)
 
 ## Running services individually in docker
-1. From project root `cd provisioning/local/` then `docker compose up` to start local mongodb
-2. From project root `cd user-service/provisioning/local` then `docker compose up` to start user service
-3. From project root `cd question-service/provisioning/local` then `docker compose up` to start question service
-4. From project root `cd frontend/provisioning/local` then `docker compose up` to start frontend service
+1. From project root `cd provisioning/db/` then `docker compose up` to start local mongodb
+2. From project root `cd user-service/provisioning` then `docker compose up` to start user service
+3. From project root `cd question-service/provisioning` then `docker compose up` to start question service
+4. From project root `cd frontend/provisioning` then `docker compose up` to start frontend service
 * Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time).
 
 ## Mongodb express (UI to view models)
@@ -83,7 +83,7 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 ### View all docker images
 `docker image ls`
 ### Start/Stop containers
-`docker compose <up/down>` in the `provisioning/local` folder.
+`docker compose <up/down>` folder container `docker-compose.yml`.
 * You will lose all your data since the data isn't saved if you docker compose down. Use `ctrl+c` to "pause" the container
 * To reset, just `docker compose down` then `docker compose up` again.
 ### View all containers
