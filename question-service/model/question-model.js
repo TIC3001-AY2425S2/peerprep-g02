@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -15,7 +15,7 @@ const QuestionModelSchema = new Schema({
   category: {
     type: [String],
     required: true,
-    set: (arr) => arr.map(str => str.trim().toLowerCase()),
+    set: (arr) => arr.map((str) => str.trim().toLowerCase()),
   },
   complexity: {
     type: String,
@@ -34,5 +34,4 @@ const QuestionModelSchema = new Schema({
     required: true,
   },
 });
-
-export default mongoose.model("QuestionModel", QuestionModelSchema);
+export default mongoose.model('QuestionModel', QuestionModelSchema);

@@ -1,0 +1,25 @@
+services:
+  mongodb:
+    extends:
+      file: db/docker-compose.yml
+      service: mongodb
+
+  mongo-express:
+    extends:
+      file: db/docker-compose.yml
+      service: mongo-express
+
+  user-service:
+    extends:
+      file: ./../user-service/provisioning/docker-compose.yml
+      service: question-service
+
+  question-service:
+    extends:
+      file: ./../question-service/provisioning/docker-compose.yml
+      service: question-service
+
+  frontend:
+    extends:
+      file: ./../frontend/provisioning/docker-compose.yml
+      service: frontend
