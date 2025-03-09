@@ -18,8 +18,3 @@ services:
     extends:
       file: ./../question-service/provisioning/docker-compose.yml
       service: question-service
-
-  frontend:
-    extends:
-      file: ./../frontend/provisioning/docker-compose.yml
-      service: frontend
