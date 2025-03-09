@@ -1,5 +1,5 @@
 services:
-  question-service:
+  user-service:
     # Automatically build the image with latest tag
     build: ./..
     image: user-service
@@ -8,3 +8,9 @@ services:
       - "8000:8000"
     env_file:
       - ./../.env
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

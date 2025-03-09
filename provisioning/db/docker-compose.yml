@@ -11,7 +11,11 @@ services:
       MONGO_INITDB_DATABASE: peerprep-g02
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - shared-network
 
+  # MongoExpress default credentials
+  # username: admin, password: pass
   mongo-express:
     image: mongo-express
     container_name: mongo-express
@@ -23,5 +27,11 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_PORT: 27017
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
-      # MongoExpress default credentials
-      # username: admin, password: pass
+    depends_on:
+      - mongodb
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

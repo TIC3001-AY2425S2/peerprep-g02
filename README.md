@@ -86,15 +86,18 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 `docker compose <up/down>` folder container `docker-compose.yml`.
 * You will lose all your data since the data isn't saved if you docker compose down. Use `ctrl+c` to "pause" the container
 * To reset, just `docker compose down` then `docker compose up` again.
+### Start containers with building image
+`docker compose up --build`
 ### View all containers
 `docker container ls`
 * From here you can get container information such as container id 
 ### View container logs in real time
 `docker logs -f <container_id>`
+### View docker network
+`docker network ls`
 ### Enter into the container
 `docker exec -it <container_id> /bin/sh`
 ### Encounter an issue?
-`docker container prune` and `docker image prune` and `docker system prune`
+`docker container prune` and `docker image prune` and `docker system prune` and `docker network prune`
 ### Removing an image
 `docker image rm <image_name>` or `docker image rm <image_name>:<tag>` if you need specificity
-
