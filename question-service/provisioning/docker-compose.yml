@@ -8,3 +8,9 @@ services:
       - "8001:8001"
     env_file:
       - ./../.env
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

@@ -1,8 +1,0 @@
-services:
-  frontend:
-    # Automatically build the image with latest tag
-    build: ./..
-    image: frontend
-    container_name: frontend
-    ports:
-      - "3000:3000"

@@ -8,23 +8,23 @@ services:
     extends:
       file: db/docker-compose.yml
       service: mongo-express
+    depends_on:
+      - mongodb
 
   user-service:
     extends:
       file: ./../user-service/provisioning/docker-compose.yml
-      service: question-service
+      service: user-service
+    depends_on:
+      - mongodb
 
   question-service:
     extends:
       file: ./../question-service/provisioning/docker-compose.yml
       service: question-service
+    depends_on:
+      - mongodb
 
-  frontend:
-    extends:
-      file: ./../frontend/provisioning/docker-compose.yml
-      service: frontend
-
-  rabbitmq:
-    extends:
-      file: db/docker-compose.yml
-      service: rabbitmq
+networks:
+  shared-network:
+    name: peerprep-g02
