@@ -1,8 +1,9 @@
 import express from 'express';
-
 import {
   createQuestion,
   deleteQuestion,
+  getAllCategories,
+  getAllComplexities,
   getAllQuestions,
   getQuestion,
   getQuestionByTitle,
@@ -12,6 +13,10 @@ import {
 const router = express.Router();
 
 router.get('/', getAllQuestions);
+
+router.get('/category/all', getAllCategories);
+
+router.get('/complexity/all', getAllComplexities);
 
 router.post('/', createQuestion);
 

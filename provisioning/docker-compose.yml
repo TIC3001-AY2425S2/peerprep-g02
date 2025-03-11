@@ -11,6 +11,11 @@ services:
     depends_on:
       - mongodb
 
+  rabbitmq:
+    extends:
+      file: db/docker-compose.yml
+      service: rabbitmq
+
   user-service:
     extends:
       file: ./../user-service/provisioning/docker-compose.yml
@@ -24,6 +29,16 @@ services:
       service: question-service
     depends_on:
       - mongodb
+
+# TODO: Need a better way to do depends on.
+#  matching-service:
+#    extends:
+#      file: ./../matching-service/provisioning/docker-compose.yml
+#      service: matching-service
+#    depends_on:
+#      - rabbitmq
+#      - mongodb
+#      - question-service
 
 networks:
   shared-network:

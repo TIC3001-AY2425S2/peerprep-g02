@@ -3,6 +3,8 @@ import {
   createQuestion as _createQuestion,
   deleteQuestionById as _deleteQuestionById,
   findAllQuestions as _findAllQuestions,
+  findDistinctCategory as _findDistinctCategory,
+  findDistinctComplexity as _findDistinctComplexity,
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
   updateQuestionById as _updateQuestionById,
@@ -109,5 +111,25 @@ export async function deleteQuestion(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Unknown error when deleting question!' });
+  }
+}
+
+export async function getAllCategories(req, res) {
+  try {
+    const categories = await _findDistinctCategory();
+    return res.status(200).json({ data: categories });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Unknown error when distinct category!' });
+  }
+}
+
+export async function getAllComplexities(req, res) {
+  try {
+    const complexities = await _findDistinctComplexity();
+    return res.status(200).json({ data: complexities });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Unknown error when retrieving distinct complexity!' });
   }
 }

@@ -1,5 +1,5 @@
 services:
-  matchign-service:
+  matching-service:
     # Automatically build the image with latest tag
     build: ./..
     image: matching-service
@@ -8,3 +8,9 @@ services:
       - "8002:8002"
     env_file:
       - ./../.env
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

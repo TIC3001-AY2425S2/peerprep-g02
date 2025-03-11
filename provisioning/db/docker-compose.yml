@@ -32,6 +32,19 @@ services:
     networks:
       - shared-network
 
+  rabbitmq:
+    image: rabbitmq:4.0.3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672" # AMPQ port
+      - "15672:15672" # Management port
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: pass
+    networks:
+      - shared-network
+
 networks:
   shared-network:
     name: peerprep-g02

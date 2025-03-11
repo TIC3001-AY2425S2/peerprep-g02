@@ -34,7 +34,7 @@ const ManageQuestionsView = () => {
   const handleQuestionDeleted = (deletedQuestion: Question) => {
     setQuestions((prev) => prev.filter((q) => q._id !== deletedQuestion._id));
     setSelectedQuestion(null);
-  }
+  };
 
   // Calculate paginated questions
   const paginatedQuestions = questions.slice((page - 1) * pageSize, page * pageSize);
