@@ -49,6 +49,7 @@ export async function startDeadLetterConsumer(category) {
   const connection = await amqp.connect(RABBITMQ_URL);
   const channel = await connection.createChannel();
 
+  // TODO: Think about the exchange and queue setup
   const deadLetterExchange = `deadletter_${category}`;
   await channel.assertExchange(deadLetterExchange, 'direct', { durable: true });
 
