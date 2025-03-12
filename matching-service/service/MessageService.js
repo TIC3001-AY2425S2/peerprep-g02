@@ -1,70 +1,54 @@
-// In-memory waiting user for matching (for simplicity).
-let waitingUser = null;
+import MessageConfig from './MessageConfig.js';
 
 /**
- * Processes a message from the main queue.
- * If a waiting user is present and still valid, the two are matched.
- * Otherwise, the current message is stored as waiting.
- *
- * @param {Object} message - The message payload.
+ * Creates a message processor for a given valid window and name.
+ * Each processor will have its own waiting state.
  */
-export async function processMessage(message) {
-  // TODO: Remove queue hardset timeout
-  const currentTime = Date.now();
-  const elapsed = currentTime - message.enqueueTime;
-  if (elapsed > 25000) {
-    console.log(`MessageService: Message for person ${message.personId} timed out (main queue).`);
-    return;
-  }
-  if (!waitingUser) {
-    waitingUser = message;
-    console.log(`MessageService: Stored waiting user (main queue): ${message.personId}`);
-  } else {
-    const waitingElapsed = currentTime - waitingUser.enqueueTime;
-    if (waitingElapsed <= 25000) {
-      console.log(`MessageService: Matched users (main queue): ${waitingUser.personId} and ${message.personId}`);
-      // Implement your match logic here.
-      waitingUser = null;
+function createMessageProcessor(validWindow, processorName) {
+  let waitingUser = null;
+
+  return async function process(message) {
+    const currentTime = Date.now();
+    const elapsed = currentTime - message.enqueueTime;
+
+    if (!waitingUser) {
+      waitingUser = { message, timer: null };
+      const remainingTime = validWindow - elapsed;
+      waitingUser.timer = setTimeout(async () => {
+        console.log(
+          `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${processorName} ${message.category} queue timed out.`,
+        );
+        waitingUser = null;
+        // Send message to dead-letter queue.
+        if (processorName !== 'dead-letter') {
+          const channel = await MessageConfig.getChannel();
+          message.enqueueTime = Date.now();
+          channel.publish(MessageConfig.EXCHANGE, message.category, Buffer.from(JSON.stringify(message)));
+        }
+      }, remainingTime);
+      console.log(`${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`);
     } else {
-      console.log(`MessageService: Waiting user ${waitingUser.personId} expired. Replacing with ${message.personId}`);
-      waitingUser = message;
+      // Clear the timer for the waiting user to avoid race conditions.
+      clearTimeout(waitingUser.timer);
+      console.log(
+        `${new Date().toISOString()} MessageService: Matched users (${processorName}) in ${message.category}: ${waitingUser.message.userId} and ${message.userId}`,
+      );
+      // TODO: Do actual matching here (send something to collaboration service).
+      waitingUser = null;
     }
-  }
+  };
 }
 
-/**
- * Processes a message from the dead-letter queue.
- * Uses a shorter (5-second) window for matching.
- *
- * @param {Object} message - The message payload.
- */
-export async function processDeadLetterMessage(message) {
-  // TODO: Remove deadletter queue hardset timeout
-  const currentTime = Date.now();
-  const elapsed = currentTime - message.enqueueTime;
-  if (elapsed > 5000) {
-    console.log(`MessageService: Message for person ${message.personId} timed out (deadletter). Discarding.`);
-    return;
-  }
-  if (!waitingUser) {
-    waitingUser = message;
-    console.log(`MessageService: Stored waiting user (deadletter): ${message.personId}`);
-  } else {
-    const waitingElapsed = currentTime - waitingUser.enqueueTime;
-    if (waitingElapsed <= 5000) {
-      console.log(`MessageService: Matched users (deadletter): ${waitingUser.personId} and ${message.personId}`);
-      // Implement your match logic here.
-      waitingUser = null;
-    } else {
-      console.log(
-        `MessageService: Waiting user ${waitingUser.personId} expired (deadletter). Replacing with ${message.personId}`,
-      );
-      waitingUser = message;
-    }
-  }
+// Isolate the instances so each consumer will have their own waitingUser, so they don't end up sharing.
+export function createNormalProcessor() {
+  return createMessageProcessor(MessageConfig.QUEUE_TIMEOUT * 1000, 'main');
+}
+
+export function createDeadLetterProcessor() {
+  return createMessageProcessor(MessageConfig.DEAD_LETTER_QUEUE_TIMEOUT * 1000, 'dead-letter');
 }
 
 export default {
-  processMessage,
-  processDeadLetterMessage,
+  createNormalProcessor,
+  createDeadLetterProcessor,
 };
