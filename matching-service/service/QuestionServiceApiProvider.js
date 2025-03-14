@@ -1,7 +1,7 @@
 import axios from 'axios';
 import 'dotenv/config';
 
-const QUESTION_SERVICE_URL = process.env.QUESTION_SERVICE_URL || 'http://localhost:8001/questions';
+const QUESTION_SERVICE_URL = process.env.QUESTION_SVC_GATEWAY_URL || 'http://localhost:8080/questions';
 const QUESTION_SERVICE_GET_ALL_CATEGORIES_URL = QUESTION_SERVICE_URL + '/category/all';
 const QUESTION_SERVICE_GET_ALL_COMPLEXITIES_URL = QUESTION_SERVICE_URL + '/complexity/all';
 

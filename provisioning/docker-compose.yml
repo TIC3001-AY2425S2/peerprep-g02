@@ -16,6 +16,11 @@ services:
       file: db/docker-compose.yml
       service: rabbitmq
 
+  api-gateway:
+    extends:
+      file: ./../api-gateway/provisioning/docker-compose.yml
+      service: api-gateway
+
   user-service:
     extends:
       file: ./../user-service/provisioning/docker-compose.yml
@@ -39,6 +44,17 @@ services:
 #      - rabbitmq
 #      - mongodb
 #      - question-service
+#      - api-gateway
+
+  frontend:
+    extends:
+      file: ./../frontend/provisioning/docker-compose.yml
+      service: frontend
+    depends_on:
+      - mongodb
+      - question-service
+      - user-service
+      - rabbitmq
 
 networks:
   shared-network:

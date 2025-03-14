@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const QUESTION_BASE_URL = process.env.REACT_APP_QUESTION_BASE_URL || 'http://localhost:8001';
+const QUESTION_SERVICE_URL = process.env.API_GATEWAY_URL || 'http://localhost:8080';
 
 const questionClient = axios.create({
-  baseURL: QUESTION_BASE_URL,
+  baseURL: QUESTION_SERVICE_URL,
   timeout: 30000,
   headers: { Accept: 'application/json' },
 });

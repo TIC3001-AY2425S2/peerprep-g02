@@ -1,11 +1,11 @@
 services:
-  matching-service:
+  api-gateway:
     # Automatically build the image with latest tag
     build: ./..
-    image: matching-service
-    container_name: matching-service
+    image: api-gateway
+    container_name: api-gateway
     ports:
-      - "8002:8002"
+      - "8080:8080"
     env_file:
       - ./../.docker.env
     networks:
