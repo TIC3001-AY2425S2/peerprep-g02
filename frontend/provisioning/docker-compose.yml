@@ -1,11 +1,11 @@
 services:
-  matching-service:
+  frontend:
     # Automatically build the image with latest tag
     build: ./..
-    image: matching-service
-    container_name: matching-service
+    image: frontend
+    container_name: frontend
     ports:
-      - "8002:8002"
+      - "3000:3000"
     env_file:
       - ./../.docker.env
     networks:

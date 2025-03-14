@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 
-const RABBITMQ_URL = process.env.RABBITMQ_DOCKER_URI || 'amqp://admin:pass@localhost:5672';
+const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localhost:5672';
 const EXCHANGE = '';
 const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 20;
 const DEAD_LETTER_QUEUE_TIMEOUT = process.env.DEAD_LETTER_QUEUE_TIMEOUT || 10;

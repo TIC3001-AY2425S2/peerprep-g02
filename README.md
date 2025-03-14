@@ -62,15 +62,18 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 5. Navigate to http://localhost:3000
 
 # Docker
-## Run everything at once
-`cd provisioning` then `docker compose up` to run everything at once.
+[//]: # (TODO: Complete this readme for matching service and .docker.env)
+## Run (almost) everything at once
+1. From project root run `cd provisioning` then `docker compose up` to run everything at once.
+2. From project root `cd match-service/provisioning` then `docker compose up` to start matching service 
 * Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time)
 
 ## Running services individually in docker
-1. From project root `cd provisioning/db/` then `docker compose up` to start local mongodb
+1. From project root `cd provisioning/db/` then `docker compose up` to start local mongodb and rabbitmq
 2. From project root `cd user-service/provisioning` then `docker compose up` to start user service
 3. From project root `cd question-service/provisioning` then `docker compose up` to start question service
-4. From project root `cd frontend/provisioning` then `docker compose up` to start frontend service
+4. From project root `cd match-service/provisioning` then `docker compose up` to start matching service
+5. From project root `cd frontend/provisioning` then `docker compose up` to start frontend service
 * Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time).
 
 ## Mongodb express (UI to view models)
