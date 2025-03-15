@@ -7,6 +7,6 @@ export async function startMatchmake(req, res) {
     return res.sendStatus(200);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Unknown error when getting question!' });
+    return res.status(500).json({ message: 'Unknown error when matching!' });
   }
 }

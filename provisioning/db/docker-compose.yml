@@ -11,6 +11,12 @@ services:
       MONGO_INITDB_DATABASE: peerprep-g02
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: [ "CMD", "mongosh", "mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin", "--eval", "db.runCommand({ ping: 1 })" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
     networks:
       - shared-network
 
@@ -41,7 +47,13 @@ services:
       - "15672:15672" # Management port
     environment:
       RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: pass
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "status" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
     networks:
       - shared-network
 

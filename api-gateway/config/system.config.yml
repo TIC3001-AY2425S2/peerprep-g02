@@ -1,12 +1,8 @@
-# Core
+# Express Gateway internally uses redis. It's on emulation mode.
 db:
   redis:
     emulate: true
     namespace: EG
-
-#plugins:
-  # express-gateway-plugin-example:
-  #   param1: 'param from system.config' 
 
 crypto:
   cipherKey: sensitiveKey

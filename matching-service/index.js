@@ -9,6 +9,14 @@ app.use(express.json());
 app.use(cors()); // config cors so that front-end can use
 app.options('*', cors());
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    uptime: process.uptime(), // seconds the app has been up
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // To handle CORS Errors
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*'); // "*" -> Allow all links to access
