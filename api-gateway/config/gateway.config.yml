@@ -19,7 +19,7 @@ apiEndpoints:
       - '/matchings'
       - '/matchings/*'
 serviceEndpoints:
-  # Used in the format of ${ENV_VARIABLE_NAME:-DEFAULT_VALUE}
+  # Used in the format of {ENV_VARIABLE_NAME:-DEFAULT_VALUE}
   user-service:
     url: ${USER_SERVICE_URL:-'http://localhost:8000'}
   question-service:

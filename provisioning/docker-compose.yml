@@ -9,7 +9,8 @@ services:
       file: db/docker-compose.yml
       service: mongo-express
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   rabbitmq:
     extends:
@@ -26,35 +27,45 @@ services:
       file: ./../user-service/provisioning/docker-compose.yml
       service: user-service
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   question-service:
     extends:
       file: ./../question-service/provisioning/docker-compose.yml
       service: question-service
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
-# TODO: Need a better way to do depends on.
-#  matching-service:
-#    extends:
-#      file: ./../matching-service/provisioning/docker-compose.yml
-#      service: matching-service
-#    depends_on:
-#      - rabbitmq
-#      - mongodb
-#      - question-service
-#      - api-gateway
+  matching-service:
+    extends:
+      file: ./../matching-service/provisioning/docker-compose.yml
+      service: matching-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+      question-service:
+        condition: service_healthy
 
   frontend:
     extends:
       file: ./../frontend/provisioning/docker-compose.yml
       service: frontend
     depends_on:
-      - mongodb
-      - question-service
-      - user-service
-      - rabbitmq
+      mongodb:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+      question-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      matching-service:
+        condition: service_healthy
+
 
 networks:
   shared-network:
