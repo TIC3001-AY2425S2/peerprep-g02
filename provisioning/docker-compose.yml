@@ -17,10 +17,10 @@ services:
       file: db/docker-compose.yml
       service: rabbitmq
 
-  api-gateway:
+  nginx:
     extends:
-      file: ./../api-gateway/provisioning/docker-compose.yml
-      service: api-gateway
+      file: ./../nginx/provisioning/docker-compose.yml
+      service: nginx
 
   user-service:
     extends:
@@ -45,7 +45,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      api-gateway:
+      nginx:
         condition: service_healthy
       question-service:
         condition: service_healthy
@@ -57,7 +57,7 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-      api-gateway:
+      nginx:
         condition: service_healthy
       question-service:
         condition: service_healthy

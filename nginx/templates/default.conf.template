@@ -1,0 +1,45 @@
+ # Replace with service name before final submission
+# e.g. user-service:8000
+upstream user-service {
+    server ${USER_SERVICE_URL};
+}
+
+upstream question-service {
+    server ${QUESTION_SERVICE_URL};
+}
+
+upstream matching-service {
+    server ${MATCHING_SERVICE_URL};
+}
+
+server {
+    listen 8080;
+    server_name localhost;
+
+    include /etc/nginx/templates/*.conf;
+
+    location /health {
+        return 200;
+    }
+
+    location /users/ {
+        proxy_pass http://user-service;
+    }
+    location = /users {
+        proxy_pass http://user-service;
+    }
+
+    location /questions/ {
+        proxy_pass http://question-service;
+    }
+    location = /questions {
+        proxy_pass http://question-service;
+    }
+
+    location /matchings/ {
+        proxy_pass http://matching-service;
+    }
+    location = /matchings {
+        proxy_pass http://matching-service;
+    }
+}

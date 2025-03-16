@@ -1,18 +1,20 @@
 services:
-  api-gateway:
-    # Automatically build the image with latest tag
+  nginx:
     build: ./..
-    image: api-gateway
-    container_name: api-gateway
+    image: nginx
+    container_name: nginx
     ports:
       - "8080:8080"
     env_file:
-      - ./../.docker.env
+      - ./../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
-      interval: 5s
+      interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 5s
     networks:
       - shared-network
 
