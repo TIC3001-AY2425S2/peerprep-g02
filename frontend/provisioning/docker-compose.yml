@@ -6,6 +6,12 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
+    volumes:
+      # Enable hot reload by mounting these folders.
+      # Any changes locally should reload the react app in the container
+      - ./../src:/app/src
+      - ./../public:/app/public
+      - ./../config:/app/config
     env_file:
       - ./../.docker.env
     networks:
