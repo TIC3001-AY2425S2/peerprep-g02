@@ -1,46 +1,28 @@
+# Use this docker compose if running cloud db
 services:
-  mongodb:
-    extends:
-      file: db/docker-compose.yml
-      service: mongodb
-
-  mongo-express:
-    extends:
-      file: db/docker-compose.yml
-      service: mongo-express
-    depends_on:
-      mongodb:
-        condition: service_healthy
-
   rabbitmq:
     extends:
-      file: db/docker-compose.yml
+      file: ./../db/docker-compose.yml
       service: rabbitmq
 
   nginx:
     extends:
-      file: ./../nginx/provisioning/docker-compose.yml
+      file: ./../../nginx/provisioning/docker-compose.yml
       service: nginx
 
   user-service:
     extends:
-      file: ./../user-service/provisioning/docker-compose.yml
+      file: ./../../user-service/provisioning/docker-compose.yml
       service: user-service
-    depends_on:
-      mongodb:
-        condition: service_healthy
 
   question-service:
     extends:
-      file: ./../question-service/provisioning/docker-compose.yml
+      file: ./../../question-service/provisioning/docker-compose.yml
       service: question-service
-    depends_on:
-      mongodb:
-        condition: service_healthy
 
   matching-service:
     extends:
-      file: ./../matching-service/provisioning/docker-compose.yml
+      file: ./../../matching-service/provisioning/docker-compose.yml
       service: matching-service
     depends_on:
       rabbitmq:
@@ -52,7 +34,7 @@ services:
 
   frontend:
     extends:
-      file: ./../frontend/provisioning/docker-compose.yml
+      file: ./../../frontend/provisioning/docker-compose.yml
       service: frontend
     depends_on:
       nginx:

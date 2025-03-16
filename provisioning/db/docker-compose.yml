@@ -11,6 +11,9 @@ services:
       MONGO_INITDB_DATABASE: peerprep-g02
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongod.conf:/etc/mongo/mongod.conf:ro
+    # Config file set to reduce log levels
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
     healthcheck:
       test: [ "CMD", "mongosh", "mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin", "--eval", "db.runCommand({ ping: 1 })" ]
       interval: 60s
@@ -50,7 +53,7 @@ services:
       RABBITMQ_DEFAULT_PASS: password
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "status" ]
-      interval: 5s
+      interval: 60s
       timeout: 10s
       retries: 5
       start_period: 5s
