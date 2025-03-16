@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import NavBar from '../../components/navbar';
-import { getQuestion } from '../../hooks/question/question';
-import { Question } from '../../types/questions';
+import { getCategoriesAndComplexities, getQuestion } from '../../hooks/question/question';
+import { Question, QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const stats = [
   { icon: <EmojiEmotionsIcon fontSize="large" />, label: 'Happy Customers', value: '250+' },
@@ -35,11 +35,28 @@ const Landing = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentQuestions = questions.slice(indexOfFirstItem, indexOfLastItem);
 
+  const [dropdownData, setDropdownData] = useState<QuestionCategoriesComplexitiesData[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedComplexity, setSelectedComplexity] = useState('');
+
   // Load questions on component mount
   useEffect(() => {
     getQuestion()
       .then((data: Question[]) => setQuestions(data))
       .catch((err) => console.error('Error fetching questions:', err));
+  }, []);
+
+  // Load categories and complexities on component mount
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const dropdownData = await getCategoriesAndComplexities();
+        setDropdownData(dropdownData);
+      } catch (error) {
+        console.error('Error fetching dropdown data:', error);
+      }
+    }
+    fetchData();
   }, []);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
