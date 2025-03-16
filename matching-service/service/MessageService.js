@@ -26,7 +26,9 @@ function createMessageProcessor(validWindow, processorName) {
           channel.publish(MessageConfig.EXCHANGE, message.category, Buffer.from(JSON.stringify(message)));
         }
       }, remainingTime);
-      console.log(`${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`);
+      console.log(
+        `${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`,
+      );
     } else {
       // Clear the timer for the waiting user to avoid race conditions.
       clearTimeout(waitingUser.timer);

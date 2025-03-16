@@ -1,4 +1,3 @@
-import cors from 'cors';
 import express from 'express';
 import matchingRoutes from './routes/matching-routes.js';
 

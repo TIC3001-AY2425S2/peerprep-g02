@@ -40,6 +40,30 @@ export async function findDistinctComplexity() {
   return QuestionModel.distinct('complexity');
 }
 
+export async function findDistinctCategoryAndComplexity() {
+  // Return in the form of:
+  // [
+  //   { "category": "category1", "complexity": ["complexity1", "complexity2"] },
+  //   { "category": "category2", "complexity": ["complexity2"] }
+  // ]
+  return QuestionModel.aggregate([
+    { $unwind: '$category' },
+    {
+      $group: {
+        _id: '$category',
+        complexities: { $addToSet: '$complexity' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        category: '$_id',
+        complexity: '$complexities',
+      },
+    },
+  ]);
+}
+
 export async function updateQuestionById(QuestionId, title, description, category, complexity) {
   return QuestionModel.findByIdAndUpdate(
     QuestionId,

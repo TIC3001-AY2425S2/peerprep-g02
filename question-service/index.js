@@ -1,4 +1,3 @@
-import cors from 'cors';
 import express from 'express';
 
 import questionRoutes from './routes/question-routes.js';
