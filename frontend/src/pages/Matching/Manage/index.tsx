@@ -1,4 +1,4 @@
-import { Box, Button, Container, Pagination, Paper, Typography } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { useEffect, useState } from 'react';
 import NavBar from '../../../components/navbar';
 import { getQuestion } from '../../../hooks/question/question';
@@ -59,9 +59,7 @@ const ManageQuestionsView = () => {
             boxShadow: 3,
             borderRadius: 1,
           }}
-        >
-
-        </Box>
+        ></Box>
       </Box>
     </Container>
   );

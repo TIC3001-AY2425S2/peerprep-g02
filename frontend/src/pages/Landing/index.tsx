@@ -10,12 +10,17 @@ import {
   Box,
   Button,
   Container,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
   Pagination,
   Paper,
+  Select,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { SelectChangeEvent } from '@mui/material/Select';
+import React, { useEffect, useMemo, useState } from 'react';
 import NavBar from '../../components/navbar';
 import { getCategoriesAndComplexities, getQuestion } from '../../hooks/question/question';
 import { Question, QuestionCategoriesComplexitiesData } from '../../types/questions';
@@ -39,6 +44,19 @@ const Landing = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedComplexity, setSelectedComplexity] = useState('');
 
+  const categories = useMemo(() => dropdownData.map((item) => item.category), [dropdownData]);
+
+  const filteredComplexities = useMemo(() => {
+    if (selectedCategory) {
+      const entry = dropdownData.find((item) => item.category === selectedCategory);
+      return entry ? entry.complexity : [];
+    } else {
+      // Union of all complexities if no category is selected
+      const allComplexities = dropdownData.flatMap((item) => item.complexity);
+      return Array.from(new Set(allComplexities));
+    }
+  }, [dropdownData, selectedCategory]);
+
   // Load questions on component mount
   useEffect(() => {
     getQuestion()
@@ -48,25 +66,77 @@ const Landing = () => {
 
   // Load categories and complexities on component mount
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const dropdownData = await getCategoriesAndComplexities();
-        setDropdownData(dropdownData);
-      } catch (error) {
-        console.error('Error fetching dropdown data:', error);
-      }
-    }
-    fetchData();
+    getCategoriesAndComplexities()
+      .then((data: QuestionCategoriesComplexitiesData[]) => setDropdownData(data))
+      .catch((err) => console.error('Error fetching categories and complexities:', err));
   }, []);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
 
+  const handleCategoryChange = (event: SelectChangeEvent) => {
+    setSelectedCategory(event.target.value);
+    // Optionally reset the selected complexity when category changes
+    setSelectedComplexity('');
+  };
+
+  const handleComplexityChange = (event: SelectChangeEvent) => {
+    setSelectedComplexity(event.target.value);
+  };
+
+  const toPascalCase = (str: string): string =>
+    str
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
       <Box sx={{ px: '20%', py: '5%', textAlign: 'center' }}>
+        {/* Top section with dropdowns */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 2,
+            mb: 4,
+            flexWrap: 'wrap',
+          }}
+        >
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              value={selectedCategory}
+              label="Category"
+              onChange={handleCategoryChange}
+            >
+              {categories.map((category: string) => (
+                <MenuItem key={category} value={category}>
+                  {toPascalCase(category)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="complexity-select-label">Complexity</InputLabel>
+            <Select
+              labelId="complexity-select-label"
+              value={selectedComplexity}
+              label="Complexity"
+              onChange={handleComplexityChange}
+            >
+              {filteredComplexities.map((complexity: string) => (
+                <MenuItem key={complexity} value={complexity}>
+                  {toPascalCase(complexity)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
         <Typography variant="h5" gutterBottom>
           Welcome to PeerPrep Hub!
         </Typography>

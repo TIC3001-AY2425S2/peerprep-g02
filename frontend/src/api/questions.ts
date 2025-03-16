@@ -32,6 +32,8 @@ export async function remove(data: QuestionDeleteData): Promise<AxiosResponse<Qu
   return questionClientApi.delete(`${URL}/${data._id}`);
 }
 
-export async function getCategoriesAndComplexities(): Promise<AxiosResponse<QuestionResponseData<QuestionCategoriesComplexitiesData[]>>> {
+export async function getCategoriesAndComplexities(): Promise<
+  AxiosResponse<QuestionResponseData<QuestionCategoriesComplexitiesData[]>>
+> {
   return questionClientApi.get(`${URL}/categories/complexities`);
 }

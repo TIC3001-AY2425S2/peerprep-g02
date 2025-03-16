@@ -1,12 +1,11 @@
 import api from '../../api';
 import {
-  Question, QuestionCategoriesComplexitiesData,
+  Question,
+  QuestionCategoriesComplexitiesData,
   QuestionDeleteData,
   QuestionPatchData,
   QuestionPostData,
-  QuestionResponseData,
 } from '../../types/questions';
-import { AxiosResponse } from 'axios';
 
 export const createQuestion = async (data: QuestionPostData): Promise<Question> => {
   try {
