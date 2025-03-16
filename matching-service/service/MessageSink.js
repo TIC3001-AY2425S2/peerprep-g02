@@ -43,7 +43,9 @@ export async function startDeadLetterConsumer(category) {
   channel.consume(deadLetterQueue, async (message) => {
     if (message) {
       const messageContent = JSON.parse(message.content.toString());
-      console.log(`${new Date().toISOString()} MessageSink (DeadLetter): Received message for user ${messageContent.userId}`);
+      console.log(
+        `${new Date().toISOString()} MessageSink (DeadLetter): Received message for user ${messageContent.userId}`,
+      );
       await processor(messageContent);
       channel.ack(message);
     }
@@ -57,19 +59,13 @@ export async function startDeadLetterConsumer(category) {
  * For each category, it creates a consumer for every complexity and also starts the dead-letter consumer.
  */
 export async function startAllConsumers() {
-  const [categories, complexities] = await Promise.all([
-    QuestionServiceApiProvider.getAllCategories(),
-    QuestionServiceApiProvider.getAllComplexities(),
+  const categoryComplexityList = await QuestionServiceApiProvider.getAllCategoriesAndComplexitiesCombination();
+
+  const consumerPromises = categoryComplexityList.flatMap(({ category, complexity }) => [
+    ...complexity.map((level) => startQueueConsumer(category, level)),
+    startDeadLetterConsumer(category),
   ]);
 
-  const consumerPromises = [];
-
-  for (const category of categories) {
-    for (const complexity of complexities) {
-      consumerPromises.push(startQueueConsumer(category, complexity));
-    }
-    consumerPromises.push(startDeadLetterConsumer(category));
-  }
   await Promise.all(consumerPromises);
   console.log(`${new Date().toISOString()} MessageSink: All consumers have been started.`);
 }

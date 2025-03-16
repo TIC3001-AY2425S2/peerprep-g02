@@ -4,6 +4,7 @@ import {
   deleteQuestionById as _deleteQuestionById,
   findAllQuestions as _findAllQuestions,
   findDistinctCategory as _findDistinctCategory,
+  findDistinctCategoryAndComplexity as _findDistinctCategoryAndComplexity,
   findDistinctComplexity as _findDistinctComplexity,
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
@@ -131,5 +132,17 @@ export async function getAllComplexities(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Unknown error when retrieving distinct complexity!' });
+  }
+}
+
+export async function getAllCategoryAndComplexityCombination(req, res) {
+  try {
+    const complexities = await _findDistinctCategoryAndComplexity();
+    return res.status(200).json({ data: complexities });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: 'Unknown error when retrieving distinct category and complexity combination!' });
   }
 }

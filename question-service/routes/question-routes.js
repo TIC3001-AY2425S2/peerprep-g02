@@ -3,6 +3,7 @@ import {
   createQuestion,
   deleteQuestion,
   getAllCategories,
+  getAllCategoryAndComplexityCombination,
   getAllComplexities,
   getAllQuestions,
   getQuestion,
@@ -14,9 +15,11 @@ const router = express.Router();
 
 router.get('/', getAllQuestions);
 
-router.get('/category/all', getAllCategories);
+router.get('/categories', getAllCategories);
 
-router.get('/complexity/all', getAllComplexities);
+router.get('/complexities', getAllComplexities);
+
+router.get('/categories/complexities', getAllCategoryAndComplexityCombination);
 
 router.post('/', createQuestion);
 
