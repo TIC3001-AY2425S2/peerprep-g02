@@ -1,0 +1,30 @@
+services:
+  mongodb:
+    extends:
+      file: db/docker-compose.yml
+      service: mongodb
+
+  mongo-express:
+    extends:
+      file: db/docker-compose.yml
+      service: mongo-express
+    depends_on:
+      - mongodb
+
+  user-service:
+    extends:
+      file: ./../user-service/provisioning/docker-compose.yml
+      service: user-service
+    depends_on:
+      - mongodb
+
+  question-service:
+    extends:
+      file: ./../question-service/provisioning/docker-compose.yml
+      service: question-service
+    depends_on:
+      - mongodb
+
+networks:
+  shared-network:
+    name: peerprep-g02

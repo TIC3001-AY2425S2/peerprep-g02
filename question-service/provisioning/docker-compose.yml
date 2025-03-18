@@ -1,0 +1,16 @@
+services:
+  question-service:
+    # Automatically build the image with latest tag
+    build: ./..
+    image: question-service
+    container_name: question-service
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./../.env
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02
