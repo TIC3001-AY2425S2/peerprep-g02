@@ -9,16 +9,16 @@
 DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@127.0.0.1:8098/peerprep-g02?authSource=admin
-RABBITMQ_LOCAL_URI=amqp://admin:pass@localhost:5672
+RABBITMQ_LOCAL_URI=amqp://admin:password@localhost:5672
 PORT=8002
 # Possible values: PROD or LOCAL
-ENV=PROD
+ENV=LOCAL
 
 # Secret for creating JWT signature
 JWT_SECRET=you-can-replace-this-with-your-own-secret
 
 # Services url
-QUESTION_SVC_GATEWAY_URL=http://api-gateway:8080/questions
+QUESTION_SVC_GATEWAY_URL=http://localhost:8080/questions
 
 QUEUE_TIMEOUT=20
 DEAD_LETTER_QUEUE_TIMEOUT=10
@@ -34,16 +34,16 @@ DEAD_LETTER_QUEUE_TIMEOUT=10
 DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
-RABBITMQ_LOCAL_URI=amqp://admin:pass@rabbitmq:5672
+RABBITMQ_LOCAL_URI=amqp://admin:password@rabbitmq:5672
 PORT=8002
 # Possible values: PROD or LOCAL
-ENV=PROD
+ENV=LOCAL
 
 # Secret for creating JWT signature
 JWT_SECRET=you-can-replace-this-with-your-own-secret
 
 # Services url
-QUESTION_SVC_GATEWAY_URL=http://api-gateway:8080/questions
+QUESTION_SVC_GATEWAY_URL=http://nginx:8080/questions
 
 QUEUE_TIMEOUT=20
 DEAD_LETTER_QUEUE_TIMEOUT=10
