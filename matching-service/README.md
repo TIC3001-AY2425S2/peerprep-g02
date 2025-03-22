@@ -10,7 +10,7 @@ DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@127.0.0.1:8098/peerprep-g02?authSource=admin
 RABBITMQ_LOCAL_URI=amqp://admin:password@localhost:5672
-REDIS_LOCAL_URL=redis://localhost:8096
+REDIS_LOCAL_URL=redis://localhost:6379
 PORT=8002
 # Possible values: PROD or LOCAL
 ENV=LOCAL
@@ -36,7 +36,7 @@ DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
 RABBITMQ_LOCAL_URI=amqp://admin:password@rabbitmq:5672
-REDIS_LOCAL_URL=redis://redis:8096
+REDIS_LOCAL_URL=redis://redis:6379
 PORT=8002
 # Possible values: PROD or LOCAL
 ENV=LOCAL

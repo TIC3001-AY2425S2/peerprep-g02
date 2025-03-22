@@ -10,7 +10,7 @@ services:
       - ./../.docker.env
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8001/health" ]
-      interval: 60s
+      interval: 10s
       timeout: 10s
       retries: 3
       start_period: 5s

@@ -65,7 +65,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "8096:6379"
+      - "6379:6379"
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       interval: 60s
@@ -81,7 +81,7 @@ services:
     container_name: redisinsight
     restart: always
     ports:
-      - "8097:5540"
+      - "5540:5540"
     depends_on:
       - redis
     networks:
