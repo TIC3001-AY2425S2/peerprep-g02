@@ -2,10 +2,22 @@ import 'dotenv/config';
 import http from 'http';
 import index from './index.js';
 import MessageSink from './service/MessageSink.js';
+import setupMatchmakingSocket from './socket/matchmaking-socket.js';
+import redisClient from './repository/redis.js';
 
 const port = process.env.PORT || 8002;
 
 await MessageSink.startAllConsumers();
 const server = http.createServer(index);
-server.listen(port);
-console.log('Matching service server listening on http://localhost:' + port);
+setupMatchmakingSocket(server);
+
+// Connect only once on startup and let it stay connected throughout lifespan of application
+await redisClient.connect()
+  .then(() => {
+    console.log('Connected to Redis');
+    server.listen(port);
+    console.log('Matching service server listening on http://localhost:' + port);
+  })
+  .catch((err) => {
+    console.error('Could not connect to Redis:', err);
+  });

@@ -7,6 +7,7 @@ import Loading from '../components/loading';
 import Landing from '../pages/Landing';
 import ManageQuestionsView from '../pages/Question/Manage';
 import './App.css';
+import Home from '../pages/Home';
 
 // Routes is for routing of pages
 const ActiveApp: React.FC = () => {
@@ -18,8 +19,8 @@ const ActiveApp: React.FC = () => {
         <Routes>
           {/* TODO: Add route to login */}
           <Route path="/" element={<Landing />} />
+          <Route path="/home" element={<Home />} />
 
-          {/* TODO: consolidate both create and update question page into 1 */}
           <Route path="/manage/question" element={<ManageQuestionsView />} />
           {/* TODO: Add user profile management */}
           {/* TODO: Add user logout */}

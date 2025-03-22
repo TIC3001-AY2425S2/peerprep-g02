@@ -12,6 +12,19 @@ services:
       mongodb:
         condition: service_healthy
 
+  redis:
+    extends:
+      file: db/docker-compose.yml
+      service: redis
+
+  redisinsight:
+    extends:
+      file: db/docker-compose.yml
+      service: redisinsight
+    depends_on:
+      redis:
+        condition: service_healthy
+
   rabbitmq:
     extends:
       file: db/docker-compose.yml
@@ -48,6 +61,8 @@ services:
       nginx:
         condition: service_healthy
       question-service:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend:

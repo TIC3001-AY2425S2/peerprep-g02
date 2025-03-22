@@ -13,6 +13,10 @@ export default function NavBar() {
   // TODO: Fix styling and add admin buttons
   const buttons = (
     <div>
+      {/*TODO: Change this out to / after doing user login */}
+      <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
+        Match
+      </Button>
       <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
         Manage Questions
       </Button>
