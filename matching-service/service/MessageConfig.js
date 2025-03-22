@@ -4,6 +4,7 @@ const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localh
 const EXCHANGE = '';
 const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 20;
 const DEAD_LETTER_QUEUE_TIMEOUT = process.env.DEAD_LETTER_QUEUE_TIMEOUT || 10;
+const MATCHED_PLAYERS_QUEUE_NAME = 'matched-players';
 
 let connection = null;
 let channel = null;
@@ -40,12 +41,20 @@ function getDeadLetterQueueConfiguration() {
   };
 }
 
+function getMatchedPlayersQueueConfiguration() {
+  return {
+    durable: true,
+  };
+}
+
 export default {
   EXCHANGE,
   QUEUE_TIMEOUT,
   DEAD_LETTER_QUEUE_TIMEOUT,
+  MATCHED_PLAYERS_QUEUE_NAME,
   getChannel,
   getQueueName,
   getQueueConfiguration,
   getDeadLetterQueueConfiguration,
+  getMatchedPlayersQueueConfiguration,
 };

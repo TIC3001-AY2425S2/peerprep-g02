@@ -55,6 +55,35 @@ export async function startDeadLetterConsumer(category) {
 }
 
 /**
+ * Starts a consumer for the matched players processing.
+ * We want to leave the consumers to only be responsible for matching
+ * and leave the processing to another dedicated consumer.
+ */
+export async function startMatchedPlayersConsumer() {
+  const channel = await MessageConfig.getChannel();
+
+  const queue = MessageConfig.MATCHED_PLAYERS_QUEUE_NAME;
+  await channel.assertQueue(queue, MessageConfig.getMatchedPlayersQueueConfiguration());
+
+  channel.consume(queue, async (message) => {
+    if (message) {
+      const messageContent = JSON.parse(message.content.toString());
+
+      const userIds = messageContent.players.map(player => player.userId).join(', ');
+      console.log(
+        `${new Date().toISOString()} MessageSink (Matched players): Received message for users ${userIds}`
+      );
+
+      await MessageService.processMatchedPlayers(messageContent);
+      channel.ack(message);
+    }
+  });
+
+  console.log(`${new Date().toISOString()} MessageSink: Matched players consumer listening on queue ${queue}`);
+}
+
+
+/**
  * Starts all consumers for the defined categories and complexities.
  * For each category, it creates a consumer for every complexity and also starts the dead-letter consumer.
  */
@@ -65,6 +94,8 @@ export async function startAllConsumers() {
     ...complexity.map((level) => startQueueConsumer(category, level)),
     startDeadLetterConsumer(category),
   ]);
+
+  consumerPromises.push(startMatchedPlayersConsumer());
 
   await Promise.all(consumerPromises);
   console.log(`${new Date().toISOString()} MessageSink: All consumers have been started.`);

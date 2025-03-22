@@ -36,10 +36,10 @@ server {
         proxy_pass http://question-service;
     }
 
-    location /matchings/ {
+    location /matching/ {
         proxy_pass http://matching-service;
     }
-    location = /matchings {
+    location = /matching {
         proxy_pass http://matching-service;
     }
 }
