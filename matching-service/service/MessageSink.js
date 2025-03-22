@@ -61,7 +61,7 @@ export async function startDeadLetterConsumer(category) {
 export async function startAllConsumers() {
   const categoryComplexityList = await QuestionServiceApiProvider.getAllCategoriesAndComplexitiesCombination();
 
-  const consumerPromises = categoryComplexityList.flatMap(({ category, complexity }) => [
+  const consumerPromises = (categoryComplexityList || [] ).flatMap(({ category, complexity }) => [
     ...complexity.map((level) => startQueueConsumer(category, level)),
     startDeadLetterConsumer(category),
   ]);
