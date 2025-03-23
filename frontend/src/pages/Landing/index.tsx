@@ -10,20 +10,15 @@ import {
   Box,
   Button,
   Container,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
   Pagination,
   Paper,
-  Select,
   Typography,
 } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBar from '../../components/navbar';
-import { getCategoriesAndComplexities, getQuestion } from '../../hooks/question/question';
-import { Question, QuestionCategoriesComplexitiesData } from '../../types/questions';
+import { getQuestion } from '../../hooks/question/question';
+import { Question } from '../../types/questions';
 
 const stats = [
   { icon: <EmojiEmotionsIcon fontSize="large" />, label: 'Happy Customers', value: '250+' },

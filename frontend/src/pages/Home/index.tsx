@@ -1,23 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { QuestionCategoriesComplexitiesData } from '../../types/questions';
-import {
-  Box, Button,
-  Container,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select, Typography,
-} from '@mui/material';
-import NavBar from '../../components/navbar';
+import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
+import { useEffect, useMemo, useState } from 'react';
+import NavBar from '../../components/navbar';
+import { startMatchmaking } from '../../hooks/matching/matching';
+import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { getCategoriesAndComplexities } from '../../hooks/question/question';
-
+import { QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const Home = () => {
+  const { goToMatchingPage } = pageNavigation();
+
   const [dropdownData, setDropdownData] = useState<QuestionCategoriesComplexitiesData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedComplexity, setSelectedComplexity] = useState('');
-
 
   const categories = useMemo(() => dropdownData.map((item) => item.category), [dropdownData]);
 
@@ -34,6 +29,21 @@ const Home = () => {
 
   const handleComplexityChange = (event: SelectChangeEvent) => {
     setSelectedComplexity(event.target.value);
+  };
+
+  const handleMatchClick = async () => {
+    try {
+      const data = {
+        userId: '123',
+        category: selectedCategory,
+        complexity: selectedComplexity,
+      };
+
+      await startMatchmaking(data);
+      goToMatchingPage();
+    } catch (error) {
+      console.error('Error in match request:', error);
+    }
   };
 
   // Load categories and complexities on component mount
@@ -62,7 +72,8 @@ const Home = () => {
             padding: '1rem',
             gap: '1.5rem',
             mx: '30%',
-          }}>
+          }}
+        >
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             Start Matching!
           </Typography>
@@ -75,7 +86,7 @@ const Home = () => {
             justifyContent: 'center',
             padding: '1rem',
             gap: '1.5rem',
-            mx: '30%'
+            mx: '30%',
           }}
         >
           <FormControl sx={{ minWidth: 150 }}>
@@ -115,9 +126,10 @@ const Home = () => {
             sx={{
               backgroundColor: '#000',
               '&:hover': {
-                backgroundColor: '#333'
-              }
+                backgroundColor: '#333',
+              },
             }}
+            onClick={handleMatchClick}
           >
             Match!
           </Button>
@@ -125,6 +137,6 @@ const Home = () => {
       </Box>
     </Container>
   );
-}
+};
 
 export default Home;

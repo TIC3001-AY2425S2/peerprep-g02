@@ -2,17 +2,17 @@ import axios from 'axios';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 
-const questionClient = axios.create({
+const client = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
   headers: { Accept: 'application/json' },
 });
 
-export const questionClientApi = Object.freeze({
-  get: questionClient.get,
-  getByTitle: questionClient.get,
-  delete: questionClient.delete,
-  post: questionClient.post,
-  put: questionClient.put,
-  patch: questionClient.patch,
+export const clientApi = Object.freeze({
+  get: client.get,
+  getByTitle: client.get,
+  delete: client.delete,
+  post: client.post,
+  put: client.put,
+  patch: client.patch,
 });

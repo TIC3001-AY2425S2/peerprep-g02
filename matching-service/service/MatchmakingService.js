@@ -1,6 +1,6 @@
-import MessageSource from './MessageSource.js';
-import { setMatchStatus } from '../repository/redis-match-repository.js';
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
+import { setMatchStatus } from '../repository/redis-match-repository.js';
+import MessageSource from './MessageSource.js';
 
 async function matchmake(userId, category, complexity) {
   const enqueueTime = Date.now();

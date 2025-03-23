@@ -69,10 +69,8 @@ export async function startMatchedPlayersConsumer() {
     if (message) {
       const messageContent = JSON.parse(message.content.toString());
 
-      const userIds = messageContent.players.map(player => player.userId).join(', ');
-      console.log(
-        `${new Date().toISOString()} MessageSink (Matched players): Received message for users ${userIds}`
-      );
+      const userIds = messageContent.players.map((player) => player.userId).join(', ');
+      console.log(`${new Date().toISOString()} MessageSink (Matched players): Received message for users ${userIds}`);
 
       await MessageService.processMatchedPlayers(messageContent);
       channel.ack(message);
@@ -81,7 +79,6 @@ export async function startMatchedPlayersConsumer() {
 
   console.log(`${new Date().toISOString()} MessageSink: Matched players consumer listening on queue ${queue}`);
 }
-
 
 /**
  * Starts all consumers for the defined categories and complexities.

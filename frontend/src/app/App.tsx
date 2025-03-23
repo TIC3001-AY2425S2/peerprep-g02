@@ -4,10 +4,11 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
+import Home from '../pages/Home';
 import Landing from '../pages/Landing';
+import Matching from '../pages/Matching';
 import ManageQuestionsView from '../pages/Question/Manage';
 import './App.css';
-import Home from '../pages/Home';
 
 // Routes is for routing of pages
 const ActiveApp: React.FC = () => {
@@ -20,7 +21,7 @@ const ActiveApp: React.FC = () => {
           {/* TODO: Add route to login */}
           <Route path="/" element={<Landing />} />
           <Route path="/home" element={<Home />} />
-
+          <Route path="/matching" element={<Matching />} />
           <Route path="/manage/question" element={<ManageQuestionsView />} />
           {/* TODO: Add user profile management */}
           {/* TODO: Add user logout */}

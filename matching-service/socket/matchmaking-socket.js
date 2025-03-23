@@ -1,18 +1,19 @@
-import { Server } from "socket.io";
+import { Server } from 'socket.io';
+import { getMatchStatus } from '../repository/redis-match-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
-
 
 export default function setupMatchmakingSocket(server) {
   const io = new Server(server, {
     // Enable connection recovery.
     // https://socket.io/docs/v4/tutorial/step-6
     // https://socket.io/docs/v4/tutorial/step-9
-    connectionStateRecovery: {}
+    connectionStateRecovery: {},
+    path: '/matching',
   });
 
-  io.on("connection", (socket) => {
+  io.on('connection', (socket) => {
     // Socket.io (WebSocket) is event driven and essentially expects a call from frontend like so:
     // socket.emit('chat message', input.value); then from here we'll handle it by doing
     // socket.on('chat message', (message) => ..... and so on.
@@ -25,16 +26,14 @@ export default function setupMatchmakingSocket(server) {
 
     console.log('a user connected');
 
-    socket.on("matchmaking status", (id, msg) => {
-      // Send a message to the socket with the given id
-      // We just need each user to have their own id tracked on their own end.
-
-      socket.to(id).emit("matchmaking status", msg);
+    socket.on('matchmaking status', async (socketId, userId) => {
+      console.log(`Received message from ${socketId}, content: ${userId}`);
+      const status = await getMatchStatus(userId);
+      socket.emit('matchmaking status', status);
     });
 
-
-    socket.on("disconnect", () => {
-      console.log('a user disconnected')
+    socket.on('disconnect', () => {
+      console.log('a user disconnected');
     });
   });
 

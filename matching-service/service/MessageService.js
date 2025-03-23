@@ -1,6 +1,6 @@
-import MessageConfig from './MessageConfig.js';
-import { setMatchStatus } from '../repository/redis-match-repository.js';
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
+import { setMatchStatus } from '../repository/redis-match-repository.js';
+import MessageConfig from './MessageConfig.js';
 
 /**
  * Creates a message processor for a given valid window and name.
@@ -22,11 +22,15 @@ function createMessageProcessor(validWindow, processorName) {
         );
         waitingUser = null;
         // Send message to dead-letter queue.
-        if (processorName !== 'dead-letter') {
+        if (processorName === 'main') {
           const channel = await MessageConfig.getChannel();
           message.enqueueTime = Date.now();
           channel.publish(MessageConfig.EXCHANGE, message.category, Buffer.from(JSON.stringify(message)));
+          return;
         }
+
+        // Set user matching status to end if it's a dead-letter queue.
+        await setMatchStatus(message.userId, MatchingStatusEnum.TERMINATED);
       }, remainingTime);
       console.log(
         `${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`,
@@ -41,7 +45,11 @@ function createMessageProcessor(validWindow, processorName) {
     );
     const channel = await MessageConfig.getChannel();
     const matchedPlayersMessage = { players: [waitingUser.message, message] };
-    channel.publish(MessageConfig.EXCHANGE, MessageConfig.MATCHED_PLAYERS_QUEUE_NAME, Buffer.from(JSON.stringify(matchedPlayersMessage)));
+    channel.publish(
+      MessageConfig.EXCHANGE,
+      MessageConfig.MATCHED_PLAYERS_QUEUE_NAME,
+      Buffer.from(JSON.stringify(matchedPlayersMessage)),
+    );
     waitingUser = null;
   };
 }
@@ -62,11 +70,7 @@ async function processMatchedPlayers(message) {
   // Set match status for player all at once then wait for all of them to resolve
   // Actually only have 2 players but player1, player2 didn't sound right so no idea
   // what to name them so might as well put in array lol.
-  await Promise.all(
-    message.players.map(player =>
-      setMatchStatus(player.userId, MatchingStatusEnum.MATCHED)
-    )
-  );
+  await Promise.all(message.players.map((player) => setMatchStatus(player.userId, MatchingStatusEnum.MATCHED)));
 }
 
 export default {

@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 // Usage tutorial: https://github.com/redis/node-redis/tree/master/packages/redis
 
 const redisClient = await createClient({
-  url: process.env.REDIS_LOCAL_URL || 'redis://localhost:8096'
+  url: process.env.REDIS_LOCAL_URL || 'redis://localhost:8096',
 });
 
 // Must have this otherwise if an error occurs and nothing is there to catch it, the entire app goes down.
