@@ -20,11 +20,39 @@ server {
         return 200;
     }
 
+    # https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-subrequest-authentication/
+    location = /auth/verify-token {
+        internal;
+        proxy_pass              http://user-service;
+        proxy_pass_request_body off;
+        proxy_set_header        Content-Length "";
+        proxy_set_header        Authorization $http_authorization;
+    }
+    location = /auth/login {
+        # This endpoint is used to login a user. It doesn't require auth.
+        proxy_pass http://user-service;
+    }
+
     location /users/ {
+        auth_request /auth/verify-token;
         proxy_pass http://user-service;
     }
     location = /users {
+        # POST /users endpoint is used to create a new user. It doesn't require auth.
+        # This just looks so complicated cause typically user credentials etc are handled on another server
+        # entirely and not by service and so nginx designed for consistent and global policies ain't
+        # really meant to do something like that.
+        if ($request_method = POST) {
+             rewrite ^ /users_noauth last;
+        }
+
+        auth_request /auth/verify-token;
         proxy_pass http://user-service;
+    }
+    location = /users_noauth {
+        # This location is used for endpoints in user-service that requires no auth
+        internal;
+        proxy_pass http://user-service/users;
     }
 
     location /questions/ {

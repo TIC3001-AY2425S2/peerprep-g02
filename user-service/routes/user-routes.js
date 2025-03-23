@@ -1,5 +1,4 @@
 import express from 'express';
-
 import {
   createUser,
   deleteUser,
@@ -8,20 +7,20 @@ import {
   updateUser,
   updateUserPrivilege,
 } from '../controller/user-controller.js';
-import { verifyAccessToken, verifyIsAdmin, verifyIsOwnerOrAdmin } from '../middleware/basic-access-control.js';
+import { verifyIsAdmin, verifyIsOwnerOrAdmin } from '../middleware/basic-access-control.js';
 
 const router = express.Router();
 
-router.get('/', verifyAccessToken, verifyIsAdmin, getAllUsers);
+router.get('/', verifyIsAdmin, getAllUsers);
 
-router.patch('/:id/privilege', verifyAccessToken, verifyIsAdmin, updateUserPrivilege);
+router.patch('/:id/privilege', verifyIsAdmin, updateUserPrivilege);
 
 router.post('/', createUser);
 
-router.get('/:id', verifyAccessToken, verifyIsOwnerOrAdmin, getUser);
+router.get('/:id', verifyIsOwnerOrAdmin, getUser);
 
-router.patch('/:id', verifyAccessToken, verifyIsOwnerOrAdmin, updateUser);
+router.patch('/:id', verifyIsOwnerOrAdmin, updateUser);
 
-router.delete('/:id', verifyAccessToken, verifyIsOwnerOrAdmin, deleteUser);
+router.delete('/:id', verifyIsOwnerOrAdmin, deleteUser);
 
 export default router;

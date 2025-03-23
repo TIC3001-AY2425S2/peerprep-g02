@@ -20,6 +20,7 @@ export async function handleLogin(req, res) {
       const accessToken = jwt.sign(
         {
           id: user.id,
+          isAdmin: user.isAdmin,
         },
         process.env.JWT_SECRET,
         {
