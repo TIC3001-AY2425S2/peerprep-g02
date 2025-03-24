@@ -1,6 +1,7 @@
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 import { setMatchStatus } from '../repository/redis-match-repository.js';
 import MessageConfig from './MessageConfig.js';
+import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
 
 /**
  * Creates a message processor for a given valid window and name.
@@ -64,6 +65,10 @@ function createDeadLetterProcessor() {
 }
 
 async function processMatchedPlayers(message) {
+  // TODO: Maybe park this in collaboration service to offload queue processing.
+  const firstPlayer = message.players[0];
+  const question = await QuestionServiceApiProvider.getRandomQuestion(firstPlayer.category, firstPlayer.complexity);
+
   console.log('Sending both players to collaboration service');
   // await for collaboration service to be done then set the matched status.
 

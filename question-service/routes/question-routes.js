@@ -8,6 +8,7 @@ import {
   getAllQuestions,
   getQuestion,
   getQuestionByTitle,
+  getRandomQuestionByCategoryAndComplexity,
   updateQuestion,
 } from '../controller/question-controller.js';
 
@@ -20,6 +21,8 @@ router.get('/categories', getAllCategories);
 router.get('/complexities', getAllComplexities);
 
 router.get('/categories/complexities', getAllCategoryAndComplexityCombination);
+
+router.get('/random', getRandomQuestionByCategoryAndComplexity);
 
 router.post('/', createQuestion);
 

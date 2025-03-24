@@ -28,6 +28,10 @@ export async function findQuestionById(questionId) {
   return QuestionModel.findById(questionId);
 }
 
+export async function findRandomQuestionByCategoryAndComplexity(category, complexity) {
+  return QuestionModel.aggregate([{ $match: { category, complexity } }, { $sample: { size: 1 } }]);
+}
+
 export async function findAllQuestions() {
   return QuestionModel.find();
 }

@@ -8,6 +8,7 @@ import {
   findDistinctComplexity as _findDistinctComplexity,
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
+  findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
   updateQuestionById as _updateQuestionById,
 } from '../model/repository.js';
 
@@ -54,6 +55,21 @@ export async function getQuestion(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Unknown error when getting question!' });
+  }
+}
+
+export async function getRandomQuestionByCategoryAndComplexity(req, res) {
+  try {
+    const category = req.query.category;
+    const complexity = req.query.complexity;
+
+    const question = await _findRandomQuestionByCategoryAndComplexity(category, complexity);
+    // Given that the category and complexity is chosen by user, we assume it will exist
+    // and therefore immediately return 1st element.
+    return res.status(200).json({ message: 'Found a random question', data: question[0] });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Unknown error when getting random question!' });
   }
 }
 
