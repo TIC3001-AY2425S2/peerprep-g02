@@ -45,7 +45,7 @@ ENV=LOCAL
 JWT_SECRET=you-can-replace-this-with-your-own-secret
 
 # Services url
-QUESTION_SVC_GATEWAY_URL=http://nginx:8080/questions
+QUESTION_SVC_GATEWAY_URL=http://nginx-gateway:8080/questions
 
 QUEUE_TIMEOUT=20
 DEAD_LETTER_QUEUE_TIMEOUT=10
