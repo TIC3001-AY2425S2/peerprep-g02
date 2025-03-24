@@ -1,8 +1,8 @@
 services:
-  nginx:
+  nginx-gateway:
     build: ./..
-    image: nginx
-    container_name: nginx
+    image: nginx-gateway
+    container_name: nginx-gateway
     ports:
       - "8080:8080"
     env_file:

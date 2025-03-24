@@ -30,10 +30,10 @@ services:
       file: db/docker-compose.yml
       service: rabbitmq
 
-  nginx:
+  nginx-gateway:
     extends:
       file: ./../nginx/provisioning/docker-compose.yml
-      service: nginx
+      service: nginx-gateway
 
   user-service:
     extends:
