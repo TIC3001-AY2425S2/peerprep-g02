@@ -58,7 +58,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      nginx:
+      nginx-gateway:
         condition: service_healthy
       question-service:
         condition: service_healthy
@@ -70,7 +70,7 @@ services:
       file: ./../frontend/provisioning/docker-compose.yml
       service: frontend
     depends_on:
-      nginx:
+      nginx-gateway:
         condition: service_healthy
       question-service:
         condition: service_healthy

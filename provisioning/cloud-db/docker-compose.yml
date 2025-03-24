@@ -5,10 +5,10 @@ services:
       file: ./../db/docker-compose.yml
       service: rabbitmq
 
-  nginx:
+  nginx-gateway:
     extends:
       file: ./../../nginx/provisioning/docker-compose.yml
-      service: nginx
+      service: nginx-gateway
 
   user-service:
     extends:
@@ -27,7 +27,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      nginx:
+      nginx-gateway:
         condition: service_healthy
       question-service:
         condition: service_healthy
@@ -37,7 +37,7 @@ services:
       file: ./../../frontend/provisioning/docker-compose.yml
       service: frontend
     depends_on:
-      nginx:
+      nginx-gateway:
         condition: service_healthy
       question-service:
         condition: service_healthy
