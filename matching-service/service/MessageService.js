@@ -1,8 +1,8 @@
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 import { getMatchStatus, setMatchStatus } from '../repository/redis-match-repository.js';
 import MessageConfig from './MessageConfig.js';
-import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
 import MessageSource from './MessageSource.js';
+import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
 
 /**
  * Creates a message processor for a given valid window and name.
@@ -33,7 +33,7 @@ function createMessageProcessor(validWindow, processorName) {
     clearTimeout(waitingUser.timer);
 
     console.log(
-      `${new Date().toISOString()} MessageService: Matched users (${processorName}) in ${message.category}: ${waitingUser.message.userId} and ${message.userId}`
+      `${new Date().toISOString()} MessageService: Matched users (${processorName}) in ${message.category}: ${waitingUser.message.userId} and ${message.userId}`,
     );
 
     await MessageSource.sendMatchedPlayersMessage([waitingUser.message, message]);
@@ -46,7 +46,7 @@ function createMessageProcessor(validWindow, processorName) {
 
     waitingUser.timer = setTimeout(async () => {
       console.log(
-        `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${processorName} ${message.category} queue timed out.`
+        `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${processorName} ${message.category} queue timed out.`,
       );
       // Clear waiting user reference.
       clearWaitingUser();
@@ -55,7 +55,7 @@ function createMessageProcessor(validWindow, processorName) {
       if (processorName === 'main') {
         if (await isUserCancelled(message.userId)) {
           console.log(
-            `${new Date().toISOString()} MessageService: User ${message.userId} cancelled during timeout, skipping further processing.`
+            `${new Date().toISOString()} MessageService: User ${message.userId} cancelled during timeout, skipping further processing.`,
           );
           return;
         }
@@ -66,7 +66,7 @@ function createMessageProcessor(validWindow, processorName) {
     }, remainingTime);
 
     console.log(
-      `${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`
+      `${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`,
     );
 
     return waitingUser;
@@ -83,7 +83,7 @@ function createMessageProcessor(validWindow, processorName) {
     // Check if the current user has cancelled.
     if (await isUserCancelled(message.userId)) {
       console.log(
-        `${new Date().toISOString()} MessageService: Current message user ${message.userId} is CANCELLED, skipping processing.`
+        `${new Date().toISOString()} MessageService: Current message user ${message.userId} is CANCELLED, skipping processing.`,
       );
       return;
     }
@@ -98,7 +98,7 @@ function createMessageProcessor(validWindow, processorName) {
     if (await isUserCancelled(waitingUser.message.userId)) {
       clearTimeout(waitingUser.timer);
       console.log(
-        `${new Date().toISOString()} MessageService: Waiting user ${waitingUser.message.userId} has CANCELLED, clearing waiting slot.`
+        `${new Date().toISOString()} MessageService: Waiting user ${waitingUser.message.userId} has CANCELLED, clearing waiting slot.`,
       );
       clearWaitingUser();
       // Now set the current message as the new waiting user and exit.

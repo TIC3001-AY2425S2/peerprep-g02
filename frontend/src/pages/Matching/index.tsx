@@ -8,7 +8,7 @@ import { MatchingStatusEnum } from '../../types/matching';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 const MATCHING_CANCEL_URL = BASE_URL + '/matching/cancel';
-const TIMEOUT = process.env.MATCH_TIMEOUT as unknown as number || 30;
+const TIMEOUT = (process.env.MATCH_TIMEOUT as unknown as number) || 30;
 const REDIRECT_TIMEOUT = 3000; // 3 seconds countdown to redirect to homepage.
 
 const Matching = () => {
@@ -23,7 +23,7 @@ const Matching = () => {
     const socket = io(BASE_URL, { path: '/matching/websocket' });
     socketRef.current = socket;
     if (!socket.connected) {
-      console.log("Running connect");
+      console.log('Running connect');
       socket.connect();
     }
 
@@ -48,12 +48,12 @@ const Matching = () => {
     // Since there are some browser restrictions on using a socket during this short window of time,
     // we'll use navigator.sendBeacon to cancel the match instead.
     const handleBeforeUnload = () => {
-      console.log("Running handleBeforeUnlock");
+      console.log('Running handleBeforeUnlock');
       socket.disconnect();
 
-      console.log("match status: ", matchStatusRef.current);
+      console.log('match status: ', matchStatusRef.current);
       if (matchStatusRef.current === MatchingStatusEnum.WAITING) {
-        console.log("Sending beacon to cancel match");
+        console.log('Sending beacon to cancel match');
         // TODO: Replace '123' with the actual userId
         navigator.sendBeacon(MATCHING_CANCEL_URL + `/123`);
       }
@@ -63,7 +63,7 @@ const Matching = () => {
 
     // Cleanup both the socket listeners and the interval on unmount.
     return () => {
-      console.log("Running off connect and status");
+      console.log('Running off connect and status');
       clearInterval(intervalId);
       handleBeforeUnload();
       socket.off('connect');
@@ -75,7 +75,7 @@ const Matching = () => {
   const handleMatchCancelled = () => goToHomePage();
 
   const handleMatchNotFound = () => {
-    setStatusMessage("Match not found. Redirecting to homepage");
+    setStatusMessage('Match not found. Redirecting to homepage');
     const timer = setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
     return () => clearTimeout(timer);
   };
@@ -88,7 +88,7 @@ const Matching = () => {
           setStatusMessage(newCount.toString());
           return newCount;
         } else {
-          setStatusMessage("Processing");
+          setStatusMessage('Processing');
           clearInterval(interval);
           return 0;
         }
@@ -97,11 +97,16 @@ const Matching = () => {
     return () => clearInterval(interval);
   };
 
+  const handleMatchFound = () => {
+    setStatusMessage('Match found! Redirecting...');
+    const timer = setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+    return () => clearTimeout(timer);
+  };
 
   useEffect(() => {
     let cleanup = () => {};
     matchStatusRef.current = matchStatus;
-    console.log("Triggering cleanup");
+    console.log('Triggering cleanup');
     switch (matchStatus) {
       case MatchingStatusEnum.CANCELLED:
         handleMatchCancelled();
@@ -113,7 +118,8 @@ const Matching = () => {
         cleanup = handleWaitingForMatch();
         break;
       case MatchingStatusEnum.MATCHED:
-        // TODO: Add collaboration service redirect here
+        cleanup = handleMatchFound();
+        break;
       default:
         break;
     }

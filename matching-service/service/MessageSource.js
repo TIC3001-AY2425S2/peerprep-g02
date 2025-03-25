@@ -24,12 +24,10 @@ async function sendCategoryComplexityMessage({ userId, category, complexity, enq
 export async function sendCategoryMessage(message) {
   const channel = await MessageConfig.getChannel();
   message.enqueueTime = Date.now();
-  channel.publish(
-    MessageConfig.EXCHANGE,
-    message.category,
-    Buffer.from(JSON.stringify(message))
+  channel.publish(MessageConfig.EXCHANGE, message.category, Buffer.from(JSON.stringify(message)));
+  console.log(
+    `${new Date().toISOString()} MessageSource: Sent message for user ${message.userId} in queue ${message.category}`,
   );
-  console.log(`${new Date().toISOString()} MessageSource: Sent message for user ${message.userId} in queue ${message.category}`);
   return true;
 }
 
@@ -43,9 +41,11 @@ export async function sendMatchedPlayersMessage(players) {
   channel.publish(
     MessageConfig.EXCHANGE,
     MessageConfig.MATCHED_PLAYERS_QUEUE_NAME,
-    Buffer.from(JSON.stringify(matchedPlayersMessage))
+    Buffer.from(JSON.stringify(matchedPlayersMessage)),
   );
-  console.log(`${new Date().toISOString()} MessageSource: Sent matched players message for players ${players.map(p => p.userId).join(', ')}`);
+  console.log(
+    `${new Date().toISOString()} MessageSource: Sent matched players message for players ${players.map((p) => p.userId).join(', ')}`,
+  );
   return true;
 }
 

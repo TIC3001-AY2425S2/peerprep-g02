@@ -49,7 +49,6 @@ const Matching = () => {
     }
   }, [matchStatus]);
 
-
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />

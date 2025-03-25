@@ -1,5 +1,5 @@
 import express from 'express';
-import { startMatchmake, cancelMatchmake } from '../controller/matching-controller.js';
+import { cancelMatchmake, startMatchmake } from '../controller/matching-controller.js';
 
 const router = express.Router();
 

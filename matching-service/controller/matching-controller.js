@@ -1,6 +1,6 @@
-import MatchmakingService from '../service/MatchmakingService.js';
-import { setMatchStatus } from '../repository/redis-match-repository.js';
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
+import { setMatchStatus } from '../repository/redis-match-repository.js';
+import MatchmakingService from '../service/MatchmakingService.js';
 
 export async function startMatchmake(req, res) {
   try {
