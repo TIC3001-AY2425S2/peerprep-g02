@@ -18,7 +18,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
     title: initialData?.title || '',
     description: initialData?.description || '',
     category: initialData?.category ? initialData.category.join(', ') : '',
-    complexity: initialData?.complexity || '',
+    complexities: initialData?.complexities || '',
   });
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
       title: initialData ? initialData.title : '',
       description: initialData ? initialData.description : '',
       category: initialData ? initialData.category.join(', ') : '',
-      complexity: initialData ? initialData.complexity : '',
+      complexities: initialData ? initialData.complexities : '',
     };
     setFormData(data);
   }, [initialData]);
@@ -135,13 +135,13 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         value={formData.category}
       />
       <FormControl fullWidth required margin="normal">
-        <InputLabel id="complexity-label">Complexity</InputLabel>
+        <InputLabel id="complexities-label">Complexity</InputLabel>
         <Select
-          labelId="complexity-label"
-          id="complexity"
-          name="complexity"
+          labelId="complexities-label"
+          id="complexities"
+          name="complexities"
           label="Complexity"
-          value={formData.complexity}
+          value={formData.complexities}
           onChange={handleSelectChange}
         >
           <MenuItem value="easy">Easy</MenuItem>

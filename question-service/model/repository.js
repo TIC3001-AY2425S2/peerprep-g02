@@ -47,8 +47,8 @@ export async function findDistinctComplexity() {
 export async function findDistinctCategoryAndComplexity() {
   // Return in the form of:
   // [
-  //   { "category": "category1", "complexity": ["complexity1", "complexity2"] },
-  //   { "category": "category2", "complexity": ["complexity2"] }
+  //   { "category": "category1", "complexities": ["complexity1", "complexity2"] },
+  //   { "category": "category2", "complexities": ["complexity2"] }
   // ]
   return QuestionModel.aggregate([
     { $unwind: '$category' },
@@ -62,7 +62,7 @@ export async function findDistinctCategoryAndComplexity() {
       $project: {
         _id: 0,
         category: '$_id',
-        complexity: '$complexities',
+        complexities: '$complexities',
       },
     },
   ]);

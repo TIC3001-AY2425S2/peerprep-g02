@@ -2,7 +2,7 @@ import 'dotenv/config';
 import http from 'http';
 import index from './index.js';
 import redisClient from './repository/redis.js';
-import MessageSink from './service/MessageSink.js';
+import MessageSink, { scheduleConsumerQueueFromRedis } from './service/MessageSink.js';
 import setupMatchmakingSocket from './socket/matchmaking-socket.js';
 
 const port = process.env.PORT || 8002;
@@ -17,6 +17,7 @@ await redisClient
   .then(() => {
     console.log('Connected to Redis');
     server.listen(port);
+    MessageSink.scheduleConsumerQueueFromRedis();
     console.log('Matching service server listening on http://localhost:' + port);
   })
   .catch((err) => {

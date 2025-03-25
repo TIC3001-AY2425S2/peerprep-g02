@@ -10,6 +10,19 @@ services:
       file: ./../../nginx/provisioning/docker-compose.yml
       service: nginx-gateway
 
+  redis:
+    extends:
+      file: db/docker-compose.yml
+      service: redis
+
+  redisinsight:
+    extends:
+      file: db/docker-compose.yml
+      service: redisinsight
+    depends_on:
+      redis:
+        condition: service_healthy
+
   user-service:
     extends:
       file: ./../../user-service/provisioning/docker-compose.yml
@@ -19,6 +32,9 @@ services:
     extends:
       file: ./../../question-service/provisioning/docker-compose.yml
       service: question-service
+    depends_on:
+      redis:
+        condition: service_healthy
 
   matching-service:
     extends:

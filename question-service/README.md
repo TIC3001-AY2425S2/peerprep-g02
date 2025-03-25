@@ -10,6 +10,7 @@
 DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@localhost:8098/peerprep-g02?authSource=admin
+REDIS_LOCAL_URL=redis://localhost:6379
 PORT=8001
 # Possible values: PROD or LOCAL or DOCKER
 ENV=LOCAL
@@ -28,6 +29,7 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 DB_CLOUD_URI=<CONNECTION_STRING>
 # For LOCAL env
 DB_LOCAL_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+REDIS_LOCAL_URL=redis://redis:6379
 PORT=8001
 # Possible values: PROD or LOCAL
 ENV=LOCAL

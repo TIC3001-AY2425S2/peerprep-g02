@@ -19,7 +19,7 @@ const Home = () => {
   const filteredComplexities = useMemo(() => {
     if (!selectedCategory) return [];
     const entry = dropdownData.find((item) => item.category === selectedCategory);
-    return entry ? entry.complexity : [];
+    return entry ? entry.complexities : [];
   }, [dropdownData, selectedCategory]);
 
   const handleCategoryChange = (event: SelectChangeEvent) => {
@@ -36,7 +36,7 @@ const Home = () => {
       const data = {
         userId: '123',
         category: selectedCategory,
-        complexity: selectedComplexity,
+        complexities: selectedComplexity,
       };
 
       await startMatchmaking(data);
@@ -106,16 +106,16 @@ const Home = () => {
           </FormControl>
 
           <FormControl sx={{ minWidth: 150 }} disabled={!selectedCategory}>
-            <InputLabel id="complexity-select-label">Complexity</InputLabel>
+            <InputLabel id="complexities-select-label">Complexity</InputLabel>
             <Select
-              labelId="complexity-select-label"
+              labelId="complexities-select-label"
               value={selectedComplexity}
-              label="complexity"
+              label="complexities"
               onChange={handleComplexityChange}
             >
-              {filteredComplexities.map((complexity) => (
-                <MenuItem key={complexity} value={complexity}>
-                  {toPascalCase(complexity)}
+              {filteredComplexities.map((complexities) => (
+                <MenuItem key={complexities} value={complexities}>
+                  {toPascalCase(complexities)}
                 </MenuItem>
               ))}
             </Select>

@@ -1,6 +1,5 @@
-import { isValidObjectId } from 'mongoose';
+import mongoose, { isValidObjectId } from 'mongoose';
 import {
-  createQuestion as _createQuestion,
   deleteQuestionById as _deleteQuestionById,
   findAllQuestions as _findAllQuestions,
   findDistinctCategory as _findDistinctCategory,
@@ -11,31 +10,39 @@ import {
   findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
   updateQuestionById as _updateQuestionById,
 } from '../model/repository.js';
+import QuestionService from '../services/QuestionService.js';
 
 export async function createQuestion(req, res) {
+  // If any error occurs during the question creation, no question is created.
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { title, description, category, complexity } = req.body;
-    if (title && description && category && complexity) {
-      const existingQuestion = await _findQuestionByTitle(title);
-      if (existingQuestion) {
-        return res.status(409).json({ message: 'Question already exists' });
-      }
 
-      const createdQuestion = await _createQuestion(title, description, category, complexity);
-      return res.status(201).json({
-        message: `Created new question ${title} successfully`,
-        data: createdQuestion,
-      });
-    } else {
-      console.error(res.status);
-      return res
-        .status(400)
-        .json({ message: 'title and/or description and/or category and/or complexity are missing' });
-    }
+    const createdQuestion = await QuestionService.createQuestion(session, title, description, category, complexity);
+    await session.commitTransaction();
+
+    return res.status(201).json({
+      message: `Created new question ${title} successfully`,
+      data: createdQuestion,
+    });
   } catch (err) {
+    // Abort the transaction so no question is created.
+    await session.abortTransaction();
     console.error(err);
-    return res.status(500).json({ message: 'Unknown error when creating new question!' });
+    if (err.message === 'Question already exists') {
+      res.status(409).json({ message: err.message });
+    } else if (err.message === 'Missing required fields') {
+      res.status(400).json({ message: err.message });
+    } else if (err.message === 'Error in redis insertion'){
+      res.status(500).json({ message: err.message });
+    } else {
+      res.status(500).json({ message: 'Unknown error when creating new question!' });
+    }
+  } finally {
+    await session.endSession();
   }
+  return res;
 }
 
 export async function getQuestion(req, res) {

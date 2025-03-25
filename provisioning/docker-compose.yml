@@ -50,6 +50,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   matching-service:
     extends:

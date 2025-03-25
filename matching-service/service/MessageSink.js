@@ -1,12 +1,16 @@
 import MessageConfig from './MessageConfig.js';
 import MessageService from './MessageService.js';
 import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
+import redisClient from '../repository/redis.js';
+
+const DISTINCT_CATEGORY_COMPLEXITY_KEY = 'category_complexity_set';
+const REDIS_QUEUE_CREATION_INTERVAL = 10;
 
 /**
  * Creates a queue for a specific category/complexity queue.
  * Also creates a consumer to process messages.
  */
-export async function startQueueConsumer(category, complexity) {
+async function startQueueConsumer(category, complexity) {
   const queueName = MessageConfig.getQueueName(category, complexity);
 
   const channel = await MessageConfig.getChannel();
@@ -32,7 +36,7 @@ export async function startQueueConsumer(category, complexity) {
  * Starts a consumer for the dead-letter queue for a given category.
  * Also creates a consumer to process dead-letter messages.
  */
-export async function startDeadLetterConsumer(category) {
+async function startDeadLetterConsumer(category) {
   const channel = await MessageConfig.getChannel();
 
   const deadLetterQueue = MessageConfig.getQueueName(category);
@@ -59,7 +63,7 @@ export async function startDeadLetterConsumer(category) {
  * We want to leave the consumers to only be responsible for matching
  * and leave the processing to another dedicated consumer.
  */
-export async function startMatchedPlayersConsumer() {
+async function startMatchedPlayersConsumer() {
   const channel = await MessageConfig.getChannel();
 
   const queue = MessageConfig.MATCHED_PLAYERS_QUEUE_NAME;
@@ -84,11 +88,11 @@ export async function startMatchedPlayersConsumer() {
  * Starts all consumers for the defined categories and complexities.
  * For each category, it creates a consumer for every complexity and also starts the dead-letter consumer.
  */
-export async function startAllConsumers() {
+async function startAllConsumers() {
   const categoryComplexityList = await QuestionServiceApiProvider.getAllCategoriesAndComplexitiesCombination();
 
-  const consumerPromises = categoryComplexityList.flatMap(({ category, complexity }) => [
-    ...complexity.map((level) => startQueueConsumer(category, level)),
+  const consumerPromises = categoryComplexityList.flatMap(({ category, complexity: complexities }) => [
+    ...complexities.map((complexity) => startQueueConsumer(category, complexity)),
     startDeadLetterConsumer(category),
   ]);
 
@@ -98,4 +102,29 @@ export async function startAllConsumers() {
   console.log(`${new Date().toISOString()} MessageSink: All consumers have been started.`);
 }
 
-export default { startAllConsumers };
+async function startConsumersFromRedis() {
+  // Retrieve all unique category:complexity set entries from Redis
+  const members = await redisClient.sMembers(DISTINCT_CATEGORY_COMPLEXITY_KEY);
+
+  // We can attempt to create queues even if it exists since rabbitmq queues are idempotent.
+  const consumerPromises = members.flatMap(member => {
+    const [category, complexity] = member.split(':');
+    return [
+      startQueueConsumer(category, complexity),
+      startDeadLetterConsumer(category)
+    ];
+  });
+
+  consumerPromises.push(startMatchedPlayersConsumer());
+
+  await Promise.all(consumerPromises);
+  console.log('Consumers started from Redis.');
+}
+
+export function scheduleConsumerQueueFromRedis() {
+  // Run once then every 10 seconds
+  startConsumersFromRedis();
+  setInterval(startConsumersFromRedis, REDIS_QUEUE_CREATION_INTERVAL * 1000);
+}
+
+export default { startAllConsumers, scheduleConsumerQueueFromRedis };
