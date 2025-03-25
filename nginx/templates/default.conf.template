@@ -64,12 +64,11 @@ server {
 
     location /matching/ {
         proxy_pass http://matching-service;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
     }
     location = /matching {
+        proxy_pass http://matching-service;
+    }
+    location /matching/websocket/ {
         proxy_pass http://matching-service;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

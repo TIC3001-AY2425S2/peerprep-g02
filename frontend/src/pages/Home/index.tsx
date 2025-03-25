@@ -130,6 +130,7 @@ const Home = () => {
               },
             }}
             onClick={handleMatchClick}
+            disabled={!selectedCategory || !selectedComplexity}
           >
             Match!
           </Button>

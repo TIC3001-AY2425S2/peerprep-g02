@@ -5,7 +5,7 @@ import MessageSource from './MessageSource.js';
 async function matchmake(userId, category, complexity) {
   const enqueueTime = Date.now();
   await setMatchStatus(userId, MatchingStatusEnum.WAITING);
-  return MessageSource.sendMessage({ userId, category, complexity, enqueueTime });
+  return MessageSource.sendCategoryComplexityMessage({ userId, category, complexity, enqueueTime });
 }
 
 export default { matchmake };

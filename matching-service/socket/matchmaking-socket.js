@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
-import { getMatchStatus } from '../repository/redis-match-repository.js';
+import { getMatchStatus, setMatchStatus } from '../repository/redis-match-repository.js';
+import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
@@ -10,7 +11,7 @@ export default function setupMatchmakingSocket(server) {
     // https://socket.io/docs/v4/tutorial/step-6
     // https://socket.io/docs/v4/tutorial/step-9
     connectionStateRecovery: {},
-    path: '/matching',
+    path: '/matching/websocket',
   });
 
   io.on('connection', (socket) => {
@@ -24,7 +25,7 @@ export default function setupMatchmakingSocket(server) {
     // Server can receive the message listening on socket hello:
     // socket.on('hello', (arg) => console.log(arg)); // prints 'world'
 
-    console.log('a user connected');
+    console.log('A user connected');
 
     socket.on('matchmaking status', async (socketId, userId) => {
       console.log(`Received message from ${socketId}, content: ${userId}`);
@@ -32,8 +33,8 @@ export default function setupMatchmakingSocket(server) {
       socket.emit('matchmaking status', status);
     });
 
-    socket.on('disconnect', () => {
-      console.log('a user disconnected');
+    socket.on('disconnect', async () => {
+      console.log('A user disconnected');
     });
   });
 

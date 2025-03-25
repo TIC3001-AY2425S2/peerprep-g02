@@ -1,7 +1,8 @@
 const MatchingStatusEnum = Object.freeze({
   WAITING: 'WAITING',
   MATCHED: 'MATCHED',
-  TERMINATED: 'TERMINATED',
+  NO_MATCH: 'NO_MATCH',
+  CANCELLED: 'CANCELLED',
 });
 
 export default MatchingStatusEnum;
