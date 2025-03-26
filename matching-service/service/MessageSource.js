@@ -54,14 +54,12 @@ async function sendKillSignal(category, complexity) {
   const message = { isShutdown: true };
 
   return new Promise((resolve, reject) => {
-    // In fanout exchange the ACK doesn't actually refer to consumers sending an ACK but rather whether
-    // the message was delivered.
-    channel.publish(MessageConfig.FANOUT_EXCHANGE, queueName, Buffer.from(JSON.stringify(message)), async (err, ok) => {
+    channel.publish(MessageConfig.EXCHANGE, queueName, Buffer.from(JSON.stringify(message)), async (err, ok) => {
       if (err) {
-        console.error(`${new Date().toISOString()} - Error publishing kill signal: `, err);
+        console.error(`${new Date().toISOString()} - Error sending kill signal: `, err);
         return reject(new Error('Kill signal message was nacked'));
       }
-      console.log(`${new Date().toISOString()} - Kill signal successfully published to ${queueName}`);
+      console.log(`${new Date().toISOString()} - Kill signal successfully sent to ${queueName}`);
       try {
         // Immediately delete the queue once the kill signal has been acknowledged.
         await channel.deleteQueue(queueName);
