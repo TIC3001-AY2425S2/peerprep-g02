@@ -2,9 +2,11 @@ import amqp from 'amqplib';
 
 const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localhost:5672';
 const EXCHANGE = '';
+const FANOUT_EXCHANGE = 'fanout-exchange';
 const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 20;
 const DEAD_LETTER_QUEUE_TIMEOUT = process.env.DEAD_LETTER_QUEUE_TIMEOUT || 10;
 const MATCHED_PLAYERS_QUEUE_NAME = 'matched-players';
+const UPDATES_QUEUE_NAME = 'queue-updates';
 
 let connection = null;
 let channel = null;
@@ -47,14 +49,26 @@ function getMatchedPlayersQueueConfiguration() {
   };
 }
 
+function getQueueUpdatesConfiguration() {
+  // Set exclusive so that only 1 container gets to consume messages from this queue
+  // In this way we maintain the ordering of the messages and processing of the messages.
+  return {
+    messageTtl: 5 * 1000, // 5 seconds message timeout
+    exclusive: true,
+  };
+}
+
 export default {
   EXCHANGE,
+  FANOUT_EXCHANGE,
   QUEUE_TIMEOUT,
   DEAD_LETTER_QUEUE_TIMEOUT,
   MATCHED_PLAYERS_QUEUE_NAME,
+  UPDATES_QUEUE_NAME,
   getChannel,
   getQueueName,
   getQueueConfiguration,
   getDeadLetterQueueConfiguration,
   getMatchedPlayersQueueConfiguration,
+  getQueueUpdatesConfiguration,
 };

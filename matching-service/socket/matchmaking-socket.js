@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { getMatchStatus } from '../repository/redis-match-repository.js';
+import { getMatchStatus } from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.

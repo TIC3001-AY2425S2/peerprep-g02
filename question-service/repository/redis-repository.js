@@ -6,4 +6,8 @@ async function setDistinctCategoryComplexity(category, complexity) {
   await redisClient.sAdd(DISTINCT_CATEGORY_COMPLEXITY_KEY, `${category}:${complexity}`);
 }
 
-export default { setDistinctCategoryComplexity };
+async function removeDistinctCategoryComplexity(category, complexity) {
+  await redisClient.sRem(DISTINCT_CATEGORY_COMPLEXITY_KEY, `${category}:${complexity}`);
+}
+
+export default { setDistinctCategoryComplexity, removeDistinctCategoryComplexity };

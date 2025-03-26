@@ -1,5 +1,5 @@
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
-import { getMatchStatus, setMatchStatus } from '../repository/redis-match-repository.js';
+import { getMatchStatus, isCategoryComplexityActive, setMatchStatus } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageSource from './MessageSource.js';
 import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
@@ -10,6 +10,19 @@ import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
  */
 function createMessageProcessor(validWindow, processorName) {
   let waitingUser = null;
+
+  async function shouldProcessMessage(message) {
+    // Check if the category + complexity still exists.
+    // If it doesn't then it means a question delete occurred and, we should not process
+    // anymore messages for this queue and just set everyone's matching status to NOT_FOUND.
+    const { userId, category, complexity } = message;
+    const active = await isCategoryComplexityActive(category, complexity);
+    if (!active) {
+      await setMatchStatus(userId, MatchingStatusEnum.NOT_FOUND);
+      return false;
+    }
+    return true;
+  }
 
   async function isUserCancelled(userId) {
     return (await getMatchStatus(userId)) === MatchingStatusEnum.CANCELLED;
@@ -77,6 +90,10 @@ function createMessageProcessor(validWindow, processorName) {
   }
 
   return async function process(message) {
+    if (!(await shouldProcessMessage(message.userId))) {
+      return;
+    }
+
     const currentTime = Date.now();
     const elapsed = currentTime - message.enqueueTime;
 

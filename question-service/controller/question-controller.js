@@ -1,6 +1,5 @@
-import mongoose, { isValidObjectId } from 'mongoose';
+import { isValidObjectId } from 'mongoose';
 import {
-  deleteQuestionById as _deleteQuestionById,
   findAllQuestions as _findAllQuestions,
   findDistinctCategory as _findDistinctCategory,
   findDistinctCategoryAndComplexity as _findDistinctCategoryAndComplexity,
@@ -10,37 +9,29 @@ import {
   findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
   updateQuestionById as _updateQuestionById,
 } from '../model/repository.js';
-import QuestionService from '../services/QuestionService.js';
+import QuestionService from '../service/QuestionService.js';
 
 export async function createQuestion(req, res) {
-  // If any error occurs during the question creation, no question is created.
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const { title, description, category, complexity } = req.body;
 
     const createdQuestion = await QuestionService.createQuestion(session, title, description, category, complexity);
-    await session.commitTransaction();
 
     return res.status(201).json({
       message: `Created new question ${title} successfully`,
       data: createdQuestion,
     });
   } catch (err) {
-    // Abort the transaction so no question is created.
-    await session.abortTransaction();
     console.error(err);
     if (err.message === 'Question already exists') {
       res.status(409).json({ message: err.message });
     } else if (err.message === 'Missing required fields') {
       res.status(400).json({ message: err.message });
-    } else if (err.message === 'Error in redis insertion'){
+    } else if (err.message === 'Error in rabbitmq create queue') {
       res.status(500).json({ message: err.message });
     } else {
       res.status(500).json({ message: 'Unknown error when creating new question!' });
     }
-  } finally {
-    await session.endSession();
   }
   return res;
 }
@@ -126,11 +117,7 @@ export async function updateQuestion(req, res) {
 export async function deleteQuestion(req, res) {
   try {
     const questionId = req.params.id;
-    if (!isValidObjectId(questionId)) {
-      return res.status(404).json({ message: `Question ${questionId} not found` });
-    }
-
-    const deletedQuestion = await _deleteQuestionById(questionId);
+    const deletedQuestion = await QuestionService.deleteQuestion(questionId);
     return res.status(200).json({ message: `Deleted question ${questionId} successfully`, data: deletedQuestion });
   } catch (err) {
     console.error(err);

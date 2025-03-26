@@ -3,7 +3,7 @@ import http from 'http';
 import index from './index.js';
 import { connectToDB } from './model/repository.js';
 import redisClient from './repository/redis.js';
-import QuestionService from './services/QuestionService.js'
+import QuestionService from './service/QuestionService.js';
 
 const port = process.env.PORT || 8001;
 

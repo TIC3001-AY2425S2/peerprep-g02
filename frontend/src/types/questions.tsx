@@ -34,5 +34,5 @@ export interface QuestionDeleteData {
 
 export interface QuestionCategoriesComplexitiesData {
   category: string;
-  complexity: string[];
+  complexities: string[];
 }

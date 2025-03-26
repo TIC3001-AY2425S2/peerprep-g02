@@ -36,7 +36,7 @@ const Home = () => {
       const data = {
         userId: '123',
         category: selectedCategory,
-        complexities: selectedComplexity,
+        complexity: selectedComplexity,
       };
 
       await startMatchmaking(data);

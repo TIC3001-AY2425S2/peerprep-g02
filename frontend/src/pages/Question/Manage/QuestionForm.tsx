@@ -18,7 +18,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
     title: initialData?.title || '',
     description: initialData?.description || '',
     category: initialData?.category ? initialData.category.join(', ') : '',
-    complexities: initialData?.complexities || '',
+    complexity: initialData?.complexity || '',
   });
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
       title: initialData ? initialData.title : '',
       description: initialData ? initialData.description : '',
       category: initialData ? initialData.category.join(', ') : '',
-      complexities: initialData ? initialData.complexities : '',
+      complexity: initialData ? initialData.complexity : '',
     };
     setFormData(data);
   }, [initialData]);
@@ -141,7 +141,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           id="complexities"
           name="complexities"
           label="Complexity"
-          value={formData.complexities}
+          value={formData.complexity}
           onChange={handleSelectChange}
         >
           <MenuItem value="easy">Easy</MenuItem>

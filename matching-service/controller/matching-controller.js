@@ -1,5 +1,5 @@
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
-import { setMatchStatus } from '../repository/redis-match-repository.js';
+import { setMatchStatus } from '../repository/redis-repository.js';
 import MatchmakingService from '../service/MatchmakingService.js';
 
 export async function startMatchmake(req, res) {
@@ -8,8 +8,8 @@ export async function startMatchmake(req, res) {
     MatchmakingService.matchmake(userId, category, complexity);
     return res.sendStatus(200);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Unknown error when matching!' });
+    console.log('Error encountered while matching: ', err);
+    return res.status(500).json({ message: err.message });
   }
 }
 
