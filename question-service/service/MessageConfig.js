@@ -11,7 +11,7 @@ async function getChannel() {
   // Reuse an existing channel or creates a new one if none exists.
   if (!connection) {
     connection = await amqp.connect(RABBITMQ_URL);
-    channel = await connection.createChannel();
+    channel = await connection.createConfirmChannel();
   }
   return channel;
 }

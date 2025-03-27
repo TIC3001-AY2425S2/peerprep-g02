@@ -1,8 +1,7 @@
-import mongoose, { isValidObjectId } from 'mongoose';
+import { isValidObjectId } from 'mongoose';
 import * as QuestionRepository from '../model/repository.js';
 import { findDistinctCategoryAndComplexity } from '../model/repository.js';
 import RedisQuestionRepository from '../repository/redis-repository.js';
-import redisClient from '../repository/redis.js';
 import MessageSource from './MessageSource.js';
 
 async function sendQueueUpdate(type, category, complexity) {
@@ -10,16 +9,6 @@ async function sendQueueUpdate(type, category, complexity) {
     await MessageSource.sendQueueUpdate(type, category, complexity);
   } catch (err) {
     throw new Error('Error creating queue');
-  }
-}
-
-async function setDistinctCategoryComplexity(category, complexity) {
-  // Update redis category + complexity set with category and complexity.
-  // It doesn't matter if it exists already since this is a set (unique).
-  try {
-    await RedisQuestionRepository.setDistinctCategoryComplexity(category, complexity);
-  } catch (err) {
-    throw new Error('Error in redis publisher create queue');
   }
 }
 
@@ -33,30 +22,22 @@ async function createQuestion(title, description, category, complexity) {
     throw new Error('Question already exists');
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  const multi = redisClient.multi();
+  // Transaction requires another form of mongodb and that is a pain in the ass to set up with single command dockerfile.
+  // const session = await mongoose.startSession();
+  // await session.startTransaction();
 
   // If any error occurs during the question creation, no question is created.
   try {
     await sendQueueUpdate('create', category, complexity);
+    const createdQuestion = await QuestionRepository.createQuestion(title, description, category, complexity);
 
-    const createdQuestion = await QuestionRepository.createQuestion(title, description, category, complexity).session(
-      session,
-    );
-
-    await setDistinctCategoryComplexity(category, complexity);
-
-    await session.commitTransaction();
-    await multi.exec();
-
+    // await session.commitTransaction();
     return createdQuestion;
   } catch (err) {
-    await session.abortTransaction();
-    multi.discard();
+    // await session.abortTransaction();
     throw err;
   } finally {
-    await session.endSession();
+    // await session.endSession();
   }
 }
 
@@ -67,37 +48,41 @@ async function deleteQuestion(questionId) {
 
   const question = await QuestionRepository.findQuestionById(questionId);
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  const multi = redisClient.multi();
+  // Transaction requires another form of mongodb and that is a pain in the ass to set up with single command dockerfile.
+  // const session = await mongoose.startSession();
+  // await session.startTransaction();
 
   // If any error occurs during the question creation, no question is created.
   try {
-    // Question category is an array of values.
-    const deletedQuestion = await QuestionRepository.deleteQuestionById(questionId).session(session);
+    // Category is an array of values.
 
-    await Promise.all(
-      question.category.map(async (category) => {
-        const exists = await QuestionRepository.checkCategoryComplexityExists(category, question.complexity, session);
-        if (!exists) {
-          await Promise.all([
-            sendQueueUpdate('delete', category, question.complexity),
-            RedisQuestionRepository.removeDistinctCategoryComplexity(category, question.complexity),
-          ]);
-        }
-      }),
-    );
+    const categoriesToDelete = (
+      await Promise.all(
+        question.category.map(async (category) => {
+          const isLast = await QuestionRepository.isLastCategoryComplexity(category, question.complexity);
+          return isLast ? category : null;
+        }),
+      )
+    ).filter(Boolean);
 
-    await session.commitTransaction();
-    await multi.exec();
+    // If there are any categories and complexities to delete, delete from redis and send a single delete update with the array.
+    if (categoriesToDelete.length > 0) {
+      await Promise.all(
+        categoriesToDelete.map((category) =>
+          RedisQuestionRepository.removeDistinctCategoryComplexity(category, question.complexity),
+        ),
+      );
+      await sendQueueUpdate('delete', categoriesToDelete, question.complexity);
+    }
 
+    const deletedQuestion = await QuestionRepository.deleteQuestionById(questionId);
+    // await session.commitTransaction();
     return deletedQuestion;
   } catch (err) {
-    await session.abortTransaction();
-    multi.discard();
+    // await session.abortTransaction();
     throw err;
   } finally {
-    await session.endSession();
+    // await session.endSession();
   }
 }
 

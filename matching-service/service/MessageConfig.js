@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 
 const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localhost:5672';
 const EXCHANGE = '';
-const FANOUT_EXCHANGE = 'fanout-exchange';
+const FANOUT_EXCHANGE = 'create-queue-exchange';
 const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 20;
 const DEAD_LETTER_QUEUE_TIMEOUT = process.env.DEAD_LETTER_QUEUE_TIMEOUT || 10;
 const MATCHED_PLAYERS_QUEUE_NAME = 'matched-players';
@@ -15,9 +15,16 @@ async function getChannel() {
   // Reuse an existing channel or creates a new one if none exists.
   if (!connection) {
     connection = await amqp.connect(RABBITMQ_URL);
-    channel = await connection.createChannel();
+    channel = await connection.createConfirmChannel();
   }
   return channel;
+}
+
+function generateShortQueueName() {
+  const prefix = 'create-event-queue-';
+  // Generate a 6-character string from a random number.
+  const shortId = Math.random().toString(36).substring(2, 8);
+  return `${prefix}${shortId}`;
 }
 
 function getQueueName(category, complexity) {
@@ -53,7 +60,7 @@ function getQueueUpdatesConfiguration() {
   // Set exclusive so that only 1 container gets to consume messages from this queue
   // In this way we maintain the ordering of the messages and processing of the messages.
   return {
-    messageTtl: 5 * 1000, // 5 seconds message timeout
+    messageTtl: 10 * 1000, // 10 seconds message timeout
     exclusive: true,
   };
 }
@@ -71,4 +78,5 @@ export default {
   getDeadLetterQueueConfiguration,
   getMatchedPlayersQueueConfiguration,
   getQueueUpdatesConfiguration,
+  generateShortQueueName,
 };

@@ -1,4 +1,3 @@
-// src/components/question-form/QuestionForm.tsx
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
@@ -37,7 +36,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleSelectChange = (event: SelectChangeEvent<string>) => {
+  const handleSelectChange = (event: SelectChangeEvent) => {
     const { name, value } = event.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
@@ -135,11 +134,11 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         value={formData.category}
       />
       <FormControl fullWidth required margin="normal">
-        <InputLabel id="complexities-label">Complexity</InputLabel>
+        <InputLabel id="complexity-label">Complexity</InputLabel>
         <Select
-          labelId="complexities-label"
-          id="complexities"
-          name="complexities"
+          labelId="complexity-label"
+          id="complexity"
+          name="complexity"
           label="Complexity"
           value={formData.complexity}
           onChange={handleSelectChange}

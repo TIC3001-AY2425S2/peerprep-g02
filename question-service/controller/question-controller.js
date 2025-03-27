@@ -15,7 +15,7 @@ export async function createQuestion(req, res) {
   try {
     const { title, description, category, complexity } = req.body;
 
-    const createdQuestion = await QuestionService.createQuestion(session, title, description, category, complexity);
+    const createdQuestion = await QuestionService.createQuestion(title, description, category, complexity);
 
     return res.status(201).json({
       message: `Created new question ${title} successfully`,
@@ -27,7 +27,10 @@ export async function createQuestion(req, res) {
       res.status(409).json({ message: err.message });
     } else if (err.message === 'Missing required fields') {
       res.status(400).json({ message: err.message });
-    } else if (err.message === 'Error in rabbitmq create queue') {
+    } else if (
+      err.message === 'Error in rabbitmq create queue' ||
+      err.message === 'Error in redis create category complexity set entry'
+    ) {
       res.status(500).json({ message: err.message });
     } else {
       res.status(500).json({ message: 'Unknown error when creating new question!' });

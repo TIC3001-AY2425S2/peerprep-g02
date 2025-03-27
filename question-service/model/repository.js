@@ -91,11 +91,12 @@ export async function deleteQuestionById(questionId) {
 }
 
 // check if a question has this category-complexity combination
-export async function checkCategoryComplexityExists(category, complexity, session) {
-  if (session) {
-    const exists = await QuestionModel.exists({ category, complexity }).session(session);
-    return !!exists; // convert to boolean
-  }
+export async function checkCategoryComplexityExists(category, complexity) {
   const exists = await QuestionModel.exists({ category, complexity });
   return !!exists; // convert to boolean
+}
+
+export async function isLastCategoryComplexity(category, complexity) {
+  const count = await QuestionModel.countDocuments({ category, complexity });
+  return count === 1;
 }

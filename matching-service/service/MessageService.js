@@ -14,11 +14,11 @@ function createMessageProcessor(validWindow, processorName) {
   async function shouldProcessMessage(message) {
     // Check if the category + complexity still exists.
     // If it doesn't then it means a question delete occurred and, we should not process
-    // anymore messages for this queue and just set everyone's matching status to NOT_FOUND.
+    // anymore messages for this queue and just set everyone's matching status to NO_MATCH.
     const { userId, category, complexity } = message;
     const active = await isCategoryComplexityActive(category, complexity);
     if (!active) {
-      await setMatchStatus(userId, MatchingStatusEnum.NOT_FOUND);
+      await setMatchStatus(userId, MatchingStatusEnum.NO_MATCH);
       return false;
     }
     return true;
@@ -57,6 +57,7 @@ function createMessageProcessor(validWindow, processorName) {
     const waitingUser = { message, timer: null };
     const remainingTime = validWindow - elapsed;
 
+    console.log(`${new Date().toISOString()} MessageService: Setting waiting user ${message.userId}`);
     waitingUser.timer = setTimeout(async () => {
       console.log(
         `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${processorName} ${message.category} queue timed out.`,
@@ -90,7 +91,8 @@ function createMessageProcessor(validWindow, processorName) {
   }
 
   return async function process(message) {
-    if (!(await shouldProcessMessage(message.userId))) {
+    if (!(await shouldProcessMessage(message))) {
+      console.log(`${new Date().toISOString()} MessageService: Should not process ${message.userId}`);
       return;
     }
 
@@ -111,7 +113,7 @@ function createMessageProcessor(validWindow, processorName) {
       return;
     }
 
-    // A waiting user exists, try to match.
+    // Wait user has cancelled, set current user has waiting user
     if (await isUserCancelled(waitingUser.message.userId)) {
       clearTimeout(waitingUser.timer);
       console.log(
@@ -131,6 +133,7 @@ function createMessageProcessor(validWindow, processorName) {
     }
 
     // If matching did not occur, update waiting user with the current message.
+    console.log(`${new Date().toISOString()} MessageService: Attempt to match failed. Someone has cancelled.`);
     waitingUser = setWaitingUser(message, validWindow, elapsed, processorName);
   };
 }

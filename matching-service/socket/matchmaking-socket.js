@@ -27,7 +27,7 @@ export default function setupMatchmakingSocket(server) {
     console.log('A user connected');
 
     socket.on('matchmaking status', async (socketId, userId) => {
-      console.log(`Received message from ${socketId}, content: ${userId}`);
+      // console.log(`Received message from ${socketId}, content: ${userId}`);
       const status = await getMatchStatus(userId);
       socket.emit('matchmaking status', status);
     });

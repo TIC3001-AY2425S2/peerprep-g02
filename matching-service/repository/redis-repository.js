@@ -19,5 +19,13 @@ export async function isCategoryActive(category) {
   const categoryMembers = (await redisClient.sMembers(DISTINCT_CATEGORY_COMPLEXITY_KEY)).filter((member) =>
     member.startsWith(`${category}:`),
   );
-  return categoryMembers.length === 0;
+  return categoryMembers.length !== 0;
+}
+
+export async function setDistinctCategoryComplexity(category, complexity) {
+  await redisClient.sAdd(DISTINCT_CATEGORY_COMPLEXITY_KEY, `${category}:${complexity}`);
+}
+
+export async function removeDistinctCategoryComplexity(category, complexity) {
+  await redisClient.sRem(DISTINCT_CATEGORY_COMPLEXITY_KEY, `${category}:${complexity}`);
 }
