@@ -3,3 +3,4 @@
 **/.docker.env
 **/.idea
 **/.gitconfig
+frontend/package-lock.json
