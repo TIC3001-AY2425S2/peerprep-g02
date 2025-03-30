@@ -65,7 +65,7 @@ const Home = () => {
       <Box sx={{ px: '20%', py: '5%', textAlign: 'center' }}>
         <Box
           sx={{
-            backgroundColor: '#f5f5f5',
+            backgroundColor: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -80,7 +80,7 @@ const Home = () => {
         </Box>
         <Box
           sx={{
-            backgroundColor: '#f5f5f5',
+            backgroundColor: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
