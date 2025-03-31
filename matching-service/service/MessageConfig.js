@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import UuidUtils from '../utils/UuidUtils.js';
 
 const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localhost:5672';
 const EXCHANGE = '';
@@ -23,7 +24,7 @@ async function getChannel() {
 function generateShortQueueName() {
   const prefix = 'create-event-queue-';
   // Generate a 6-character string from a random number.
-  const shortId = Math.random().toString(36).substring(2, 8);
+  const shortId = UuidUtils.APP_UUID;
   return `${prefix}${shortId}`;
 }
 

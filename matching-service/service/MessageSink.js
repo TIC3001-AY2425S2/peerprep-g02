@@ -1,3 +1,4 @@
+import RedisLock from '../repository/redis-lock.js';
 import { isCategoryActive } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageService from './MessageService.js';
@@ -29,9 +30,9 @@ async function startQueueConsumer(category, complexity) {
         // message slower than our isShutdown kill signal message. In any case there is another check at
         // MessageService.shouldProcessMessage().
         if (messageContent.isShutdown === true) {
-          console.log(`${new Date().toISOString()} - Shutdown kill signal received on ${queueName}.`);
+          console.log(`${new Date().toISOString()} MessageSink: Shutdown kill signal received on ${queueName}.`);
           channel.deleteQueue(queueName);
-          console.log(`${new Date().toISOString()} - Queue ${queueName} deleted successfully.`);
+          console.log(`${new Date().toISOString()} MessageSink: Queue ${queueName} deleted successfully.`);
           return;
         }
 
@@ -66,9 +67,11 @@ async function startDeadLetterConsumer(category) {
       if (message) {
         const messageContent = JSON.parse(message.content.toString());
         if (messageContent.isShutdown === true) {
-          console.log(`${new Date().toISOString()} - Shutdown kill signal received on ${deadLetterQueueName}.`);
+          console.log(
+            `${new Date().toISOString()} MessageSink: Shutdown kill signal received on ${deadLetterQueueName}.`,
+          );
           channel.deleteQueue(deadLetterQueueName);
-          console.log(`${new Date().toISOString()} - Queue ${deadLetterQueueName} deleted successfully.`);
+          console.log(`${new Date().toISOString()} MessageSink: Queue ${deadLetterQueueName} deleted successfully.`);
           return;
         }
 
@@ -115,88 +118,60 @@ async function startMatchedPlayersConsumer() {
   console.log(`${new Date().toISOString()} MessageSink: Matched players consumer listening on queue ${queueName}`);
 }
 
-function startErrorChannelListener(channel, queueName) {
-  channel.on('error', (error) => {
-    if (error.message.includes('RESOURCE_LOCKED')) {
-      console.error(
-        `${new Date().toISOString()} - RESOURCE_LOCKED - Queue already in use by another consumer: ${queueName}`,
-      );
-    } else {
-      console.error(`${new Date().toISOString()} - Channel error:`, error);
-    }
-  });
-}
-
 /**
  * Creates and starts a consumer for queue create/delete events during question create/delete flow.
+ * This queue-updates queue is declared exclusive and only 1 consumer can receive messages for it.
+ * So when scaling up, we want to ensure that the other containers instantiate a consumer for it.
  */
-async function startQueueUpdatesConsumer() {
+export async function startQueueUpdatesConsumer() {
   const queueName = MessageConfig.UPDATES_QUEUE_NAME;
   const channel = await MessageConfig.getChannel();
 
-  // This queue-updates queue is declared exclusive and only 1 consumer can receive messages for it.
-  // So when scaling up, we want to ensure that the other containers do not crash while trying
-  // to get access. This is not the perfect way to do it since if the container with the access
-  // rights to this queue crashes, no one else can take over but... whatever.
-  // For some reason we need to catch the error on the channel level and also on the assertQueue.
-  // The error being that we're trying to create a consumer for an exclusive queue that already
-  // has a consumer.
-  startErrorChannelListener(channel, queueName);
-  let isAbleGetAccess = true;
+  // Only initialize queue updates consumer if this application instance is the leader/has the lock.
+  await RedisLock.ensureLeadership(async () => {
+    await channel.assertQueue(queueName, MessageConfig.getQueueUpdatesConfiguration());
 
-  await channel.assertQueue(queueName, MessageConfig.getQueueUpdatesConfiguration()).catch((error) => {
-    if (error.message.includes('RESOURCE_LOCKED')) {
-      isAbleGetAccess = false;
-      return;
-    }
-    throw error;
-  });
+    channel.consume(
+      queueName,
+      async (message) => {
+        if (message) {
+          const messageContent = JSON.parse(message.content.toString());
+          console.log(
+            `${new Date().toISOString()} MessageSink: Received message ${JSON.stringify(messageContent)} on queue ${queueName}`,
+          );
+          const operations = [];
+          switch (messageContent.type) {
+            case 'create':
+              operations.push(MessageSource.sendCreateEvent(messageContent.category, messageContent.complexity));
+              break;
+            case 'delete':
+              // We only need to check if the category exists since the question service already determined we must delete
+              // these queues. Question service also removes the entry from redis, so we can just check with redis.
+              const filteredCategoryPromises = messageContent.category.map(async (cat) => {
+                const exists = await isCategoryActive(cat);
+                return exists ? null : cat;
+              });
 
-  if (!isAbleGetAccess) {
-    return;
-  }
+              const filteredCategory = (await Promise.all(filteredCategoryPromises)).filter(Boolean);
 
-  channel.consume(
-    queueName,
-    async (message) => {
-      if (message) {
-        const messageContent = JSON.parse(message.content.toString());
-        console.log(
-          `${new Date().toISOString()} MessageSink: Received message ${JSON.stringify(messageContent)} on queue ${queueName}`,
-        );
-        const operations = [];
+              messageContent.category.forEach((cat) => {
+                operations.push(MessageSource.sendKillSignal(cat, messageContent.complexity));
+              });
 
-        switch (messageContent.type) {
-          case 'create':
-            operations.push(MessageSource.sendCreateEvent(messageContent.category, messageContent.complexity));
-            break;
-          case 'delete':
-            // We only need to check if the category exists since the question service already determined we must delete
-            // these queues. Question service also removes the entry from redis, so we can just check with redis.
-            const filteredCategoryPromises = messageContent.category.map(async (cat) => {
-              const exists = await isCategoryActive(cat);
-              return exists ? null : cat;
-            });
+              filteredCategory.forEach((cat) => {
+                operations.push(MessageSource.sendKillSignal(cat));
+              });
+              break;
+          }
 
-            const filteredCategory = (await Promise.all(filteredCategoryPromises)).filter(Boolean);
-
-            messageContent.category.forEach((cat) => {
-              operations.push(MessageSource.sendKillSignal(cat, messageContent.complexity));
-            });
-
-            filteredCategory.forEach((cat) => {
-              operations.push(MessageSource.sendKillSignal(cat));
-            });
-            break;
+          await Promise.all(operations);
         }
+      },
+      { noAck: true },
+    );
 
-        await Promise.all(operations);
-      }
-    },
-    { noAck: true },
-  );
-
-  console.log(`${new Date().toISOString()} MessageSink: Queue updates listening on queue ${queueName}`);
+    console.log(`${new Date().toISOString()} MessageSink: Queue updates listening on queue ${queueName}`);
+  });
 }
 
 /**
@@ -220,7 +195,7 @@ async function startCreateEventConsumer() {
       try {
         const messageContent = JSON.parse(msg.content.toString());
         console.log(
-          `${new Date().toISOString()} - MessageSink: Received create event: ${JSON.stringify(messageContent)} on queue ${queueName}`,
+          `${new Date().toISOString()} MessageSink: Received create event: ${JSON.stringify(messageContent)} on queue ${queueName}`,
         );
 
         // Start category + complexity consumer.
@@ -236,16 +211,16 @@ async function startCreateEventConsumer() {
 
         await Promise.all([...queueConsumers, ...deadLetterConsumers]);
 
-        console.log(`${new Date().toISOString()} - MessageSink: Finished creating new queues in ${queueName}`);
+        console.log(`${new Date().toISOString()} MessageSink: Finished creating new queues in ${queueName}`);
         channel.ack(msg);
       } catch (err) {
-        console.error(`${new Date().toISOString()} - MessageSink: Error processing create event:`, err);
+        console.error(`${new Date().toISOString()} MessageSink: Error processing create event:`, err);
         channel.nack(msg);
       }
     }
   });
 
-  console.log(`${new Date().toISOString()} - MessageSink: Create event consumer is listening on queue ${queueName}`);
+  console.log(`${new Date().toISOString()} MessageSink: Create event consumer is listening on queue ${queueName}`);
 }
 
 /**
