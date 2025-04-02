@@ -5,6 +5,7 @@ import NavBar from '../../components/navbar';
 import { startMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { getCategoriesAndComplexities } from '../../hooks/question/question';
+import { setSessionId } from '../../localStorage';
 import { QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const Home = () => {
@@ -39,7 +40,8 @@ const Home = () => {
         complexity: selectedComplexity,
       };
 
-      await startMatchmaking(data);
+      const { sessionId } = await startMatchmaking(data);
+      setSessionId(sessionId);
       goToMatchingPage();
     } catch (error) {
       console.error('Error in match request:', error);

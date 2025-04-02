@@ -1,27 +1,26 @@
 import SearchIcon from '@mui/icons-material/Search';
 import { Button, Container } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import NavBar from '../../components/navbar';
+import { cancelMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
+import { getSessionId } from '../../localStorage';
 import { MatchingStatusEnum } from '../../types/matching';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
-const MATCHING_CANCEL_URL = BASE_URL + '/matching/cancel';
-const TIMEOUT = (process.env.MATCH_TIMEOUT as unknown as number) || 30;
 const REDIRECT_TIMEOUT = 3000; // 3 seconds countdown to redirect to homepage.
 
 const Matching = () => {
   const { goToHomePage } = pageNavigation();
-  const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>('');
-  const [countdown, setCountdown] = useState<number>(TIMEOUT);
-  const [statusMessage, setStatusMessage] = useState<string>(countdown.toString());
-  const matchStatusRef = useRef(matchStatus);
-  const socketRef = useRef<Socket | null>(null);
+  const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>(MatchingStatusEnum.WAITING);
+  const [countdown, setCountdown] = useState<number | ''>('');
+  const [statusMessage, setStatusMessage] = useState<string>();
+  const sessionId = getSessionId();
 
   useEffect(() => {
     const socket = io(BASE_URL, { path: '/matching/websocket' });
-    socketRef.current = socket;
+    // socketRef.current = socket;
     if (!socket.connected) {
       console.log('Running connect');
       socket.connect();
@@ -31,32 +30,24 @@ const Matching = () => {
       console.log('Connected to server with socket ID:', socket.id);
     });
 
-    socket.on('matchmaking status', (status) => {
-      console.log('Received matchmaking status from server:', status);
-      setMatchStatus(status);
+    socket.on('matchmaking status', (data) => {
+      // console.log('Received matchmaking status from server: ', data);
+      setMatchStatus(data.status);
+      setCountdown(data.timer);
     });
 
     // Set up an interval to emit status requests every second.
     const intervalId = setInterval(() => {
       if (socket.connected) {
         // TODO: replace 123 with userId.
-        socket.emit('matchmaking status', socket.id, '123');
+        socket.emit('matchmaking status', socket.id, { userId: '123', sessionId });
       }
     }, 1000);
 
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
-    // Since there are some browser restrictions on using a socket during this short window of time,
-    // we'll use navigator.sendBeacon to cancel the match instead.
     const handleBeforeUnload = () => {
       console.log('Running handleBeforeUnlock');
       socket.disconnect();
-
-      console.log('match status: ', matchStatusRef.current);
-      if (matchStatusRef.current === MatchingStatusEnum.WAITING) {
-        console.log('Sending beacon to cancel match');
-        // TODO: Replace '123' with the actual userId
-        navigator.sendBeacon(MATCHING_CANCEL_URL + `/123`);
-      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -72,59 +63,41 @@ const Matching = () => {
     };
   }, []);
 
-  const handleMatchCancelled = () => goToHomePage();
-
-  const handleMatchNotFound = () => {
-    setStatusMessage('Match not found. Redirecting to homepage');
-    const timer = setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
-    return () => clearTimeout(timer);
-  };
-
-  const handleWaitingForMatch = () => {
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev > 1) {
-          const newCount = prev - 1;
-          setStatusMessage(newCount.toString());
-          return newCount;
-        } else {
-          setStatusMessage('Processing');
-          clearInterval(interval);
-          return 0;
-        }
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  };
-
-  const handleMatchFound = () => {
-    setStatusMessage('Match found! Redirecting...');
-    const timer = setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
-    return () => clearTimeout(timer);
+  const handleMatchCancelled = async () => {
+    await cancelMatchmaking({ userId: '123', sessionId });
+    goToHomePage();
   };
 
   useEffect(() => {
-    let cleanup = () => {};
-    matchStatusRef.current = matchStatus;
-    console.log('Triggering cleanup');
+    console.log('matchStatus changed:', matchStatus, 'or countdown changed:', countdown);
+
+    // When countdown reaches 0 and we're still WAITING, set status message to processing.
+    if (matchStatus === MatchingStatusEnum.WAITING && countdown === 0) {
+      setStatusMessage('Processing');
+      return;
+    }
+
     switch (matchStatus) {
-      case MatchingStatusEnum.CANCELLED:
-        handleMatchCancelled();
-        break;
-      case MatchingStatusEnum.NO_MATCH:
-        cleanup = handleMatchNotFound();
-        break;
       case MatchingStatusEnum.WAITING:
-        cleanup = handleWaitingForMatch();
+        setStatusMessage(countdown.toString());
         break;
       case MatchingStatusEnum.MATCHED:
-        cleanup = handleMatchFound();
+        setStatusMessage('Match found! Redirecting...');
+        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+        break;
+      case MatchingStatusEnum.NO_MATCH:
+        setStatusMessage('Match not found. Redirecting to homepage');
+        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+        break;
+      case MatchingStatusEnum.CANCELLED:
+        setStatusMessage('Cancelled. Redirecting to homepage');
+        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
       default:
+        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
     }
-    return cleanup;
-  }, [matchStatus]);
+  }, [matchStatus, countdown]);
 
   return (
     <Container disableGutters component="main" maxWidth={false}>

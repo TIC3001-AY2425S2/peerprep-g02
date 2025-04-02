@@ -1,9 +1,19 @@
 import api from '../../api';
-import { MatchingPostData } from '../../types/matching';
+import { MatchingCancelPostData, MatchingPostData, MatchingSessionData } from '../../types/matching';
 
-export const startMatchmaking = async (data: MatchingPostData): Promise<void> => {
+export const startMatchmaking = async (data: MatchingPostData): Promise<MatchingSessionData> => {
   try {
-    await api.matching.start(data);
+    const response = await api.matching.start(data);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error creating question: ', error);
+    throw error;
+  }
+};
+
+export const cancelMatchmaking = async (data: MatchingCancelPostData): Promise<void> => {
+  try {
+    await api.matching.cancel(data);
   } catch (error) {
     console.error('Error creating question: ', error);
     throw error;
