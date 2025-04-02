@@ -13,6 +13,7 @@ export interface MatchingResponseData<T> {
   message: string;
   data: T;
 }
+
 export interface MatchingSessionData {
   readonly sessionId: string;
 }

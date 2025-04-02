@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import NavBar from '../../components/navbar';
 import { getQuestion } from '../../hooks/question/question';
 import { Question } from '../../types/questions';
@@ -75,10 +76,10 @@ const Landing = () => {
           ))}
         </Grid>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
-          <Button variant="outlined" size="large">
+          <Button variant="outlined" component={Link} to="/login" size="large">
             Sign in
           </Button>
-          <Button variant="contained" size="large">
+          <Button variant="contained" component={Link} to="/register" size="large">
             Register
           </Button>
         </Box>

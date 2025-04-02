@@ -9,16 +9,16 @@ import * as React from 'react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import NavBar from '../../../components/navbar';
-import { login } from '../../../hooks/auth/auth';
 import pageNavigation from '../../../hooks/navigation/pageNavigation';
-import { setAccessToken, setUser } from '../../../localStorage';
-import { AuthPostData } from '../../../types/auth';
+import { createUser } from '../../../hooks/users/users';
+import { UsersPostData } from '../../../types/users';
 
-const Login = () => {
-  const { goToHomePage } = pageNavigation();
-  const [formData, setFormData] = useState<AuthPostData>({
-    password: '',
+const Register = () => {
+  const { goToLandingPage } = pageNavigation();
+  const [formData, setFormData] = useState<UsersPostData>({
+    username: '',
     email: '',
+    password: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,10 +30,8 @@ const Login = () => {
     event.preventDefault();
 
     try {
-      const user = await login(formData);
-      setAccessToken(user.accessToken);
-      setUser(user);
-      goToHomePage();
+      await createUser(formData);
+      goToLandingPage();
     } catch (error) {
       console.log(error);
       toast.error(`Error: ${error?.response?.data?.message}`);
@@ -55,9 +53,21 @@ const Login = () => {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Register
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="username"
+            name="username"
+            type="username"
+            autoComplete="username"
+            autoFocus
+            onChange={handleChange}
+          />
           <TextField
             margin="normal"
             required
@@ -82,7 +92,7 @@ const Login = () => {
             onChange={handleChange}
           />
           <Button id="login-button" type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Login
+            Register
           </Button>
         </Box>
       </Box>
@@ -90,4 +100,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

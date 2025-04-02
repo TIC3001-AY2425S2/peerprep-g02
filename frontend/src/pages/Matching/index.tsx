@@ -1,6 +1,7 @@
 import SearchIcon from '@mui/icons-material/Search';
 import { Button, Container } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
 import NavBar from '../../components/navbar';
 import { cancelMatchmaking } from '../../hooks/matching/matching';
@@ -22,12 +23,12 @@ const Matching = () => {
     const socket = io(BASE_URL, { path: '/matching/websocket' });
     // socketRef.current = socket;
     if (!socket.connected) {
-      console.log('Running connect');
+      toast.success('Running connect');
       socket.connect();
     }
 
     socket.on('connect', () => {
-      console.log('Connected to server with socket ID:', socket.id);
+      toast.success(`Connected to server with socket ID: ${socket.id}`);
     });
 
     socket.on('matchmaking status', (data) => {
@@ -46,7 +47,7 @@ const Matching = () => {
 
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
-      console.log('Running handleBeforeUnlock');
+      toast.success('Running handleBeforeUnlock');
       socket.disconnect();
     };
 
@@ -54,7 +55,7 @@ const Matching = () => {
 
     // Cleanup both the socket listeners and the interval on unmount.
     return () => {
-      console.log('Running off connect and status');
+      toast.success('Running off connect and status');
       clearInterval(intervalId);
       handleBeforeUnload();
       socket.off('connect');
@@ -69,7 +70,7 @@ const Matching = () => {
   };
 
   useEffect(() => {
-    console.log('matchStatus changed:', matchStatus, 'or countdown changed:', countdown);
+    toast.success(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
 
     // When countdown reaches 0 and we're still WAITING, set status message to processing.
     if (matchStatus === MatchingStatusEnum.WAITING && countdown === 0) {
