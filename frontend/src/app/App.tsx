@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
-import { hasAccessToken } from '../localStorage';
+import { hasAccessToken, isAdmin } from '../localStorage';
 import Login from '../pages/account/login';
 import Logout from '../pages/account/logout';
 import Register from '../pages/account/register';
@@ -28,9 +28,11 @@ const ActiveApp: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/home" element={hasAccessToken() ? <Home /> : <Navigate to="/" />} />
           <Route path="/matching" element={hasAccessToken() ? <Matching /> : <Navigate to="/" />} />
-          <Route path="/manage/question" element={hasAccessToken() ? <ManageQuestionsView /> : <Navigate to="/" />} />
+          <Route
+            path="/manage/question"
+            element={hasAccessToken() && isAdmin() ? <ManageQuestionsView /> : <Navigate to="/" />}
+          />
           {/* TODO: Add user profile management */}
-          {/* TODO: Add user logout */}
           <Route path="*" element={<Landing />} />
         </Routes>
       </div>
