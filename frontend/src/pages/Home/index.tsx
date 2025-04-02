@@ -5,12 +5,12 @@ import NavBar from '../../components/navbar';
 import { startMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { getCategoriesAndComplexities } from '../../hooks/question/question';
-import { setSessionId } from '../../localStorage';
+import { getUser, setSessionId } from '../../localStorage';
 import { QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const Home = () => {
   const { goToMatchingPage } = pageNavigation();
-
+  const userId = getUser()?.id;
   const [dropdownData, setDropdownData] = useState<QuestionCategoriesComplexitiesData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedComplexity, setSelectedComplexity] = useState('');
@@ -35,7 +35,7 @@ const Home = () => {
   const handleMatchClick = async () => {
     try {
       const data = {
-        userId: '123',
+        userId,
         category: selectedCategory,
         complexity: selectedComplexity,
       };

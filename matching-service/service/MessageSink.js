@@ -90,35 +90,6 @@ async function startDeadLetterConsumer(category) {
 }
 
 /**
- * Starts a consumer for the matched players processing.
- * We want to leave the consumers to only be responsible for matching
- * and leave the processing to another dedicated consumer.
- */
-async function startMatchedPlayersConsumer() {
-  const channel = await MessageConfig.getChannel();
-
-  const queueName = MessageConfig.MATCHED_PLAYERS_QUEUE_NAME;
-  await channel.assertQueue(queueName, MessageConfig.getMatchedPlayersQueueConfiguration());
-
-  channel.consume(
-    queueName,
-    async (message) => {
-      if (message) {
-        const messageContent = JSON.parse(message.content.toString());
-
-        const userIds = messageContent.players.map((player) => player.userId).join(', ');
-        console.log(`${new Date().toISOString()} MessageSink (Matched players): Received message for users ${userIds}`);
-
-        await MessageService.processMatchedPlayers(messageContent);
-      }
-    },
-    { noAck: true },
-  );
-
-  console.log(`${new Date().toISOString()} MessageSink: Matched players consumer listening on queue ${queueName}`);
-}
-
-/**
  * Creates and starts a consumer for queue create/delete events during question create/delete flow.
  * This queue-updates queue is declared exclusive and only 1 consumer can receive messages for it.
  * So when scaling up, we want to ensure that the other containers instantiate a consumer for it.
@@ -235,7 +206,6 @@ async function startAllConsumers() {
     startDeadLetterConsumer(category),
   ]);
 
-  consumerPromises.push(startMatchedPlayersConsumer());
   consumerPromises.push(startQueueUpdatesConsumer());
   consumerPromises.push(startCreateEventConsumer());
 

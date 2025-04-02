@@ -51,12 +51,6 @@ function getDeadLetterQueueConfiguration() {
   };
 }
 
-function getMatchedPlayersQueueConfiguration() {
-  return {
-    durable: true,
-  };
-}
-
 function getQueueUpdatesConfiguration() {
   // Set exclusive so that only 1 container gets to consume messages from this queue
   // In this way we maintain the ordering of the messages and processing of the messages.
@@ -77,7 +71,6 @@ export default {
   getQueueName,
   getQueueConfiguration,
   getDeadLetterQueueConfiguration,
-  getMatchedPlayersQueueConfiguration,
   getQueueUpdatesConfiguration,
   generateShortQueueName,
 };

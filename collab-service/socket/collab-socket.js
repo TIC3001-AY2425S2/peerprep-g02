@@ -1,16 +1,15 @@
 import { Server } from 'socket.io';
-import { getMatchStatus, getMatchTimer } from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
 
-export default function setupMatchmakingSocket(server) {
+export default function setupCollabSocket(server) {
   const io = new Server(server, {
     // Enable connection recovery.
     // https://socket.io/docs/v4/tutorial/step-6
     // https://socket.io/docs/v4/tutorial/step-9
     connectionStateRecovery: {},
-    path: '/matching/websocket',
+    path: '/collab/websocket',
   });
 
   io.on('connection', (socket) => {
@@ -24,20 +23,17 @@ export default function setupMatchmakingSocket(server) {
     // Server can receive the message listening on socket hello:
     // socket.on('hello', (arg) => console.log(arg)); // prints 'world'
 
-    console.log('MatchingSocket: A user connected');
+    console.log('CollabSocket: A user connected');
 
-    socket.on('matchmaking status', async (socketId, user) => {
+    socket.on('collab update', async (socketId, user) => {
       // console.log(`Received message from ${socketId}, content: ${JSON.stringify(user)}`);
-      const [status, timer] = await Promise.all([
-        getMatchStatus(user.userId, user.sessionId),
-        getMatchTimer(user.userId, user.sessionId),
-      ]);
+
       // console.log(`Emitting match status: ${status} and timer ${timer}`);
-      socket.emit('matchmaking status', { status, timer });
+      socket.emit('collab update', { status, timer });
     });
 
     socket.on('disconnect', async () => {
-      console.log('MatchingSocket: A user disconnected');
+      console.log('CollabSocket: A user disconnected');
     });
   });
 

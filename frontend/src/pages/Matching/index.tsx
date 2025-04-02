@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import NavBar from '../../components/navbar';
 import { cancelMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
-import { getSessionId } from '../../localStorage';
+import { getSessionId, getUser } from '../../localStorage';
 import { MatchingStatusEnum } from '../../types/matching';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
@@ -18,12 +18,13 @@ const Matching = () => {
   const [countdown, setCountdown] = useState<number | ''>('');
   const [statusMessage, setStatusMessage] = useState<string>();
   const sessionId = getSessionId();
+  const userId = getUser()?.id;
 
   useEffect(() => {
     const socket = io(BASE_URL, { path: '/matching/websocket' });
     // socketRef.current = socket;
     if (!socket.connected) {
-      toast.success('Running connect');
+      console.log('Running connect');
       socket.connect();
     }
 
@@ -40,14 +41,13 @@ const Matching = () => {
     // Set up an interval to emit status requests every second.
     const intervalId = setInterval(() => {
       if (socket.connected) {
-        // TODO: replace 123 with userId.
-        socket.emit('matchmaking status', socket.id, { userId: '123', sessionId });
+        socket.emit('matchmaking status', socket.id, { userId, sessionId });
       }
     }, 1000);
 
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
-      toast.success('Running handleBeforeUnlock');
+      console.log('Running handleBeforeUnlock');
       socket.disconnect();
     };
 
@@ -55,7 +55,7 @@ const Matching = () => {
 
     // Cleanup both the socket listeners and the interval on unmount.
     return () => {
-      toast.success('Running off connect and status');
+      console.log('Running off connect and status');
       clearInterval(intervalId);
       handleBeforeUnload();
       socket.off('connect');
@@ -65,12 +65,12 @@ const Matching = () => {
   }, []);
 
   const handleMatchCancelled = async () => {
-    await cancelMatchmaking({ userId: '123', sessionId });
+    await cancelMatchmaking({ userId, sessionId });
     goToHomePage();
   };
 
   useEffect(() => {
-    toast.success(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
+    console.log(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
 
     // When countdown reaches 0 and we're still WAITING, set status message to processing.
     if (matchStatus === MatchingStatusEnum.WAITING && countdown === 0) {

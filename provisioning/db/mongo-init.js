@@ -1,12 +1,29 @@
 db = db.getSiblingDB('peerprep-g02');
 
 db.createCollection('usermodels');
-// email: email@domain.com, password: adminuser
+// Seed in some admin users for testing
 db.usermodels.insertMany([
+    // email: email@domain.com, password: adminuser
     {
         username: "adminuser",
         email: "email@domain.com",
         password: "$2b$10$0Pjjg1JWlOUVhX5LKzLEyOEe7oyY8yh4jVyDLn2EPWryMSwOQkegu",
+        isAdmin: true,
+        createdAt: new Date(),
+    },
+    // email: admin, password: admin
+    {
+        username: "admin",
+        email: "admin",
+        password: "$2b$10$3p5dLNff76R5LzctNTwM8.2qi4mdm0r4kudCSvQ.lEg1YyF6DGiTG",
+        isAdmin: true,
+        createdAt: new Date(),
+    },
+    // email: admin1, password: admin
+    {
+        username: "admin1",
+        email: "admin1",
+        password: "$2b$10$3p5dLNff76R5LzctNTwM8.2qi4mdm0r4kudCSvQ.lEg1YyF6DGiTG",
         isAdmin: true,
         createdAt: new Date(),
     }

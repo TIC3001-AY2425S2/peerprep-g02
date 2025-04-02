@@ -4,11 +4,11 @@ import pageNavigation from '../../../hooks/navigation/pageNavigation';
 import { logout } from '../../../localStorage';
 
 const Logout = (): any => {
-  const { goToHomePage } = pageNavigation();
+  const { goToLandingPage } = pageNavigation();
 
   useEffect(() => {
     logout();
-    goToHomePage();
+    goToLandingPage();
     toast.success('Successfully logged out.');
   }, []);
 

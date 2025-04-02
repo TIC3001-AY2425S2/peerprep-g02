@@ -7,7 +7,6 @@ import {
 } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageSource from './MessageSource.js';
-import QuestionServiceApiProvider from './QuestionServiceApiProvider.js';
 
 /**
  * Creates a message processor for a given valid window and name.
@@ -144,17 +143,7 @@ function createDeadLetterProcessor() {
   return createMessageProcessor(MessageConfig.DEAD_LETTER_QUEUE_TIMEOUT * 1000, 'dead-letter');
 }
 
-async function processMatchedPlayers(message) {
-  // TODO: Maybe park this in collaboration service to offload queue processing.
-  const firstPlayer = message.players[0];
-  const question = await QuestionServiceApiProvider.getRandomQuestion(firstPlayer.category, firstPlayer.complexity);
-
-  console.log('Sending both players to collaboration service');
-  // await for collaboration service to be done then set the matched status.
-}
-
 export default {
   createNormalProcessor,
   createDeadLetterProcessor,
-  processMatchedPlayers,
 };
