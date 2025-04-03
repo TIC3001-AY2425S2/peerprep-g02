@@ -12,6 +12,10 @@ async function createCollab(user1, user2, questionId) {
   return new CollabModel({ code: '', user1, user2, questionId, status: true }).save();
 }
 
+async function updateCollab(collabId, ydoc) {
+  await CollabModel.findByIdAndUpdate(collabId, { code: ydoc });
+}
+
 async function getActiveCollab(userId) {
   return CollabModel.findOne({
     status: true,

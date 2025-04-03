@@ -1,4 +1,6 @@
 import { Server } from 'socket.io';
+import * as Y from 'yjs';
+import RedisRepository from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
@@ -12,30 +14,54 @@ export default function setupCollabSocket(server) {
     path: '/collab/websocket',
   });
 
-  io.on('connection', (socket) => {
-    // Socket.io (WebSocket) is event driven and essentially expects a call from frontend like so:
-    // socket.emit('chat message', input.value); then from here we'll handle it by doing
-    // socket.on('chat message', (message) => ..... and so on.
-    // So to say we can change 'chat message' to be something else for different kinds of response.
-    // Kinda like a "controller" or entry point.
-    // Another example:
-    // Client emits a message world on socket hello: socket.emit('hello', 'world');
-    // Server can receive the message listening on socket hello:
-    // socket.on('hello', (arg) => console.log(arg)); // prints 'world'
+  io.on('connection', async (socket) => {
+    // Here we use redis to store a ydoc which contains all the code stuff.
+    // When user disconnects then we save the ydoc into Collab model.
+    // This has the advantage of fast read/writes using redis and prevents
+    // overloading the database with write calls.
 
-    console.log('CollabSocket: A user connected');
+    console.log('CollabSocket: A user connected')
+    const room = socket.handshake.query.room
+    socket.join(room)
 
-    socket.on('collab update', async (socketId, user) => {
-      // console.log(`Received message from ${socketId}, content: ${JSON.stringify(user)}`);
 
-      // console.log(`Emitting match status: ${status} and timer ${timer}`);
-      socket.emit('collab update', { status, timer });
+    const ydoc = new Y.Doc();
+
+    // Try to load an existing ydoc from Redis
+    const encodedYdoc = await RedisRepository.getCollabYdoc(room);
+    if (encodedYdoc) {
+      const encodedYdocBuffer = Buffer.from(encodedYdoc, 'base64');
+      Y.applyUpdate(ydoc, new Uint8Array(encodedYdocBuffer))
+    } else {
+      // If no state exists, save initial empty ydoc to Redis
+      const initialYdoc = Y.encodeStateAsUpdate(ydoc);
+      const encodedInitialYdoc = Buffer.from(initialYdoc).toString('base64');
+      await RedisRepository.setCollabYdoc(room, encodedInitialYdoc);
+    }
+
+    // Send the initial ydoc to the connected client
+    socket.emit('yjs update', Y.encodeStateAsUpdate(ydoc));
+
+    // Listen for updates from this client
+    socket.on('yjs update', async (update) => {
+      // Apply the incoming update to the Y.Doc
+      Y.applyUpdate(ydoc, update);
+      // Broadcast the update to other clients in the room
+      socket.to(room).emit('yjs update', update);
+      // Persist the updated Y.Doc state to Redis
+      const newYdocUpdate = Y.encodeStateAsUpdate(ydoc);
+      const encodedNewYdocUpdate = Buffer.from(newYdocUpdate).toString('base64');
+      await RedisRepository.setCollabYdoc(room, encodedNewYdocUpdate);
     });
 
     socket.on('disconnect', async () => {
       console.log('CollabSocket: A user disconnected');
+      const encodedYdoc = Y.encodeStateAsUpdate(ydoc);
+      const encodedYdocBuffer = Buffer.from(encodedYdoc).toString('base64');
+      await RedisRepository.getCollabYdoc(room, encodedYdocBuffer);
+      console.log(`Saved ydoc to Collab model for ${room}`);
     });
-  });
+  })
 
-  return io;
+  return io
 }
