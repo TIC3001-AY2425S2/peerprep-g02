@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { connect } from 'mongoose';
 import CollabModel from './collab-model.js';
 
-export async function connectToDB() {
+async function connectToDB() {
   const mongoDBUri = process.env.ENV === 'PROD' ? process.env.DB_CLOUD_URI : process.env.DB_LOCAL_URI;
 
   await connect(mongoDBUri);
@@ -23,4 +23,4 @@ async function getActiveCollab(userId) {
   });
 }
 
-export default { connectToDB, createCollab, getActiveCollab };
+export default { connectToDB, createCollab, getActiveCollab, updateCollab };

@@ -6,11 +6,13 @@ export const pageNavigation = () => {
   const goToLandingPage = () => navigate('/');
   const goToHomePage = () => navigate('/home');
   const goToMatchingPage = () => navigate('/matching');
+  const goToCollabPage = () => navigate('/collab');
 
   return {
     goToLandingPage,
     goToHomePage,
     goToMatchingPage,
+    goToCollabPage,
   };
 };
 

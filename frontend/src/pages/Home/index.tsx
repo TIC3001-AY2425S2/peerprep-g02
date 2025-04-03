@@ -2,15 +2,16 @@ import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Typo
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useEffect, useMemo, useState } from 'react';
 import NavBar from '../../components/navbar';
+import { useAuth } from '../../context/authcontext';
 import { startMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { getCategoriesAndComplexities } from '../../hooks/question/question';
-import { getUser, setSessionId } from '../../localStorage';
 import { QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const Home = () => {
+  const { user, setSessionId } = useAuth();
   const { goToMatchingPage } = pageNavigation();
-  const userId = getUser()?.id;
+  const userId = user.id;
   const [dropdownData, setDropdownData] = useState<QuestionCategoriesComplexitiesData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedComplexity, setSelectedComplexity] = useState('');

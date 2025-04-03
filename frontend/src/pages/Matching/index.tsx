@@ -4,25 +4,25 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
 import NavBar from '../../components/navbar';
+import { useAuth } from '../../context/authcontext';
+import { getCollab } from '../../hooks/collab/collab';
 import { cancelMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
-import { getSessionId, getUser } from '../../localStorage';
 import { MatchingStatusEnum } from '../../types/matching';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 const REDIRECT_TIMEOUT = 3000; // 3 seconds countdown to redirect to homepage.
 
 const Matching = () => {
-  const { goToHomePage } = pageNavigation();
+  const { user, sessionId, setCollab } = useAuth();
+  const { goToHomePage, goToCollabPage } = pageNavigation();
   const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>(MatchingStatusEnum.WAITING);
   const [countdown, setCountdown] = useState<number | ''>('');
   const [statusMessage, setStatusMessage] = useState<string>();
-  const sessionId = getSessionId();
-  const userId = getUser()?.id;
+  const userId = user.id;
 
   useEffect(() => {
     const socket = io(BASE_URL, { path: '/matching/websocket' });
-    // socketRef.current = socket;
     if (!socket.connected) {
       console.log('Running connect');
       socket.connect();
@@ -34,6 +34,10 @@ const Matching = () => {
 
     socket.on('matchmaking status', (data) => {
       // console.log('Received matchmaking status from server: ', data);
+      // Prevent further updates when matched.
+      if (data.status === MatchingStatusEnum.MATCHED) {
+        socket.disconnect();
+      }
       setMatchStatus(data.status);
       setCountdown(data.timer);
     });
@@ -84,7 +88,12 @@ const Matching = () => {
         break;
       case MatchingStatusEnum.MATCHED:
         setStatusMessage('Match found! Redirecting...');
-        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+        // We can't set async to useEffect directly so define an async function here.
+        (async () => {
+          const collab = await getCollab({ userId });
+          setCollab(collab.collab);
+          setTimeout(() => goToCollabPage(), REDIRECT_TIMEOUT);
+        })();
         break;
       case MatchingStatusEnum.NO_MATCH:
         setStatusMessage('Match not found. Redirecting to homepage');

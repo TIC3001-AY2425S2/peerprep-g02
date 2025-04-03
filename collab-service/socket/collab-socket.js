@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import * as Y from 'yjs';
+import CollabRepository from '../model/collab-repository.js';
 import RedisRepository from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
@@ -20,10 +21,9 @@ export default function setupCollabSocket(server) {
     // This has the advantage of fast read/writes using redis and prevents
     // overloading the database with write calls.
 
-    console.log('CollabSocket: A user connected')
-    const room = socket.handshake.query.room
-    socket.join(room)
-
+    console.log('CollabSocket: A user connected');
+    const room = socket.handshake.query.room;
+    socket.join(room);
 
     const ydoc = new Y.Doc();
 
@@ -31,7 +31,7 @@ export default function setupCollabSocket(server) {
     const encodedYdoc = await RedisRepository.getCollabYdoc(room);
     if (encodedYdoc) {
       const encodedYdocBuffer = Buffer.from(encodedYdoc, 'base64');
-      Y.applyUpdate(ydoc, new Uint8Array(encodedYdocBuffer))
+      Y.applyUpdate(ydoc, new Uint8Array(encodedYdocBuffer));
     } else {
       // If no state exists, save initial empty ydoc to Redis
       const initialYdoc = Y.encodeStateAsUpdate(ydoc);
@@ -56,12 +56,11 @@ export default function setupCollabSocket(server) {
 
     socket.on('disconnect', async () => {
       console.log('CollabSocket: A user disconnected');
-      const encodedYdoc = Y.encodeStateAsUpdate(ydoc);
-      const encodedYdocBuffer = Buffer.from(encodedYdoc).toString('base64');
-      await RedisRepository.getCollabYdoc(room, encodedYdocBuffer);
+      const ydoc = await RedisRepository.getCollabYdoc(room);
+      await CollabRepository.updateCollab(room, ydoc);
       console.log(`Saved ydoc to Collab model for ${room}`);
     });
-  })
+  });
 
-  return io
+  return io;
 }

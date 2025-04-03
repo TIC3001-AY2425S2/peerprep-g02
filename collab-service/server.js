@@ -1,10 +1,8 @@
 import 'dotenv/config';
 import http from 'http';
 import index from './index.js';
-import { connectToDB } from './model/collab-repository.js';
-import MessageSink from './service/MessageSink.js';
-import setupCollabSocket from './socket/collab-socket.js';
 import Redis from './repository/redis.js';
+import setupCollabSocket from './socket/collab-socket.js';
 
 const port = process.env.PORT || 8003;
 

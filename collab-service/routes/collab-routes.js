@@ -3,6 +3,6 @@ import CollabController from '../controller/collab-controller.js';
 
 const router = express.Router();
 
-router.get('/:userId', CollabController.getCollab);
+router.get('/', CollabController.getCollab);
 
 export default router;

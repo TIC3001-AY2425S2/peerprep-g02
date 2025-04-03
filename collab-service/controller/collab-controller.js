@@ -2,7 +2,7 @@ import CollabService from '../service/CollabService.js';
 
 async function getCollab(req, res) {
   try {
-    const { userId } = req.params.userId;
+    const { userId } = req.query;
     const collab = await CollabService.getCollab(userId);
     return res.status(200).json({ message: `Retrieved collab: ${collab}`, data: { collab } });
   } catch (err) {

@@ -1,6 +1,6 @@
 import Redis from './redis.js';
 
-const COLLAB_SESSION_KEY = 'collab:';
+const COLLAB_SESSION_KEY = 'collab';
 
 async function getCollabYdoc(collabId) {
   return await Redis.client.get(`${COLLAB_SESSION_KEY}:${collabId}`);

@@ -5,13 +5,12 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
-import { getUser, hasAccessToken } from '../../localStorage';
+import { useAuth } from '../../context/authcontext';
 
 export default function NavBar() {
-  const loggedIn = hasAccessToken();
-  const user = getUser();
+  const { accessToken, isAdmin, user } = useAuth();
+  const loggedIn = accessToken;
   const title = loggedIn && user ? `Welcome ${user?.username}!` : 'Welcome!';
-  const isAdmin = user?.isAdmin;
 
   const buttons = (
     <div>

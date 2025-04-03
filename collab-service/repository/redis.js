@@ -1,10 +1,9 @@
 import 'dotenv/config';
 import { createClient } from 'redis';
+import CollabRepository from '../model/collab-repository.js';
 import MessageSink from '../service/MessageSink.js';
-import { connectToDB } from '../model/collab-repository.js';
 
 // Usage tutorial: https://github.com/redis/node-redis/tree/master/packages/redis
-
 
 const client = await createClient({
   url: process.env.REDIS_LOCAL_URL || 'redis://localhost:6379',
@@ -12,7 +11,7 @@ const client = await createClient({
 
 async function initRedis(server, port) {
   try {
-    await connectToDB();
+    await CollabRepository.connectToDB();
     console.log('MongoDB Connected!');
     await client.connect();
     console.log('Connected to Redis');
