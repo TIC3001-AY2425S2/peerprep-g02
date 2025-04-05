@@ -19,25 +19,26 @@ import { cancelMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { MatchingStatusEnum } from '../../types/matching';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
+const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:8080';
 const REDIRECT_TIMEOUT = 3000;
-const TIMEOUT = (process.env.MATCH_TIMEOUT as unknown as number) || 30;
 
 const Matching = () => {
   // State Management
   const { user, sessionId, setCollab } = useAuth();
   const { goToHomePage, goToCollabPage } = pageNavigation();
-  const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>(MatchingStatusEnum.WAITING);
+  const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum>(MatchingStatusEnum.WAITING);
   const [timer, setTimer] = useState<number>(0);
   const [dots, setDots] = useState<string>('.');
   const [showConfirm, setShowConfirm] = useState(false);
-  const [countdown, setCountdown] = useState<number | ''>('');
   const userId = user.id;
   const socketRef = useRef<Socket | null>(null);
-
+  
   // WebSocket Connection
   useEffect(() => {
-    const socket = io(BASE_URL, { path: '/matching/websocket' });
+    const socket = io(BASE_URL, { 
+      path: '/matching/websocket',
+      transports: ['websocket']
+    });
     socketRef.current = socket;
 
     const handleConnect = () => {
@@ -45,16 +46,23 @@ const Matching = () => {
       console.log('Connected:', socket.id);
     };
 
+    const handleConnectError = (err: Error) => {
+      console.error('Connection failed:', err);
+      toast.error('Failed to connect to matching service');
+    };
+
     const handleStatusUpdate = (data: { status: MatchingStatusEnum, timer: number }) => {
-      if (data.status === MatchingStatusEnum.MATCHED) {
-        socket.disconnect();
+      if (matchStatus !== MatchingStatusEnum.TIMEOUT) { // Prevent state override
+        setMatchStatus(data.status);
+        if (data.status === MatchingStatusEnum.MATCHED) {
+          socket.disconnect();
+        }
       }
-      setMatchStatus(data.status);
-      setCountdown(data.timer);
     };
 
     socket
       .on('connect', handleConnect)
+      .on('connect_error', handleConnectError)
       .on('matchmaking status', handleStatusUpdate);
 
     const pollInterval = setInterval(() => {
@@ -63,17 +71,32 @@ const Matching = () => {
       }
     }, 1000);
 
-    const handleBeforeUnload = () => socket.disconnect();
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
       clearInterval(pollInterval);
       socket.disconnect();
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       socket.off('connect', handleConnect);
+      socket.off('connect_error', handleConnectError);
       socket.off('matchmaking status', handleStatusUpdate);
     };
   }, []);
+
+  // Timeout Handling
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    
+    if (matchStatus === MatchingStatusEnum.WAITING) {
+      timeout = setTimeout(() => {
+        cancelMatchmaking({ 
+          userId, 
+          sessionId,
+          reason: 'timeout'
+        });
+        setMatchStatus(MatchingStatusEnum.TIMEOUT);
+      }, Number(process.env.MATCH_TIMEOUT || 30000));
+    }
+
+    return () => clearTimeout(timeout);
+  }, [matchStatus]);
 
   // UI Effects
   useEffect(() => {
@@ -91,10 +114,6 @@ const Matching = () => {
 
   // Status Handler
   useEffect(() => {
-    if (matchStatus === MatchingStatusEnum.WAITING && countdown === 0) {
-      return;
-    }
-
     switch (matchStatus) {
       case MatchingStatusEnum.MATCHED:
         (async () => {
@@ -104,6 +123,7 @@ const Matching = () => {
         })();
         break;
       case MatchingStatusEnum.NO_MATCH:
+      case MatchingStatusEnum.TIMEOUT:
       case MatchingStatusEnum.CANCELLED:
         setTimeout(goToHomePage, REDIRECT_TIMEOUT);
         break;
@@ -112,11 +132,16 @@ const Matching = () => {
 
   // Dialog Handlers
   const handleCancelRequest = () => setShowConfirm(true);
+  
   const handleConfirmClose = async (confirmed: boolean) => {
     setShowConfirm(false);
     if (confirmed) {
-      await cancelMatchmaking({ userId, sessionId });
-      goToHomePage();
+      await cancelMatchmaking({ 
+        userId, 
+        sessionId,
+        reason: 'cancel' // Fixed typo
+      });
+      setMatchStatus(MatchingStatusEnum.CANCELLED);
     }
   };
 
@@ -130,7 +155,6 @@ const Matching = () => {
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
-
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -146,14 +170,11 @@ const Matching = () => {
               {dots}
             </Typography>
           </Typography>
-          
           <Typography variant="h6" color="text.secondary">
             Elapsed Time: {formatTime(timer)}
           </Typography>
         </Box>
-
         <CircularProgress size={80} thickness={4} />
-
         <Button
           variant="contained"
           color="error"
@@ -163,7 +184,6 @@ const Matching = () => {
         >
           Cancel Matching
         </Button>
-
         <Dialog
           open={showConfirm}
           onClose={() => handleConfirmClose(false)}

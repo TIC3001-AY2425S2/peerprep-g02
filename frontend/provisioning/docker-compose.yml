@@ -16,7 +16,11 @@ services:
       - ./../.docker.env
     networks:
       - shared-network
+    environment:         
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
 
 networks:
   shared-network:
     name: peerprep-g02
+

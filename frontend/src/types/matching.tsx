@@ -7,6 +7,7 @@ export interface MatchingPostData {
 export interface MatchingCancelPostData {
   readonly userId: string;
   readonly sessionId: string;
+  readonly reason: string;
 }
 
 export interface MatchingResponseData<T> {
@@ -23,4 +24,5 @@ export enum MatchingStatusEnum {
   MATCHED = 'MATCHED',
   NO_MATCH = 'NO_MATCH',
   CANCELLED = 'CANCELLED',
+  TIMEOUT = 'TIMEOUT',
 }
