@@ -5,20 +5,45 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authcontext';
 
 export default function NavBar() {
-  const loggedIn = false;
-  const title = loggedIn ? `Welcome, some user!` : '';
+  const { accessToken, isAdmin, user } = useAuth();
+  const loggedIn = accessToken;
+  const title = loggedIn && user ? `Welcome ${user?.username}!` : 'Welcome!';
 
-  // TODO: Fix styling and add admin buttons
   const buttons = (
     <div>
-      {/*TODO: Change this out to / after doing user login */}
+      <Button variant="outlined" component={Link} to="/login" sx={{ my: 1, mx: 1.5 }}>
+        Sign In
+      </Button>
+      <Button variant="outlined" component={Link} to="/register" sx={{ my: 1, mx: 1.5 }}>
+        Register
+      </Button>
+    </div>
+  );
+
+  const userButtons = (
+    <div>
+      <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
+        Match
+      </Button>
+      <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
+        Log out
+      </Button>
+    </div>
+  );
+
+  const adminButtons = (
+    <div>
       <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
         Match
       </Button>
       <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
         Manage Questions
+      </Button>
+      <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
+        Log out
       </Button>
     </div>
   );
@@ -45,9 +70,11 @@ export default function NavBar() {
             noWrap
             sx={{ flexGrow: 1, textAlign: 'left', cursor: 'pointer' }}
           >
-            PeerPrep Hub {title}
+            PeerPrep Hub | {title}
           </Typography>
-          {buttons}
+          {!loggedIn && buttons}
+          {loggedIn && !isAdmin && userButtons}
+          {isAdmin && adminButtons}
         </Toolbar>
       </AppBar>
     </Container>

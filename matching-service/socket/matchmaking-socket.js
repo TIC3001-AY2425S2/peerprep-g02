@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { getMatchStatus } from '../repository/redis-repository.js';
+import { getMatchStatus, getMatchTimer } from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
@@ -24,16 +24,20 @@ export default function setupMatchmakingSocket(server) {
     // Server can receive the message listening on socket hello:
     // socket.on('hello', (arg) => console.log(arg)); // prints 'world'
 
-    console.log('A user connected');
+    console.log('MatchingSocket: A user connected');
 
-    socket.on('matchmaking status', async (socketId, userId) => {
-      // console.log(`Received message from ${socketId}, content: ${userId}`);
-      const status = await getMatchStatus(userId);
-      socket.emit('matchmaking status', status);
+    socket.on('matchmaking status', async (socketId, user) => {
+      // console.log(`Received message from ${socketId}, content: ${JSON.stringify(user)}`);
+      const [status, timer] = await Promise.all([
+        getMatchStatus(user.userId, user.sessionId),
+        getMatchTimer(user.userId, user.sessionId),
+      ]);
+      // console.log(`Emitting match status: ${status} and timer ${timer}`);
+      socket.emit('matchmaking status', { status, timer });
     });
 
     socket.on('disconnect', async () => {
-      console.log('A user disconnected');
+      console.log('MatchingSocket: A user disconnected');
     });
   });
 

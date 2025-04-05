@@ -1,15 +1,34 @@
+import 'dotenv/config';
 import { createClient } from 'redis';
+import MessageSink from '../service/MessageSink.js';
 
 // Usage tutorial: https://github.com/redis/node-redis/tree/master/packages/redis
 
-const redisClient = await createClient({
+let subscriberInstance = null;
+
+const client = await createClient({
   url: process.env.REDIS_LOCAL_URL || 'redis://localhost:6379',
 });
 
-// Must have this otherwise if an error occurs and nothing is there to catch it, the entire app goes down.
-// Maybe we want it to crash if connection to redis is lost?
-// redisClient.on('error', (err) => {
-//   console.error('Redis Client Error: ', err);
-// });
+async function initRedis(server, port) {
+  try {
+    await client.connect();
+    console.log('Connected to Redis');
+    await client.configSet('notify-keyspace-events', 'Ex');
+    subscriberInstance = await client.duplicate();
+    await subscriberInstance.connect();
+    await MessageSink.startAllConsumers();
+    server.listen(port);
+    console.log('Matching service server listening on http://localhost:' + port);
+  } catch (err) {
+    console.error('Could not connect to Redis:', err);
+  }
+}
 
-export default redisClient;
+export default {
+  client,
+  get subscriber() {
+    return subscriberInstance;
+  },
+  initRedis,
+};

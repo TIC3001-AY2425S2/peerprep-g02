@@ -8,11 +8,11 @@ import MessageConfig from './MessageConfig.js';
 /**
  * Publishes a message to the appropriate category-complexity queue.
  */
-async function sendCategoryComplexityMessage({ userId, category, complexity, enqueueTime }) {
+async function sendCategoryComplexityMessage({ userId, sessionId, category, complexity, enqueueTime }) {
   const queueName = MessageConfig.getQueueName(category, complexity);
   const channel = await MessageConfig.getChannel();
 
-  const message = { userId, category, complexity, enqueueTime };
+  const message = { userId, sessionId, category, complexity, enqueueTime };
   const messageBuffer = Buffer.from(JSON.stringify(message));
   channel.publish(MessageConfig.EXCHANGE, queueName, messageBuffer);
 

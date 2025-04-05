@@ -2,19 +2,24 @@ import { Box, Button, Container, FormControl, InputLabel, MenuItem, Paper, Selec
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useEffect, useMemo, useState } from 'react';
 import NavBar from '../../components/navbar';
+import { useAuth } from '../../context/authcontext';
 import { startMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { getCategoriesAndComplexities } from '../../hooks/question/question';
 import { QuestionCategoriesComplexitiesData } from '../../types/questions';
 
 const Home = () => {
+  const { user, setSessionId } = useAuth();
   const { goToMatchingPage } = pageNavigation();
+  const userId = user.id;
   const [dropdownData, setDropdownData] = useState<QuestionCategoriesComplexitiesData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedComplexity, setSelectedComplexity] = useState('');
 
-  // Data processing logic
+  // Process categories from API data
   const categories = useMemo(() => dropdownData.map((item) => item.category), [dropdownData]);
+  
+  // Filter complexities based on selected category
   const filteredComplexities = useMemo(() => (
     selectedCategory 
       ? dropdownData.find(item => item.category === selectedCategory)?.complexities || []
@@ -38,11 +43,14 @@ const Home = () => {
 
   const handleMatchClick = async () => {
     try {
-      await startMatchmaking({
-        userId: '123',
+      const data = {
+        userId,
         category: selectedCategory,
-        complexity: selectedComplexity
-      });
+        complexity: selectedComplexity,
+      };
+
+      const { sessionId } = await startMatchmaking(data);
+      setSessionId(sessionId);
       goToMatchingPage();
     } catch (error) {
       console.error('Match request failed:', error);
@@ -51,10 +59,8 @@ const Home = () => {
 
   return (
     <Container disableGutters component="main" maxWidth={false}>
-      {/* Navigation Bar */}
       <NavBar />
 
-      {/* Main Content Container */}
       <Box
         sx={{
           display: 'flex',
@@ -64,42 +70,44 @@ const Home = () => {
           backgroundColor: '#f0f2f5',
         }}
       >
-        {/* Central Gray Box (50vw x 35vh) */}
         <Paper
           sx={{
             width: '50vw',
             height: '35vh',
-            bgcolor: 'grey.100',
+            backgroundColor: '#ffffff',
             borderRadius: 2,
             p: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem',
           }}
         >
-          {/* Title Section (Top 30% of gray box) */}
+          {/* Header Section */}
           <Box
             sx={{
               height: '30%',
               display: 'flex',
               alignItems: 'center',
-              pl: '5%',
+              justifyContent: 'center',
               borderBottom: 1,
               borderColor: 'divider'
             }}
           >
-            <Typography variant="h4">Start Matching</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+              Start Matching
+            </Typography>
           </Box>
 
-          {/* Form Section (Bottom 70% of gray box) */}
+          {/* Form Section */}
           <Box
             sx={{
-              height: '70%',
+              flex: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               px: '5%',
-              py: '15%',
             }}
           >
-            {/* Category Dropdown (30% width) */}
             <FormControl sx={{ flex: '0 0 30%' }}>
               <InputLabel>Category</InputLabel>
               <Select
@@ -115,10 +123,8 @@ const Home = () => {
               </Select>
             </FormControl>
 
-            {/* Spacer (5% width) */}
             <Box sx={{ flex: '0 0 5%' }} />
 
-            {/* Complexity Dropdown (30% width) */}
             <FormControl sx={{ flex: '0 0 30%' }} disabled={!selectedCategory}>
               <InputLabel>Complexity</InputLabel>
               <Select
@@ -134,10 +140,8 @@ const Home = () => {
               </Select>
             </FormControl>
 
-            {/* Spacer (5% width) */}
             <Box sx={{ flex: '0 0 5%' }} />
 
-            {/* Match Button (20% width) */}
             <Button
               variant="contained"
               sx={{ 

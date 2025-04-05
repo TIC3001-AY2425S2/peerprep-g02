@@ -4,6 +4,20 @@ export interface MatchingPostData {
   readonly complexity: string;
 }
 
+export interface MatchingCancelPostData {
+  readonly userId: string;
+  readonly sessionId: string;
+}
+
+export interface MatchingResponseData<T> {
+  message: string;
+  data: T;
+}
+
+export interface MatchingSessionData {
+  readonly sessionId: string;
+}
+
 export enum MatchingStatusEnum {
   WAITING = 'WAITING',
   MATCHED = 'MATCHED',
