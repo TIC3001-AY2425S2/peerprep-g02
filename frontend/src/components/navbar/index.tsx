@@ -25,9 +25,10 @@ export default function NavBar() {
 
   const userButtons = (
     <div>
-    <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
-      Question
-    </Button>
+    <Button variant="outlined" component={Link} to="/question" sx={{ my: 1, mx: 1.5 }}>
+    Question
+   </Button>
+
     <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
       Match
     </Button>
@@ -42,9 +43,10 @@ export default function NavBar() {
 
   const adminButtons = (
     <div>
-    <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
-      Question
-    </Button>
+    <Button variant="outlined" component={Link} to="/question" sx={{ my: 1, mx: 1.5 }}>
+    Question
+   </Button>
+
     <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
       Match
     </Button>

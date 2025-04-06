@@ -14,6 +14,7 @@ import Landing from '../pages/Landing';
 import Matching from '../pages/Matching';
 import ManageQuestionsView from '../pages/Question/Manage';
 import Profile from '../pages/account/profile';
+import QuestionPage from '../pages/Question';
 import './App.css';
 
 const ActiveApp: React.FC = () => {
@@ -29,6 +30,8 @@ const ActiveApp: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/question" element={accessToken ? <QuestionPage /> : <Navigate to="/" />} />
+
           <Route path="/home" element={accessToken ? <Home /> : <Navigate to="/" />} />
           <Route path="/matching" element={accessToken ? <Matching /> : <Navigate to="/" />} />
           <Route path="/collab" element={accessToken && hasCollab ? <Collab /> : <Navigate to="/" />} />
