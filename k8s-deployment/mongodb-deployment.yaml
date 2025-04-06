@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongodb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: mongodb
+    spec:
+      containers:
+        - args:
+            - mongod
+            - --config
+            - /etc/mongo/mongod.conf
+          env:
+            - name: MONGO_INITDB_DATABASE
+              value: peerprep-g02
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: password
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+            - name: GLIBC_TUNABLES
+              value: "glibc.pthread.rseq=0"
+          image: mongo:8.0.4
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 45  # Increased to allow for initialization
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: mongodb
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d/mongo-init.js
+              name: mongodb-cm0
+              readOnly: true
+              subPath: mongo-init.js
+            - mountPath: /etc/mongo/mongod.conf
+              name: mongodb-cm1
+              readOnly: true
+              subPath: mongod.conf
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: mongo-init.js
+                path: mongo-init.js
+            name: mongodb-cm0
+          name: mongodb-cm0
+        - configMap:
+            items:
+              - key: mongod.conf
+                path: mongod.conf
+            name: mongodb-cm1
+          name: mongodb-cm1

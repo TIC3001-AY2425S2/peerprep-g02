@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  DB_CLOUD_URI: <CONNECTION_STRING>
+  DB_LOCAL_URI: mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+  ENV: LOCAL
+  JWT_SECRET: you-can-replace-this-with-your-own-secret
+  PORT: "8001"
+  REDIS_LOCAL_URL: redis://redis:6379
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: question-service-question-service-docker-env
+  name: question-service-docker-env

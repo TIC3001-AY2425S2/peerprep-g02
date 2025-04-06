@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  DB_CLOUD_URI: <CONNECTION_STRING>
+  DB_LOCAL_URI: mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+  ENV: LOCAL
+  JWT_SECRET: you-can-replace-this-with-your-own-secret
+  PORT: "8003"
+  QUESTION_SVC_GATEWAY_URL: http://nginx-gateway:8080/questions
+  RABBITMQ_LOCAL_URI: amqp://admin:password@rabbitmq:5672
+  REDIS_LOCAL_URL: redis://redis:6379
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: collab-service-collab-service-docker-env
+  name: collab-service-docker-env

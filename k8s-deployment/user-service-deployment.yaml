@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: user-service
+  name: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: user-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: user-service
+    spec:
+      containers:
+        - env:
+            - name: DB_CLOUD_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_CLOUD_URI
+                  name: user-service-docker-env
+            - name: DB_LOCAL_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_LOCAL_URI
+                  name: user-service-docker-env
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  key: ENV
+                  name: user-service-docker-env
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: JWT_SECRET
+                  name: user-service-docker-env
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: PORT
+                  name: user-service-docker-env
+          image: user-service
+          imagePullPolicy: Never
+          livenessProbe:
+            exec:
+              command:
+                - "wget"
+                - "-q"
+                - "--spider"
+                - "http://localhost:8000/health"
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 10
+          name: user-service
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+      restartPolicy: Always
