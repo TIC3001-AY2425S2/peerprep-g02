@@ -25,26 +25,35 @@ export default function NavBar() {
 
   const userButtons = (
     <div>
-      <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
-        Match
-      </Button>
-      <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
-        Log out
-      </Button>
+    <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
+      Question
+    </Button>
+    <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
+      Match
+    </Button>
+    <Button variant="outlined" component={Link} to="/profile" sx={{ my: 1, mx: 1.5 }}>
+      Profile
+    </Button>
+    <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
+      Log out
+    </Button>
     </div>
   );
 
   const adminButtons = (
     <div>
-      <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
-        Match
-      </Button>
-      <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
-        Manage Questions
-      </Button>
-      <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
-        Log out
-      </Button>
+    <Button variant="outlined" component={Link} to="/manage/question" sx={{ my: 1, mx: 1.5 }}>
+      Question
+    </Button>
+    <Button variant="outlined" component={Link} to="/home" sx={{ my: 1, mx: 1.5 }}>
+      Match
+    </Button>
+    <Button variant="outlined" component={Link} to="/profile" sx={{ my: 1, mx: 1.5 }}>
+      Profile
+    </Button>
+    <Button variant="outlined" component={Link} to="/logout" sx={{ my: 1, mx: 1.5 }}>
+      Log out
+    </Button>
     </div>
   );
 

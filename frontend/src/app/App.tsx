@@ -13,6 +13,7 @@ import Home from '../pages/Home';
 import Landing from '../pages/Landing';
 import Matching from '../pages/Matching';
 import ManageQuestionsView from '../pages/Question/Manage';
+import Profile from '../pages/account/profile';
 import './App.css';
 
 const ActiveApp: React.FC = () => {
@@ -31,6 +32,7 @@ const ActiveApp: React.FC = () => {
           <Route path="/home" element={accessToken ? <Home /> : <Navigate to="/" />} />
           <Route path="/matching" element={accessToken ? <Matching /> : <Navigate to="/" />} />
           <Route path="/collab" element={accessToken && hasCollab ? <Collab /> : <Navigate to="/" />} />
+          <Route path="/profile" element={accessToken ? <Profile /> : <Navigate to="/" />} />
           <Route
             path="/manage/question"
             element={accessToken && isAdmin ? <ManageQuestionsView /> : <Navigate to="/" />}

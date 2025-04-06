@@ -7,7 +7,7 @@ export interface MatchingPostData {
 export interface MatchingCancelPostData {
   readonly userId: string;
   readonly sessionId: string;
-  readonly reason: string;
+  reason: string;
 }
 
 export interface MatchingResponseData<T> {

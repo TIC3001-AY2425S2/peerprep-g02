@@ -19,7 +19,7 @@ import { cancelMatchmaking } from '../../hooks/matching/matching';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { MatchingStatusEnum } from '../../types/matching';
 
-const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:8080';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 const REDIRECT_TIMEOUT = 3000;
 
 const Matching = () => {
