@@ -52,7 +52,6 @@ async function deleteQuestion(questionId) {
   // const session = await mongoose.startSession();
   // await session.startTransaction();
 
-  // If any error occurs during the question creation, no question is created.
   try {
     // Category is an array of values.
 
@@ -86,6 +85,49 @@ async function deleteQuestion(questionId) {
   }
 }
 
+async function editQuestion(questionId, title,  description, category, complexity) {
+  if (!isValidObjectId(questionId)) {
+    throw new Error(`Question ${questionId} not found`);
+  }
+
+  const question = await QuestionRepository.findQuestionById(questionId);
+
+  try {
+    // check if new queues should be created
+    await sendQueueUpdate('create', category, complexity);
+
+    // check if existing queues should be deleted
+    const originalCategories = question.category;
+    const removedCategories = originalCategories.filter(element => !category.includes(element));
+    const categoriesToDelete = (
+      await Promise.all(
+        removedCategories.map(async (category) => {
+          const isLast = await QuestionRepository.isLastCategoryComplexity(category, question.complexity);
+          return isLast ? category : null;
+        }),
+      )
+    ).filter(Boolean);
+
+    // If there are any categories and complexities to delete, delete from redis and send a single delete update with the array.
+    if (categoriesToDelete.length > 0) {
+      await Promise.all(
+        categoriesToDelete.map((category) =>
+          RedisQuestionRepository.removeDistinctCategoryComplexity(category, question.complexity),
+        ),
+      );
+      await sendQueueUpdate('delete', categoriesToDelete, question.complexity);
+    }
+
+    // update question
+    const editedQuestion =
+        await QuestionRepository.updateQuestionById(questionId, title, description, category, complexity);
+
+    return editedQuestion;
+  } catch (err) {
+    throw err;
+  }
+}
+
 async function populateDistinctCategoryComplexity() {
   try {
     const categoryComplexityList = await findDistinctCategoryAndComplexity();
@@ -100,4 +142,4 @@ async function populateDistinctCategoryComplexity() {
   }
 }
 
-export default { createQuestion, deleteQuestion, populateDistinctCategoryComplexity };
+export default { createQuestion, deleteQuestion, editQuestion, populateDistinctCategoryComplexity };

@@ -104,17 +104,22 @@ export async function updateQuestion(req, res) {
   try {
     const { title, description, category, complexity } = req.body;
     const questionId = req.params.id;
-    if (!isValidObjectId(questionId)) {
-      return res.status(404).json({ message: `Question ${questionId} not found` });
-    }
 
     // only update the fields that are provided
-    const updatedQuestion = await _updateQuestionById(questionId, title, description, category, complexity);
+    const updatedQuestion = await QuestionService.editQuestion(questionId, title, description, category, complexity);
     return res.status(200).json({ message: `Updated question ${questionId} successfully`, data: updatedQuestion });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Unknown error when updating question!' });
+    if (
+      err.message === 'Error in rabbitmq create queue' ||
+      err.message === 'Error in redis create category complexity set entry'
+    ){
+      res.status(500).json({ message: err.message });
+    } else {
+      res.status(500).json({ message: 'Unknown error when updating question!' });
+    }
   }
+  return res;
 }
 
 export async function deleteQuestion(req, res) {
