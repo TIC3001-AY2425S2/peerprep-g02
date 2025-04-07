@@ -25,7 +25,7 @@ Add the following entries to your system's `hosts` file to map local addresses f
 minikube addons enable metrics-server
 minikube addons enable dashboard
 ```
-3. Deploy the containers `kubectl apply -f k8s-deployment/*`
+3. Deploy the containers `kubectl apply -f k8s-deployment`
 4. Validate all pods are running `kubectl get pods`
 5. Port forward frontend service and nginx service
 ```
