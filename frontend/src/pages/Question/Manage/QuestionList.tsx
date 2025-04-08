@@ -2,7 +2,7 @@
 import StarIcon from '@mui/icons-material/Star';
 import { ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import { Question } from '../../types/questions';
+import { Question } from '../../../types/questions';
 
 interface QuestionListProps {
   questions: Question[];

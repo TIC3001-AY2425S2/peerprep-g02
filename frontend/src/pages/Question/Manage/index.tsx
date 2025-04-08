@@ -12,23 +12,15 @@ const ManageQuestionsView = () => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  // Load questions on component mount
   useEffect(() => {
     getQuestion()
       .then((data: Question[]) => setQuestions(data))
       .catch((err) => console.error('Error fetching questions:', err));
   }, []);
 
-  // Handler when a new question is added
   const handleQuestionAdded = (newQuestion: Question) => {
     setQuestions((prev) => [...prev, newQuestion]);
     setSelectedQuestion(newQuestion);
-  };
-
-  // Handler when a question is updated
-  const handleQuestionUpdated = (updatedQuestion: Question) => {
-    setQuestions((prev) => prev.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q)));
-    setSelectedQuestion(updatedQuestion);
   };
 
   const handleQuestionDeleted = (deletedQuestion: Question) => {
@@ -36,7 +28,6 @@ const ManageQuestionsView = () => {
     setSelectedQuestion(null);
   };
 
-  // Calculate paginated questions
   const paginatedQuestions = questions.slice((page - 1) * pageSize, page * pageSize);
 
   return (
@@ -51,11 +42,11 @@ const ManageQuestionsView = () => {
           height: 'calc(100vh - 128px)',
         }}
       >
-        {/* left container */}
         <Paper
           sx={{
             width: '30%',
-            height: '100%',
+            height: 'auto',
+            minHeight: '700px',
             p: 2,
             display: 'flex',
             flexDirection: 'column',
@@ -84,7 +75,6 @@ const ManageQuestionsView = () => {
             />
           </Box>
 
-          {/* page component */}
           <Box
             sx={{
               pt: 2,
@@ -103,11 +93,11 @@ const ManageQuestionsView = () => {
           </Box>
         </Paper>
 
-        {/* right container */}
         <Box
           sx={{
             width: '67%',
             height: '100%',
+            minHeight: '700px',
             p: 3,
             bgcolor: 'background.paper',
             boxShadow: 3,
@@ -115,7 +105,7 @@ const ManageQuestionsView = () => {
           }}
         >
           <QuestionForm
-            onSubmit={selectedQuestion ? handleQuestionUpdated : handleQuestionAdded}
+            onSubmit={handleQuestionAdded}
             onDelete={handleQuestionDeleted}
             initialData={selectedQuestion || undefined}
           />

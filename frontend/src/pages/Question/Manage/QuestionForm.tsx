@@ -43,27 +43,17 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (initialData) return;
     try {
-      if (initialData) {
-        const payload = {
-          ...formData,
-          category: formData.category.split(',').map((cat) => cat.trim()),
-          _id: initialData._id,
-        };
-        await updateQuestion(payload);
-        toast.success(`Question updated successfully`);
-        onSubmit(payload);
-      } else {
-        const payload = {
-          ...formData,
-          category: formData.category.split(',').map((cat) => cat.trim()),
-        };
-        await createQuestion(payload);
-        const question = await getQuestionByTitle(payload.title);
-        payload._id = question._id;
-        toast.success(`Question created successfully`);
-        onSubmit(payload);
-      }
+      const payload = {
+        ...formData,
+        category: formData.category.split(',').map((cat) => cat.trim()),
+      };
+      await createQuestion(payload);
+      const question = await getQuestionByTitle(payload.title);
+      payload._id = question._id;
+      toast.success(`Question created successfully`);
+      onSubmit(payload);
     } catch (error) {
       toast.error(`Error creating question: ${error.response?.data?.message}`);
     }
@@ -89,7 +79,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       <Typography component="h1" variant="h5" align="center">
-        {initialData ? 'Edit Question' : 'Add Question'}
+        {initialData ? 'Question Details' : 'Add Question'}
       </Typography>
       <TextField
         margin="normal"
@@ -101,6 +91,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.title}
+        disabled={!!initialData}
       />
       <TextField
         margin="normal"
@@ -115,6 +106,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.description}
+        disabled={!!initialData}
         sx={{
           '& .MuiInputBase-root': {
             overflow: 'auto',
@@ -132,6 +124,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.category}
+        disabled={!!initialData}
       />
       <FormControl fullWidth required margin="normal">
         <InputLabel id="complexity-label">Complexity</InputLabel>
@@ -142,6 +135,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           label="Complexity"
           value={formData.complexity}
           onChange={handleSelectChange}
+          disabled={!!initialData}
         >
           <MenuItem value="easy">Easy</MenuItem>
           <MenuItem value="medium">Medium</MenuItem>
@@ -157,17 +151,19 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           mb: 2,
         }}
       >
-        <Button
-          type="submit"
-          variant="contained"
-          sx={{
-            width: '20%',
-            minWidth: 120,
-            flexShrink: 0,
-          }}
-        >
-          {initialData ? 'Update' : 'Create'}
-        </Button>
+        {!initialData && (
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              width: '20%',
+              minWidth: 120,
+              flexShrink: 0,
+            }}
+          >
+            Create
+          </Button>
+        )}
 
         {initialData && (
           <Button

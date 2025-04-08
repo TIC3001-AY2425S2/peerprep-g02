@@ -6,6 +6,17 @@ services:
     container_name: user-service
     ports:
       - "8000:8000"
+    volumes:
+      - ./../controller:/app/controller       
+      - ./../routes:/app/routes                
+      - ./../model:/app/model                  
+      - ./../middleware:/app/middleware       
+      - ./../index.js:/app/index.js            
+      - ./../server.js:/app/server.js          
+    
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
     env_file:
       - ./../.docker.env
     healthcheck:

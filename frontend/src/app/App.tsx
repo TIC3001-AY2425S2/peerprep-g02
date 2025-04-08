@@ -14,7 +14,7 @@ import Landing from '../pages/Landing';
 import Matching from '../pages/Matching';
 import ManageQuestionsView from '../pages/Question/Manage';
 import Profile from '../pages/account/profile';
-import QuestionPage from '../pages/Question';
+import QuestionPage from '../pages/Question/Manage';
 import './App.css';
 
 const ActiveApp: React.FC = () => {
