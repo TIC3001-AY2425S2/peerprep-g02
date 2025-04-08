@@ -16,11 +16,7 @@ export const startMatchmaking = async (data: MatchingPostData): Promise<Matching
 export const cancelMatchmaking = async (data: MatchingCancelPostData): Promise<void> => {
   try {
     await api.matching.cancel(data);
-    if(data.reason === 'timeout') {
-      toast.error('Matchmaking timed out. Please try again.');
-    }else{
       toast.error('Matchmaking cancelled.');
-    }
   } catch (error) {
     console.error('Error creating question: ', error);
     throw error;

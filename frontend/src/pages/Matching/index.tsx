@@ -30,6 +30,7 @@ const Matching = () => {
   const [timer, setTimer] = useState<number>(0);
   const [dots, setDots] = useState<string>('.');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showTimeoutDialog, setShowTimeoutDialog] = useState(false);
   const userId = user.id;
   const socketRef = useRef<Socket | null>(null);
   
@@ -52,11 +53,9 @@ const Matching = () => {
     };
 
     const handleStatusUpdate = (data: { status: MatchingStatusEnum, timer: number }) => {
-      if (matchStatus !== MatchingStatusEnum.TIMEOUT) { // Prevent state override
-        setMatchStatus(data.status);
-        if (data.status === MatchingStatusEnum.MATCHED) {
-          socket.disconnect();
-        }
+      setMatchStatus(data.status);
+      if (data.status === MatchingStatusEnum.MATCHED) {
+        socket.disconnect();
       }
     };
 
@@ -88,10 +87,9 @@ const Matching = () => {
       timeout = setTimeout(() => {
         cancelMatchmaking({ 
           userId, 
-          sessionId,
-          reason: 'timeout'
+          sessionId
         });
-        setMatchStatus(MatchingStatusEnum.TIMEOUT);
+        setShowTimeoutDialog(true);
       }, Number(process.env.MATCH_TIMEOUT || 30000));
     }
 
@@ -123,7 +121,6 @@ const Matching = () => {
         })();
         break;
       case MatchingStatusEnum.NO_MATCH:
-      case MatchingStatusEnum.TIMEOUT:
       case MatchingStatusEnum.CANCELLED:
         setTimeout(goToHomePage, REDIRECT_TIMEOUT);
         break;
@@ -138,8 +135,7 @@ const Matching = () => {
     if (confirmed) {
       await cancelMatchmaking({ 
         userId, 
-        sessionId,
-        reason: 'cancel' // Fixed typo
+        sessionId
       });
       setMatchStatus(MatchingStatusEnum.CANCELLED);
     }
@@ -152,67 +148,98 @@ const Matching = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  function handleTimeoutConfirm(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    // Close the timeout dialog and navigate the user back to the home page
+    setShowTimeoutDialog(false);
+    goToHomePage();
+  }
+
   return (
-    <Container disableGutters component="main" maxWidth={false}>
-      <NavBar />
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: 4,
-      }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h2" component="div" sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Typography component="span" style={{ fontSize: '30px' }}>Matching</Typography>
-            <Typography component="span" style={{ fontSize: '30px' }} sx={{ width: '2em' }}>
-              {dots}
-            </Typography>
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
-            Elapsed Time: {formatTime(timer)}
-          </Typography>
-        </Box>
-        <CircularProgress size={80} thickness={4} />
-        <Button
+<Container disableGutters component="main" maxWidth={false}>
+  <NavBar />
+  <Box sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    gap: 4,
+    filter: showTimeoutDialog ? 'blur(2px)' : 'none', 
+    transition: 'filter 0.3s ease'
+  }}>
+
+    <Box sx={{ textAlign: 'center' }}>
+      <Typography variant="h2" component="div" sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Typography component="span" style={{ fontSize: '30px' }}>Matching</Typography>
+        <Typography component="span" style={{ fontSize: '30px' }} sx={{ width: '2em' }}>
+          {dots}
+        </Typography>
+      </Typography>
+      <Typography variant="h6" color="text.secondary">
+        Elapsed Time: {formatTime(timer)}
+      </Typography>
+    </Box>
+    <CircularProgress size={80} thickness={4} />
+    <Button
+      variant="contained"
+      color="error"
+      size="large"
+      onClick={handleCancelRequest}
+      sx={{ mt: 4 }}
+    >
+      Cancel Matching
+    </Button>
+
+    <Dialog
+      open={showTimeoutDialog}
+      onClose={handleTimeoutConfirm}
+      BackdropProps={{ style: { backgroundColor: 'rgba(0,0,0,0.4)' } }}
+      sx={{ 
+        '& .MuiPaper-root': { 
+          width: '30vw',
+          minWidth: 300,
+          maxWidth: 400,
+          textAlign: 'center',
+          py: 3
+        }
+      }}
+    >
+      <DialogTitle sx={{ fontSize: '1.5rem' }}>
+        ⏰ Matching Timeout
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="body1">
+          Sorry!! No match found, please try again later.
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+        <Button 
+          onClick={handleTimeoutConfirm}
           variant="contained"
-          color="error"
-          size="large"
-          onClick={handleCancelRequest}
-          sx={{ mt: 4 }}
+          color="primary"
+          sx={{ width: 120 }}
         >
-          Cancel Matching
+          OK
         </Button>
-        <Dialog
-          open={showConfirm}
-          onClose={() => handleConfirmClose(false)}
-          sx={{ 
-            '& .MuiPaper-root': { 
-              width: '20vw', 
-              height: '25vh',
-              minWidth: 300,
-              minHeight: 150 
-            } 
-          }}
-        >
-          <DialogTitle>Confirm Cancel?</DialogTitle>
-          <DialogContent dividers>
-            Are you sure you want to cancel the matching process?
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => handleConfirmClose(false)}>No</Button>
-            <Button 
-              onClick={() => handleConfirmClose(true)} 
-              color="error"
-              variant="contained"
-            >
-              Yes
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </Container>
+      </DialogActions>
+    </Dialog>
+
+    <Dialog
+      open={showConfirm}
+      onClose={() => handleConfirmClose(false)}
+      sx={{ 
+        '& .MuiPaper-root': { 
+          width: '20vw', 
+          height: '25vh',
+          minWidth: 300,
+          minHeight: 150 
+        } 
+      }}
+    >
+    </Dialog>
+  </Box>
+</Container>
+
   );
 };
 
