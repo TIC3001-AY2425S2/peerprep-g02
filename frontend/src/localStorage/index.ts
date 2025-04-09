@@ -54,12 +54,18 @@ function getCollab() {
 function setCollab(collab) {
   const collabToStore = {
     ...collab,
-    _id: collab._id?.toString(),
-    user1: collab.user1?.toString(),
-    user2: collab.user2?.toString(),
+    id: collab.id?.toString(),
     questionId: collab.questionId?.toString(),
   };
   localStorage.setItem('collab', JSON.stringify(collabToStore));
+}
+
+function removeCollab() {
+  localStorage.removeItem('collab');
+}
+
+function removeSessionId() {
+  localStorage.removeItem('sessionId');
 }
 
 export default {
@@ -75,4 +81,6 @@ export default {
   hasCollab,
   getCollab,
   setCollab,
+  removeCollab,
+  removeSessionId,
 };

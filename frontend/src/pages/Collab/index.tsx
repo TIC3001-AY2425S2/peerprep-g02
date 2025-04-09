@@ -7,7 +7,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { Box, Container, FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { basicSetup, EditorView } from 'codemirror';
 import { format } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
@@ -16,8 +16,8 @@ import { io } from 'socket.io-client';
 import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate } from 'y-protocols/awareness';
 import * as Y from 'yjs';
-import NavBar from '../../components/navbar';
 import { useAuth } from '../../context/authcontext';
+import pageNavigation from '../../hooks/navigation/pageNavigation';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 
@@ -41,7 +41,8 @@ function getLanguageExtension(lang) {
 }
 
 const Collab = () => {
-  const { collab, user } = useAuth();
+  const { collab, user, removeCollab } = useAuth();
+  const { goToHomePage } = pageNavigation();
   const socketRef = useRef(null);
 
   const [ydoc] = useState(() => new Y.Doc());
@@ -55,7 +56,7 @@ const Collab = () => {
   const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
-    socketRef.current = io(BASE_URL, { path: '/collab/websocket', query: { room: collab._id } });
+    socketRef.current = io(BASE_URL, { path: '/collab/websocket', query: { room: collab.id } });
     const socket = socketRef.current;
     if (!socket.connected) {
       console.log('Running connect');
@@ -183,9 +184,24 @@ const Collab = () => {
     socket.emit('chat message', message);
   };
 
+  const handleLeaveSession = () => {
+    const socket = socketRef.current;
+    const userId = user.id;
+    socket.emit('leave collab', userId, (response) => {
+      if (!response) {
+        toast.error(`Error leaving session`);
+        return;
+      }
+
+      toast.success(`Successfully left session`);
+      removeCollab();
+      goToHomePage();
+    });
+  };
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
-      <NavBar />
+      {/*<NavBar />*/}
       <Grid container spacing={2} style={{ width: '100%', height: '100vh' }}>
         <Grid item xs={8} style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Language selector dropdown */}
@@ -224,8 +240,22 @@ const Collab = () => {
         </Grid>
 
         <Grid item xs={4}>
-          <Box sx={{ border: '1px solid #ccc', height: '100%', display: 'flex' }}>
-            <ChatContainerWrapper sender={user.username} messages={chatMessages} onSend={handleSendMessage} />
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Leave Session button */}
+            <Button variant="contained" color="error" onClick={handleLeaveSession} sx={{ m: 1 }}>
+              Leave Session
+            </Button>
+            {/* Chat container */}
+            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+              <ChatContainerWrapper sender={user.username} messages={chatMessages} onSend={handleSendMessage} />
+            </Box>
           </Box>
         </Grid>
       </Grid>

@@ -12,13 +12,12 @@ async function setCollabYdoc(collabId, ydoc) {
 }
 
 async function getCollabChat(collabId) {
-  const key = `${COLLAB_CHAT_SESSION_KEY}:${collabId}`;
-  const messages = await Redis.client.lRange(key, 0, -1);
+  const messages = await Redis.client.lRange(`${COLLAB_CHAT_SESSION_KEY}:${collabId}`, 0, -1);
   return messages.map((msg) => JSON.parse(msg));
 }
 
-async function setCollabChat(collabId, message) {
+async function addCollabChat(collabId, message) {
   await Redis.client.rPush(`${COLLAB_CHAT_SESSION_KEY}:${collabId}`, JSON.stringify(message));
 }
 
-export default { getCollabYdoc, setCollabYdoc, getCollabChat, setCollabChat };
+export default { getCollabYdoc, setCollabYdoc, getCollabChat, addCollabChat };

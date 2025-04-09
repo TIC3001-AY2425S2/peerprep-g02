@@ -3,7 +3,6 @@ import { Button, Container } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
-import NavBar from '../../components/navbar';
 import { useAuth } from '../../context/authcontext';
 import { getCollab } from '../../hooks/collab/collab';
 import { cancelMatchmaking } from '../../hooks/matching/matching';
@@ -14,7 +13,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 const REDIRECT_TIMEOUT = 3000; // 3 seconds countdown to redirect to homepage.
 
 const Matching = () => {
-  const { user, sessionId, setCollab } = useAuth();
+  const { user, sessionId, setCollab, removeSessionId } = useAuth();
   const { goToHomePage, goToCollabPage } = pageNavigation();
   const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>(MatchingStatusEnum.WAITING);
   const [countdown, setCountdown] = useState<number | ''>('');
@@ -70,6 +69,7 @@ const Matching = () => {
 
   const handleMatchCancelled = async () => {
     await cancelMatchmaking({ userId, sessionId });
+    removeSessionId();
     goToHomePage();
   };
 
@@ -92,18 +92,22 @@ const Matching = () => {
         (async () => {
           const collab = await getCollab({ userId });
           setCollab(collab.collab);
+          removeSessionId();
           setTimeout(() => goToCollabPage(), REDIRECT_TIMEOUT);
         })();
         break;
       case MatchingStatusEnum.NO_MATCH:
         setStatusMessage('Match not found. Redirecting to homepage');
+        removeSessionId();
         setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
       case MatchingStatusEnum.CANCELLED:
         setStatusMessage('Cancelled. Redirecting to homepage');
+        removeSessionId();
         setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
       default:
+        removeSessionId();
         setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
     }
@@ -111,7 +115,7 @@ const Matching = () => {
 
   return (
     <Container disableGutters component="main" maxWidth={false}>
-      <NavBar />
+      {/*<NavBar />*/}
       <div style={{ textAlign: 'center' }}>
         <div>
           <h2>Matching... {matchStatus}</h2>

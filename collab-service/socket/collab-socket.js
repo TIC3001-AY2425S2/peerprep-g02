@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import * as Y from 'yjs';
-import CollabRepository from '../model/collab-repository.js';
+import CollabRepository from '../repository/collab-repository.js';
 import RedisRepository from '../repository/redis-repository.js';
 
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
@@ -59,9 +59,9 @@ export default function setupCollabSocket(server) {
       await RedisRepository.setCollabYdoc(room, encodedNewYdocUpdate);
     });
 
-    socket.onAny((event, ...args) => {
-      console.log(`Received event: "${event}" with data:`, args);
-    });
+    // socket.onAny((event, ...args) => {
+    //   console.log(`Received event: "${event}" with data:`, args);
+    // });
 
     socket.on('awareness', (encodedUpdate) => {
       // Broadcast the awareness update to all other clients in the room
@@ -73,8 +73,19 @@ export default function setupCollabSocket(server) {
     socket.emit('chat history', chatHistory);
 
     socket.on('chat message', async (message) => {
-      await RedisRepository.setCollabChat(room, message);
+      await RedisRepository.addCollabChat(room, message);
       socket.to(room).emit('chat message', message);
+    });
+
+    // Leave session
+    socket.on('leave collab', async (userId, callback) => {
+      try {
+        const collab = await CollabRepository.setInactiveCollabUser(userId);
+        callback(true);
+      } catch (error) {
+        console.log('CollabService: Error occurred while creating collab', error);
+        callback(false);
+      }
     });
 
     socket.on('disconnect', async () => {
