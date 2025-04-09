@@ -1,3 +1,4 @@
+// frontend/src/pages/account/profile/index.tsx
 import { Avatar, Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
@@ -12,16 +13,16 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState({
     displayName: user?.username || '',
     email: user?.email || '',
-    currentPassword: '',
-    newPassword: '',
+    // REMOVED: currentPassword field
+    password: '', // CHANGED: from newPassword to password
   });
 
   useEffect(() => {
     setFormData({
       displayName: user?.username || '',
       email: user?.email || '',
-      currentPassword: '',
-      newPassword: '',
+      // REMOVED: currentPassword reset
+      password: '', // CHANGED: from newPassword to password
     });
   }, [user]);
 
@@ -35,13 +36,12 @@ const ProfilePage = () => {
       const payload = {
         username: formData.displayName,
         email: formData.email,
-        ...(formData.newPassword && { 
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword 
-        })
+        // SIMPLIFIED: Direct password update without current password
+        ...(formData.password && { password: formData.password }) // CHANGED: field name and structure
       };
 
-      const response = await clientApi.put(`/users/${user.id}`, payload);
+      // CHANGED: PUT → PATCH to match backend route
+      const response = await clientApi.patch(`/users/${user.id}`, payload);
       LocalStorage.setUser(response.data.data);
       toast.success('Profile updated successfully');
     } catch (error) {
@@ -92,22 +92,14 @@ const ProfilePage = () => {
           sx={{ width: '400px', mb: 3 }}
         />
 
-        <TextField
-          label="Current Password (for password change)"
-          type="password"
-          variant="outlined"
-          name="currentPassword"
-          value={formData.currentPassword}
-          onChange={handleChange}
-          sx={{ width: '400px', mb: 3 }}
-        />
+        {/* REMOVED: Current Password field */}
 
         <TextField
-          label="New Password"
+          label="New Password" // CHANGED: from "New Password" to "Password"
           type="password"
           variant="outlined"
-          name="newPassword"
-          value={formData.newPassword}
+          name="password" // CHANGED: from newPassword to password
+          value={formData.password}
           onChange={handleChange}
           sx={{ width: '400px', mb: 3 }}
         />

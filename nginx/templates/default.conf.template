@@ -27,7 +27,7 @@ server {
     # https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-subrequest-authentication/
     location = /auth/verify-token {
         internal;
-        proxy_pass              http://user-service/auth/verify-token;
+        proxy_pass              http://user-service;
         proxy_pass_request_body off;
         proxy_set_header        Content-Length "";
         proxy_set_header        Authorization $http_authorization;
@@ -38,6 +38,12 @@ server {
     }
 
     location /users/ {
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' '*' always;
+            add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type, Accept, Authorization' always;
+            return 204;
+        }
         auth_request /auth/verify-token;
         proxy_pass http://user-service;
     }
