@@ -6,6 +6,11 @@ import RedisRepository from '../repository/redis-repository.js';
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
 
+// This is by far the most confusing thing in this entire project or rather my lack of understanding
+// of yjs and trying to use a library here wasted a lot of time.
+// The best way to do this is to just implement your own. I did not expect y-websocket to be so inflexible
+// but that may be that our use case is not fit for it or I do not understand y-websocket well enough.
+// Here we just retrieve all updates and emit back to the entire room based on collabId retrieved from mongodb.
 export default function setupCollabSocket(server) {
   const io = new Server(server, {
     // Enable connection recovery.
@@ -54,9 +59,29 @@ export default function setupCollabSocket(server) {
       await RedisRepository.setCollabYdoc(room, encodedNewYdocUpdate);
     });
 
+    socket.onAny((event, ...args) => {
+      console.log(`Received event: "${event}" with data:`, args);
+    });
+
+    socket.on('awareness', (encodedUpdate) => {
+      // Broadcast the awareness update to all other clients in the room
+      socket.to(room).emit('awareness', encodedUpdate);
+    });
+
+    // Send chat history on 1st connect.
+    const chatHistory = await RedisRepository.getCollabChat(room);
+    socket.emit('chat history', chatHistory);
+
+    socket.on('chat message', async (message) => {
+      await RedisRepository.setCollabChat(room, message);
+      socket.to(room).emit('chat message', message);
+    });
+
     socket.on('disconnect', async () => {
+      // Retrieve the ydoc stored in redis.
       console.log('CollabSocket: A user disconnected');
       const ydoc = await RedisRepository.getCollabYdoc(room);
+      // Store the retrieved ydoc in collab repository.
       await CollabRepository.updateCollab(room, ydoc);
       console.log(`Saved ydoc to Collab model for ${room}`);
     });

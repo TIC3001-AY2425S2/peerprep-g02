@@ -85,7 +85,7 @@ async function deleteQuestion(questionId) {
   }
 }
 
-async function editQuestion(questionId, title,  description, category, complexity) {
+async function editQuestion(questionId, title, description, category, complexity) {
   if (!isValidObjectId(questionId)) {
     throw new Error(`Question ${questionId} not found`);
   }
@@ -98,7 +98,7 @@ async function editQuestion(questionId, title,  description, category, complexit
 
     // check if existing queues should be deleted
     const originalCategories = question.category;
-    const removedCategories = originalCategories.filter(element => !category.includes(element));
+    const removedCategories = originalCategories.filter((element) => !category.includes(element));
     const categoriesToDelete = (
       await Promise.all(
         removedCategories.map(async (category) => {
@@ -119,8 +119,13 @@ async function editQuestion(questionId, title,  description, category, complexit
     }
 
     // update question
-    const editedQuestion =
-        await QuestionRepository.updateQuestionById(questionId, title, description, category, complexity);
+    const editedQuestion = await QuestionRepository.updateQuestionById(
+      questionId,
+      title,
+      description,
+      category,
+      complexity,
+    );
 
     return editedQuestion;
   } catch (err) {
