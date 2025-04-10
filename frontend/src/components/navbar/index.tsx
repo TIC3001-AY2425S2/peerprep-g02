@@ -11,7 +11,7 @@ export default function NavBar() {
   const { accessToken, isAdmin, user } = useAuth();
   const loggedIn = accessToken;
   const title = loggedIn && user ? `Welcome ${user?.username}!` : 'Welcome!';
-
+  const containerName = process.env.REACT_APP_CONTAINER_NAME;
   const buttons = (
     <div>
       <Button variant="outlined" component={Link} to="/login" sx={{ my: 1, mx: 1.5 }}>
@@ -70,7 +70,7 @@ export default function NavBar() {
             noWrap
             sx={{ flexGrow: 1, textAlign: 'left', cursor: 'pointer' }}
           >
-            PeerPrep Hub | {title}
+            PeerPrep Hub {containerName ? `| Container: ${containerName} ` : ''}| {title}
           </Typography>
           {!loggedIn && buttons}
           {loggedIn && !isAdmin && userButtons}

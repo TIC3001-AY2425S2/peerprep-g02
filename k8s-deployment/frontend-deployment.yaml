@@ -29,6 +29,10 @@ spec:
                 configMapKeyRef:
                   key: REACT_APP_BASE_URL
                   name: frontend-docker-env
+            - name: REACT_APP_CONTAINER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           image: frontend
           imagePullPolicy: Never
           name: frontend
