@@ -61,7 +61,9 @@ function createMessageProcessor() {
       );
       clearWaitingUser();
 
-      await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
+      if (await isUserWaiting(message.userId, message.sessionId)) {
+        await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
+      }
     }, remainingTime);
 
     console.log(
