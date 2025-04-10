@@ -8,4 +8,3 @@ user-service/package-lock.json
 user-service/package-lock.json
 user-service/package.json
 frontend/package.json
-nginx/provisioning/docker-compose.yml
