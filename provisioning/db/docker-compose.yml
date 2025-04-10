@@ -1,0 +1,92 @@
+services:
+  mongodb:
+    image: mongo:8.0.4
+    container_name: mongodb
+    restart: always
+    ports:
+      - "8098:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: peerprep-g02
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongod.conf:/etc/mongo/mongod.conf:ro
+    # Config file set to reduce log levels
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    healthcheck:
+      test: [ "CMD", "mongosh", "mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin", "--eval", "db.runCommand({ ping: 1 })" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - shared-network
+
+  # MongoExpress default credentials
+  # username: admin, password: pass
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8099:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
+    depends_on:
+      - mongodb
+    networks:
+      - shared-network
+
+  rabbitmq:
+    image: rabbitmq:4.0.3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672" # AMPQ port
+      - "15672:15672" # Management port
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "status" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - shared-network
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - shared-network
+
+  # This doesn't allow automatic connection to redis like how mongo-express has with mongodb.
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: redisinsight
+    restart: always
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

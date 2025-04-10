@@ -1,0 +1,23 @@
+services:
+  nginx-gateway:
+    build: ./..
+    image: nginx-gateway
+    container_name: nginx-gateway
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02
