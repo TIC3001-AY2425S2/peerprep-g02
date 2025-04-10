@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createClient } from 'redis';
-import CollabRepository from '../model/collab-repository.js';
 import MessageSink from '../service/MessageSink.js';
+import CollabRepository from './collab-repository.js';
 
 // Usage tutorial: https://github.com/redis/node-redis/tree/master/packages/redis
 

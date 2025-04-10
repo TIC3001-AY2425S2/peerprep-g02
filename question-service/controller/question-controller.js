@@ -7,7 +7,6 @@ import {
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
   findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
-  updateQuestionById as _updateQuestionById,
 } from '../model/repository.js';
 import QuestionService from '../service/QuestionService.js';
 
@@ -113,7 +112,7 @@ export async function updateQuestion(req, res) {
     if (
       err.message === 'Error in rabbitmq create queue' ||
       err.message === 'Error in redis create category complexity set entry'
-    ){
+    ) {
       res.status(500).json({ message: err.message });
     } else {
       res.status(500).json({ message: 'Unknown error when updating question!' });
