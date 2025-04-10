@@ -12,8 +12,6 @@ interface AuthContextProps {
   logoutAuth: () => void;
   setSessionId: (sessionId: string) => void;
   setCollab: (collabData: any) => void;
-  removeCollab: () => void;
-  removeSessionId: () => void;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -27,8 +25,6 @@ const AuthContext = createContext<AuthContextProps>({
   logoutAuth: () => {},
   setSessionId: () => {},
   setCollab: () => {},
-  removeCollab: () => {},
-  removeSessionId: () => {},
 });
 
 export const AuthProvider: React.FC<any> = ({ children }) => {
@@ -78,17 +74,6 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
     setHasCollabState(LocalStorage.hasCollab());
   };
 
-  const removeCollab = () => {
-    LocalStorage.removeCollab();
-    setCollabState(null);
-    setHasCollabState(false);
-  };
-
-  const removeSessionId = () => {
-    LocalStorage.removeSessionId();
-    setSessionIdState(null);
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -102,8 +87,6 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
         logoutAuth,
         setSessionId,
         setCollab,
-        removeCollab,
-        removeSessionId,
       }}
     >
       {children}
