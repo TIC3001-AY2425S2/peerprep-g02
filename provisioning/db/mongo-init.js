@@ -1,6 +1,7 @@
 db = db.getSiblingDB('peerprep-g02');
 
 db.createCollection('usermodels');
+// email: email@domain.com, password: adminuser
 db.usermodels.insertMany([
     {
         username: "adminuser",

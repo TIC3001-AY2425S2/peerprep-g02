@@ -7,7 +7,13 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - ./../.env
+      - ./../.docker.env
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8001/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
     networks:
       - shared-network
 

@@ -1,5 +1,11 @@
 import api from '../../api';
-import { Question, QuestionDeleteData, QuestionPatchData, QuestionPostData } from '../../types/questions';
+import {
+  Question,
+  QuestionCategoriesComplexitiesData,
+  QuestionDeleteData,
+  QuestionPatchData,
+  QuestionPostData,
+} from '../../types/questions';
 
 export const createQuestion = async (data: QuestionPostData): Promise<Question> => {
   try {
@@ -47,6 +53,16 @@ export const deleteQuestion = async (data: QuestionDeleteData): Promise<Question
     return response.data;
   } catch (error) {
     console.error('Error deleting question: ', error);
+    throw error;
+  }
+};
+
+export const getCategoriesAndComplexities = async (): Promise<QuestionCategoriesComplexitiesData[]> => {
+  try {
+    const response = await api.questions.getCategoriesAndComplexities();
+    return response.data.data;
+  } catch (error) {
+    console.error('Error getting question: ', error);
     throw error;
   }
 };

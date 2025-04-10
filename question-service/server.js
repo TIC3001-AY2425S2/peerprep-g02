@@ -2,19 +2,28 @@ import 'dotenv/config';
 import http from 'http';
 import index from './index.js';
 import { connectToDB } from './model/repository.js';
+import redisClient from './repository/redis.js';
+import QuestionService from './service/QuestionService.js';
 
 const port = process.env.PORT || 8001;
 
 const server = http.createServer(index);
 
-await connectToDB()
-  .then(() => {
+async function startServer() {
+  try {
+    await connectToDB();
     console.log('MongoDB Connected!');
 
-    server.listen(port);
-    console.log('Question service server listening on http://localhost:' + port);
-  })
-  .catch((err) => {
-    console.error('Failed to connect to DB');
-    console.error(err);
-  });
+    await redisClient.connect();
+    console.log('Connected to Redis');
+    await QuestionService.populateDistinctCategoryComplexity();
+
+    server.listen(port, () => {
+      console.log(`Server listening on http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error('Error connecting to dependencies: ', err);
+  }
+}
+
+await startServer();

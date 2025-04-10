@@ -1,0 +1,86 @@
+upstream user-service {
+    server ${USER_SERVICE_URL};
+}
+
+upstream question-service {
+    server ${QUESTION_SERVICE_URL};
+}
+
+upstream matching-service {
+    server ${MATCHING_SERVICE_URL};
+}
+
+server {
+    listen 8080;
+    server_name localhost;
+
+    include /etc/nginx/templates/*.conf;
+
+    location /health {
+        return 200;
+    }
+
+    # https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-subrequest-authentication/
+    location = /auth/verify-token {
+        internal;
+        proxy_pass              http://user-service;
+        proxy_pass_request_body off;
+        proxy_set_header        Content-Length "";
+        proxy_set_header        Authorization $http_authorization;
+    }
+    location = /auth/login {
+        # This endpoint is used to login a user. It doesn't require auth.
+        proxy_pass http://user-service;
+    }
+
+    location /users/ {
+        auth_request /auth/verify-token;
+        proxy_pass http://user-service;
+    }
+    location = /users {
+        # For some reason this is needed for the preflight request that frontend sends when we try to create user.
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' '*' always;
+            add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type, Accept, Authorization' always;
+            return 204;
+        }
+
+        # POST /users endpoint is used to create a new user. It doesn't require auth.
+        # This just looks so complicated cause typically user credentials etc are handled on another server
+        # entirely and not by service and so nginx designed for consistent and global policies ain't
+        # really meant to do something like that.
+        if ($request_method = POST) {
+             rewrite ^ /users_noauth last;
+        }
+
+        auth_request /auth/verify-token;
+        proxy_pass http://user-service;
+    }
+    location = /users_noauth {
+        # This location is used for endpoints in user-service that requires no auth
+        internal;
+        proxy_pass http://user-service/users;
+    }
+
+    location /questions/ {
+        proxy_pass http://question-service;
+    }
+    location = /questions {
+        proxy_pass http://question-service;
+    }
+
+    location /matching/ {
+        proxy_pass http://matching-service;
+    }
+    location = /matching {
+        proxy_pass http://matching-service;
+    }
+    location /matching/websocket/ {
+        proxy_pass http://matching-service;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}

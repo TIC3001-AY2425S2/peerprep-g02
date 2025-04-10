@@ -8,6 +8,11 @@ export interface Question {
   readonly updatedAt: Date;
 }
 
+export interface QuestionResponseData<T> {
+  message: string;
+  data: T;
+}
+
 export interface QuestionPostData {
   readonly title: string;
   readonly description: string;
@@ -25,4 +30,9 @@ export interface QuestionPatchData {
 
 export interface QuestionDeleteData {
   readonly _id: string;
+}
+
+export interface QuestionCategoriesComplexitiesData {
+  category: string;
+  complexities: string[];
 }

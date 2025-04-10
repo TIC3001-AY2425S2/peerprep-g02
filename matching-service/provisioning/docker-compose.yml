@@ -1,0 +1,22 @@
+services:
+  matching-service:
+    # Automatically build the image with latest tag
+    build: ./..
+    image: matching-service
+    container_name: matching-service
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./../.docker.env
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8002/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

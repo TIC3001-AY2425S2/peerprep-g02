@@ -72,13 +72,7 @@ const QuestionList = ({ questions, selectedId, onQuestionSelect }: QuestionListP
   };
 
   return (
-    <FixedSizeList
-      height={800}
-      width="100%"
-      itemSize={80}
-      itemCount={questions.length}
-      overscanCount={5}
-    >
+    <FixedSizeList height={800} width="100%" itemSize={80} itemCount={questions.length} overscanCount={5}>
       {renderQuestion}
     </FixedSizeList>
   );
