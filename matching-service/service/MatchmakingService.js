@@ -13,10 +13,9 @@ async function matchmake(userId, category, complexity) {
   // mess up the matchmaking since the 1st message will no longer be valid but treated as valid if we set to
   // just userId and status waiting.
   const sessionId = UuidUtils.generateUUID();
-  const enqueueTime = Date.now();
   await setMatchStatus(userId, sessionId, MatchingStatusEnum.WAITING);
   await setMatchTimer(userId, sessionId);
-  await MessageSource.sendCategoryComplexityMessage({ userId, sessionId, category, complexity, enqueueTime });
+  await MessageSource.sendCategoryComplexityMessage({ userId, sessionId, category, complexity });
   return sessionId;
 }
 

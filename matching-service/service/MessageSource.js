@@ -1,38 +1,71 @@
+import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 import {
-  isCategoryActive,
+  getMatchStatus,
   isCategoryComplexityActive,
   setDistinctCategoryComplexity,
 } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 
-/**
- * Publishes a message to the appropriate category-complexity queue.
- */
-async function sendCategoryComplexityMessage({ userId, sessionId, category, complexity, enqueueTime }) {
-  const queueName = MessageConfig.getQueueName(category, complexity);
-  const channel = await MessageConfig.getChannel();
+// DOMAIN EXPANSION
+function sendCategoryComplexityMessageSide({ userId, sessionId, category, complexity, side, expansion }) {
+  // On user's chosen complexity, expansion = 0.
+  const index = MessageConfig.COMPLEXITY_ORDER.indexOf(complexity);
+  let newComplexity;
+  if (side === 'left') {
+    newComplexity = MessageConfig.COMPLEXITY_ORDER[index - expansion];
+  } else {
+    newComplexity = MessageConfig.COMPLEXITY_ORDER[index + expansion];
+  }
+  if (!newComplexity) return;
 
-  const message = { userId, sessionId, category, complexity, enqueueTime };
-  const messageBuffer = Buffer.from(JSON.stringify(message));
-  channel.publish(MessageConfig.EXCHANGE, queueName, messageBuffer);
+  // For expansion = 0, skip sending for the right side to avoid duplicate.
+  if (expansion === 0 && side === 'right') {
+    // Continue the expansion for the right side.
+    return sendCategoryComplexityMessageSide({
+      userId,
+      sessionId,
+      category,
+      complexity,
+      side,
+      expansion: expansion + 1,
+    });
+  }
 
-  console.log(`${new Date().toISOString()} MessageSource: Sent message for user ${userId} to queue ${queueName}`);
-  return true;
+  // Delay and check waiting status
+  const delay = MessageConfig.getExpansionDelay(expansion);
+  setTimeout(async () => {
+    const status = await getMatchStatus(userId, sessionId);
+    if (status !== MatchingStatusEnum.WAITING) return;
+
+    // Only send message if the category + complexity exists
+    if (await isCategoryComplexityActive(category, newComplexity)) {
+      const queueName = MessageConfig.getQueueName(category, newComplexity);
+      const channel = await MessageConfig.getChannel();
+      const message = { userId, sessionId, category, complexity: newComplexity, enqueueTime: Date.now(), expansion };
+      channel.publish(MessageConfig.EXCHANGE, queueName, Buffer.from(JSON.stringify(message)));
+      console.log(
+        `${new Date().toISOString()} MessageSource: Sent message for user ${userId} to queue ${queueName} (side ${side}, expansion ${expansion})`,
+      );
+    }
+
+    // Recursively expand in a radius to neighbouring complexities.
+    sendCategoryComplexityMessageSide({
+      userId,
+      sessionId,
+      category,
+      complexity,
+      side,
+      expansion: expansion + 1,
+    });
+  }, delay);
 }
 
 /**
- * Used as dead-letter queue for category-complexity queue.
- * Sends a message by updating its enqueueTime and publishing to its category queue.
+ * Publishes a message to the appropriate category-complexity queue.
  */
-async function sendCategoryMessage(message) {
-  const queueName = message.category;
-  const channel = await MessageConfig.getChannel();
-  message.enqueueTime = Date.now();
-  channel.publish(MessageConfig.EXCHANGE, queueName, Buffer.from(JSON.stringify(message)));
-  console.log(
-    `${new Date().toISOString()} MessageSource: Sent message for user ${message.userId} in queue ${queueName}`,
-  );
-  return true;
+async function sendCategoryComplexityMessage({ userId, sessionId, category, complexity }) {
+  sendCategoryComplexityMessageSide({ userId, sessionId, category, complexity, side: 'left', expansion: 0 });
+  sendCategoryComplexityMessageSide({ userId, sessionId, category, complexity, side: 'right', expansion: 0 });
 }
 
 /**
@@ -67,15 +100,7 @@ async function sendCreateEvent(category, complexity) {
   });
   const filteredCategoryComplexity = (await Promise.all(filteredCategoryComplexityPromises)).filter(Boolean);
 
-  // Filter out categories that already exists
-  const filteredCategoryPromises = category.map(async (cat) => {
-    const exists = await isCategoryActive(cat);
-    return exists ? null : cat;
-  });
-  const filteredCategory = (await Promise.all(filteredCategoryPromises)).filter(Boolean);
-
   // If filteredCategoryComplexity is empty, there is no need to send a message.
-  // Implicitly it would also mean filteredCategory is empty since that is our dead-letter queue.
   if (filteredCategoryComplexity.length === 0) {
     console.log(`${new Date().toISOString()} - No create event needed as there are no new queues to create.`);
     return Promise.resolve();
@@ -87,7 +112,6 @@ async function sendCreateEvent(category, complexity) {
 
   const message = {
     categoryComplexityQueues: filteredCategoryComplexity,
-    categoryQueues: filteredCategory,
     complexity,
   };
 
@@ -126,7 +150,6 @@ async function sendKillSignal(category, complexity) {
 
 export default {
   sendCategoryComplexityMessage,
-  sendCategoryMessage,
   sendMatchedPlayersMessage,
   sendCreateEvent,
   sendKillSignal,

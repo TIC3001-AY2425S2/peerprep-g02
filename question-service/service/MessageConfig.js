@@ -4,16 +4,16 @@ const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localh
 const EXCHANGE = '';
 const UPDATES_QUEUE_NAME = 'queue-updates';
 
-let connection = null;
-let channel = null;
+let channelPromise = null;
 
 async function getChannel() {
-  // Reuse an existing channel or creates a new one if none exists.
-  if (!connection) {
-    connection = await amqp.connect(RABBITMQ_URL);
-    channel = await connection.createConfirmChannel();
+  if (!channelPromise) {
+    channelPromise = (async () => {
+      const connection = await amqp.connect(RABBITMQ_URL);
+      return await connection.createConfirmChannel();
+    })();
   }
-  return channel;
+  return channelPromise;
 }
 
 function getQueueUpdatesConfiguration() {
