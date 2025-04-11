@@ -7,7 +7,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { basicSetup, EditorView } from 'codemirror';
 import { format } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
@@ -18,6 +18,7 @@ import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate } from 'y-protoc
 import * as Y from 'yjs';
 import { useAuth } from '../../context/authcontext';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
+import { getQuestion } from '../../hooks/question/question';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 
@@ -48,6 +49,7 @@ const Collab = () => {
   const [ydoc] = useState(() => new Y.Doc());
   const editorRef = useRef(null);
   const [editorView, setEditorView] = useState(null);
+  const [question, setQuestion] = useState(null);
   const awareness = new Awareness(ydoc);
   const [selectedLanguage, setSelectedLanguage] = useState('JavaScript');
   const languageCompartment = new Compartment();
@@ -172,6 +174,22 @@ const Collab = () => {
     }
   }, [selectedLanguage, editorView]);
 
+  useEffect(() => {
+    async function fetchQuestion() {
+      if (!collab || !collab.questionId) {
+        return;
+      }
+
+      try {
+        const data = await getQuestion(collab.questionId);
+        setQuestion(data);
+      } catch (error) {
+        console.error('Failed to fetch error: ', error);
+      }
+    }
+    fetchQuestion();
+  }, [collab]);
+
   const handleSendMessage = (messageText) => {
     const socket = socketRef.current;
     const message = {
@@ -236,7 +254,10 @@ const Collab = () => {
             }}
           />
           {/* Question details */}
-          <Box sx={{ border: '1px solid #ccc', mt: 2, height: '150px' }}>Question details.</Box>
+          <Box sx={{ border: '1px solid #ccc', mt: 2, height: '200px', overflowY: 'auto', whiteSpace: 'pre-wrap', textAlign: 'left', }}>
+            <Typography variant="body1"> {question?.title || ''} </Typography>
+            <Typography variant="body2"> {question?.description || ''} </Typography>
+          </Box>
         </Grid>
 
         <Grid item xs={4}>
