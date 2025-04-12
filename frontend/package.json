@@ -6,6 +6,7 @@
     "start": "cross-env WATCHPACK_POLLING=true react-scripts start",
     "build": "react-scripts build",
     "test": "vitest",
+    "test:ci": "vitest run",
     "eject": "react-scripts eject"
   },
   "dependencies": {
