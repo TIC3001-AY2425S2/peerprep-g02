@@ -2,7 +2,7 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typo
 import { SelectChangeEvent } from '@mui/material/Select';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createQuestion, deleteQuestion, getQuestionByTitle, updateQuestion } from '../../../hooks/question/question';
+import { createQuestion, deleteQuestion, updateQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 
 interface QuestionFormProps {
@@ -58,11 +58,9 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           ...formData,
           category: formData.category.split(',').map((cat) => cat.trim()),
         };
-        await createQuestion(payload);
-        const question = await getQuestionByTitle(payload.title);
-        payload._id = question._id;
+        const response = await createQuestion(payload);
         toast.success(`Question created successfully`);
-        onSubmit(payload);
+        onSubmit(response.data);
       }
     } catch (error) {
       toast.error(`Error creating question: ${error.response?.data?.message}`);

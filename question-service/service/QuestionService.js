@@ -1,7 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import * as QuestionRepository from '../model/repository.js';
 import { findDistinctCategoryAndComplexity } from '../model/repository.js';
-import RedisQuestionRepository from '../repository/redis-repository.js';
+import { default as RedisQuestionRepository, default as RedisRepository } from '../repository/redis-repository.js';
 import MessageSource from './MessageSource.js';
 
 async function sendQueueUpdate(type, category, complexity) {
@@ -75,6 +75,7 @@ async function deleteQuestion(questionId) {
     }
 
     const deletedQuestion = await QuestionRepository.deleteQuestionById(questionId);
+    await RedisRepository.setDeletedQuestion(deletedQuestion);
     // await session.commitTransaction();
     return deletedQuestion;
   } catch (err) {
@@ -133,6 +134,42 @@ async function editQuestion(questionId, title, description, category, complexity
   }
 }
 
+async function getQuestion(questionId) {
+  if (!isValidObjectId(questionId)) {
+    throw new Error(`Question not found`);
+  }
+
+  // Check the primary data source.
+  const questionFromModel = await QuestionRepository.findQuestionById(questionId);
+  if (questionFromModel) {
+    return questionFromModel;
+  }
+
+  // Check Redis if primary data source returns no results. It may be deleted.
+  const questionFromRedis = await RedisRepository.getDeletedQuestion(questionId);
+  if (questionFromRedis) {
+    console.log('QuestionService: Retrieved question from redis');
+    return questionFromRedis;
+  }
+
+  throw new Error(`Question not found`);
+}
+
+async function getRandomQuestion(category, complexity) {
+  const questionFromModel = await QuestionRepository.findRandomQuestionByCategoryAndComplexity(category, complexity);
+  if (questionFromModel && questionFromModel.length >= 1) {
+    return questionFromModel;
+  }
+
+  const questionFromRedis = await RedisRepository.getRandomDeletedQuestion(category, complexity);
+  if (questionFromRedis) {
+    console.log('QuestionService: Retrieved question from redis');
+    return questionFromRedis;
+  }
+
+  throw new Error(`Question not found`);
+}
+
 async function populateDistinctCategoryComplexity() {
   try {
     const categoryComplexityList = await findDistinctCategoryAndComplexity();
@@ -147,4 +184,11 @@ async function populateDistinctCategoryComplexity() {
   }
 }
 
-export default { createQuestion, deleteQuestion, editQuestion, populateDistinctCategoryComplexity };
+export default {
+  createQuestion,
+  deleteQuestion,
+  editQuestion,
+  getQuestion,
+  getRandomQuestion,
+  populateDistinctCategoryComplexity,
+};

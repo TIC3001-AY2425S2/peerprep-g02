@@ -79,7 +79,7 @@ const Matching = () => {
     console.log(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
 
     // When countdown reaches 0, set status message to processing.
-    if (statusLoaded && countdown <= 0) {
+    if (statusLoaded && matchStatus === MatchingStatusEnum.WAITING && countdown <= 0) {
       setStatusMessage('Processing');
       return;
     }
