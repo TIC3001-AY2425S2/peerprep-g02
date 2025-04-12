@@ -44,7 +44,7 @@ async function getActiveCollab(userId) {
 }
 
 async function setInactiveCollabUser(userId) {
-  return await CollabUserModel.findOneAndUpdate({ userId }, { active: false }, { new: true });
+  return await CollabUserModel.findOneAndUpdate({ userId, active: true }, { active: false }, { new: true });
 }
 
 export default { connectToDB, createCollab, updateCollab, getActiveCollab, setInactiveCollabUser };
