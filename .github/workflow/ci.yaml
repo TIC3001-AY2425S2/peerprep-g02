@@ -2,9 +2,9 @@ name: Run Frontend Tests in Docker
 
 on:
   push:
-    branches: [feat/cicd-vitest]
+    branches: [main]
   pull_request:
-    branches: [feat/cicd-vitest]
+    branches: [main]
 
 jobs:
   test:
