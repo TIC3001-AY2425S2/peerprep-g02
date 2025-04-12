@@ -3,7 +3,7 @@ import {
   atomicMatch,
   getMatchStatus,
   isCategoryComplexityActive,
-  setMatchStatus,
+  setMatchStatusIfStatusWaiting,
 } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageSource from './MessageSource.js';
@@ -61,9 +61,7 @@ function createMessageProcessor() {
       );
       clearWaitingUser();
 
-      if (await isUserWaiting(message.userId, message.sessionId)) {
-        await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
-      }
+      await setMatchStatusIfStatusWaiting(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
     }, remainingTime);
 
     console.log(
@@ -85,7 +83,7 @@ function createMessageProcessor() {
       console.log(
         `${new Date().toISOString()} MessageService: Queue does not exists. Should not process ${message.userId}`,
       );
-      await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
+      await setMatchStatusIfStatusWaiting(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
       return;
     }
 

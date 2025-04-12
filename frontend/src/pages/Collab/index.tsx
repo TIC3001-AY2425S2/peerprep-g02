@@ -254,7 +254,16 @@ const Collab = () => {
             }}
           />
           {/* Question details */}
-          <Box sx={{ border: '1px solid #ccc', mt: 2, height: '200px', overflowY: 'auto', whiteSpace: 'pre-wrap', textAlign: 'left', }}>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              mt: 2,
+              height: '200px',
+              overflowY: 'auto',
+              whiteSpace: 'pre-wrap',
+              textAlign: 'left',
+            }}
+          >
             <Typography variant="body1"> {question?.title || ''} </Typography>
             <Typography variant="body2"> {question?.description || ''} </Typography>
           </Box>

@@ -1,7 +1,9 @@
+import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 import Redis from './redis.js';
 
 const COLLAB_YDOC_SESSION_KEY = 'collab:ydoc';
 const COLLAB_CHAT_SESSION_KEY = 'collab:chat';
+const MATCH_STATUS_KEY = 'match:status';
 
 async function getCollabYdoc(collabId) {
   return await Redis.client.get(`${COLLAB_YDOC_SESSION_KEY}:${collabId}`);
@@ -18,6 +20,22 @@ async function getCollabChat(collabId) {
 
 async function addCollabChat(collabId, message) {
   await Redis.client.rPush(`${COLLAB_CHAT_SESSION_KEY}:${collabId}`, JSON.stringify(message));
+}
+
+export async function setMatchStatusIfStatusWaiting(userId, sessionId, status) {
+  const script = `
+    local current = redis.call('GET', KEYS[1])
+    if current == ARGV[1] then
+      return redis.call('SET', KEYS[1], ARGV[2])
+    else
+      return nil
+    end
+  `;
+
+  return await Redis.client.eval(script, {
+    keys: [`${MATCH_STATUS_KEY}:${userId}:${sessionId}`],
+    arguments: [MatchingStatusEnum.PROCESSING, status],
+  });
 }
 
 export default { getCollabYdoc, setCollabYdoc, getCollabChat, addCollabChat };

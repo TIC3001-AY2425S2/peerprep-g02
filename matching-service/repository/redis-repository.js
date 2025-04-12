@@ -10,6 +10,22 @@ export async function setMatchStatus(userId, sessionId, status) {
   await Redis.client.set(`${MATCH_STATUS_KEY}:${userId}:${sessionId}`, status, { EX: 60 });
 }
 
+export async function setMatchStatusIfStatusWaiting(userId, sessionId, status) {
+  const script = `
+    local current = redis.call('GET', KEYS[1])
+    if current == ARGV[1] then
+      return redis.call('SET', KEYS[1], ARGV[2])
+    else
+      return nil
+    end
+  `;
+
+  return await Redis.client.eval(script, {
+    keys: [`${MATCH_STATUS_KEY}:${userId}:${sessionId}`],
+    arguments: [MatchingStatusEnum.WAITING, status],
+  });
+}
+
 export async function getMatchStatus(userId, sessionId) {
   return await Redis.client.get(`${MATCH_STATUS_KEY}:${userId}:${sessionId}`);
 }
@@ -50,6 +66,6 @@ export async function atomicMatch(userId1, sessionId1, userId2, sessionId2) {
   `;
   return await Redis.client.eval(luaScript, {
     keys: [`${MATCH_STATUS_KEY}:${userId1}:${sessionId1}`, `${MATCH_STATUS_KEY}:${userId2}:${sessionId2}`],
-    arguments: [MatchingStatusEnum.WAITING, MatchingStatusEnum.MATCHED],
+    arguments: [MatchingStatusEnum.WAITING, MatchingStatusEnum.PROCESSING],
   });
 }
