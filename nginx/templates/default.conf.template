@@ -38,6 +38,12 @@ server {
     }
 
     location /users/ {
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' '*' always;
+            add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type, Accept, Authorization' always;
+            return 204;
+        }
         auth_request /auth/verify-token;
         proxy_pass http://user-service;
     }

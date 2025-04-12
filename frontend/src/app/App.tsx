@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loading from '../components/loading';
 import { AuthProvider, useAuth } from '../context/authcontext';
-import pageNavigation from '../hooks/navigation/pageNavigation';
+import pageNavigation from '../hooks/navigation/pageNavigation'; // Preserved from new file for navigation functionality
 import Login from '../pages/account/login';
 import Logout from '../pages/account/logout';
 import Register from '../pages/account/register';
@@ -14,8 +14,11 @@ import Home from '../pages/Home';
 import Landing from '../pages/Landing';
 import Matching from '../pages/Matching';
 import ManageQuestionsView from '../pages/Question/Manage';
+import Profile from '../pages/account/profile';
+import QuestionPage from '../pages/Question/Manage';
 import './App.css';
 
+// Preserved from new file: Navigation handler for session restoration
 const ResumeHandler: React.FC = () => {
   const { accessToken, hasCollab, sessionId } = useAuth();
   const { goToCollabPage, goToMatchingPage, goToHomePage } = pageNavigation();
@@ -43,13 +46,16 @@ const ResumeHandler: React.FC = () => {
   return null;
 };
 
+// Maintained design structure from old file with functional additions
 const ActiveApp: React.FC = () => {
   const { accessToken, isAdmin, hasCollab } = useAuth();
 
   return (
     <React.Suspense fallback={<Loading message="Loading App..." />}>
       <div className="App">
+        {/* Added from new file for session management */}
         <ResumeHandler />
+        {/* Preserved design elements from old file */}
         <ToastContainer theme="colored" />
         <CssBaseline />
         <Routes>
@@ -57,9 +63,11 @@ const ActiveApp: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/question" element={accessToken ? <QuestionPage /> : <Navigate to="/" />} />
           <Route path="/home" element={accessToken ? <Home /> : <Navigate to="/" />} />
           <Route path="/matching" element={accessToken ? <Matching /> : <Navigate to="/" />} />
           <Route path="/collab" element={accessToken && hasCollab ? <Collab /> : <Navigate to="/" />} />
+          <Route path="/profile" element={accessToken ? <Profile /> : <Navigate to="/" />} />
           <Route
             path="/manage/question"
             element={accessToken && isAdmin ? <ManageQuestionsView /> : <Navigate to="/" />}
@@ -72,7 +80,7 @@ const ActiveApp: React.FC = () => {
   );
 };
 
-// Landing page / entry point
+// Maintained entry point structure from old file
 const App: React.FC = () => {
   return (
     <BrowserRouter>

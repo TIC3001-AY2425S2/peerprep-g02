@@ -7,6 +7,7 @@ import {
   findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
   findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
+  updateQuestionById as _updateQuestionById,
 } from '../model/repository.js';
 import QuestionService from '../service/QuestionService.js';
 

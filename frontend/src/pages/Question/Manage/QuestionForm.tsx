@@ -9,9 +9,10 @@ interface QuestionFormProps {
   onSubmit: (formData: any) => void;
   onDelete?: (deletedQuestion: any) => void;
   initialData?: Question;
+  isAdmin?: boolean; // Added admin permission flag
 }
 
-const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) => {
+const QuestionForm = ({ onSubmit, onDelete, initialData, isAdmin = false }: QuestionFormProps) => {
   const [formData, setFormData] = useState({
     _id: initialData?._id || '',
     title: initialData?.title || '',
@@ -86,10 +87,14 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
     }
   };
 
+  // Determine if fields should be disabled
+  const isDisabled = !isAdmin;
+
+
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       <Typography component="h1" variant="h5" align="center">
-        {initialData ? 'Edit Question' : 'Add Question'}
+        {initialData ? (isAdmin ? 'Edit Question' : 'Question Details') : 'Add Question'}
       </Typography>
       <TextField
         margin="normal"
@@ -101,6 +106,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.title}
+        disabled={isDisabled}
       />
       <TextField
         margin="normal"
@@ -115,6 +121,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.description}
+        disabled={isDisabled}
         sx={{
           '& .MuiInputBase-root': {
             overflow: 'auto',
@@ -132,6 +139,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
         type="text"
         onChange={handleChange}
         value={formData.category}
+        disabled={isDisabled}
       />
       <FormControl fullWidth required margin="normal">
         <InputLabel id="complexity-label">Complexity</InputLabel>
@@ -142,6 +150,7 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           label="Complexity"
           value={formData.complexity}
           onChange={handleSelectChange}
+          disabled={isDisabled}
         >
           <MenuItem value="easy">Easy</MenuItem>
           <MenuItem value="medium">Medium</MenuItem>
@@ -157,32 +166,37 @@ const QuestionForm = ({ onSubmit, onDelete, initialData }: QuestionFormProps) =>
           mb: 2,
         }}
       >
-        <Button
-          type="submit"
-          variant="contained"
-          sx={{
-            width: '20%',
-            minWidth: 120,
-            flexShrink: 0,
-          }}
-        >
-          {initialData ? 'Update' : 'Create'}
-        </Button>
+        {/* Show action buttons only for admin */}
+        {isAdmin && (
+          <>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                width: '20%',
+                minWidth: 120,
+                flexShrink: 0,
+              }}
+            >
+              {initialData ? 'Update' : 'Create'}
+            </Button>
 
-        {initialData && (
-          <Button
-            type="button"
-            variant="contained"
-            color="error"
-            sx={{
-              width: '20%',
-              minWidth: 120,
-              flexShrink: 0,
-            }}
-            onClick={handleDelete}
-          >
-            Delete
-          </Button>
+            {initialData && (
+              <Button
+                type="button"
+                variant="contained"
+                color="error"
+                sx={{
+                  width: '20%',
+                  minWidth: 120,
+                  flexShrink: 0,
+                }}
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            )}
+          </>
         )}
       </Box>
     </Box>
