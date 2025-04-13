@@ -24,10 +24,10 @@ spec:
     spec:
       containers:
         - env:
-            - name: REACT_APP_BASE_URL
+            - name: BASE_URL
               valueFrom:
                 configMapKeyRef:
-                  key: REACT_APP_BASE_URL
+                  key: BASE_URL
                   name: frontend-docker-env
             - name: REACT_APP_CONTAINER_NAME
               valueFrom:
