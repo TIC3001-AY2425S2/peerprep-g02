@@ -91,6 +91,11 @@ async function editQuestion(questionId, title, description, category, complexity
     throw new Error(`Question ${questionId} not found`);
   }
 
+  const existingQuestion = await QuestionRepository.findQuestionByTitle(title);
+  if (existingQuestion && existingQuestion.id !== questionId) {
+    throw new Error('Question title already exists');
+  }
+
   const question = await QuestionRepository.findQuestionById(questionId);
 
   try {

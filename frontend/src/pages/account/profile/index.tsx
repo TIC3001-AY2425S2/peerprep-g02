@@ -22,7 +22,7 @@ const ProfilePage = () => {
   const { user, logoutAuth } = useAuth();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
-    displayName: user?.username || '',
+    username: user?.username || '',
     email: user?.email || '',
     // REMOVED: currentPassword field
     password: '', // CHANGED: from newPassword to password
@@ -30,7 +30,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     setFormData({
-      displayName: user?.username || '',
+      username: user?.username || '',
       email: user?.email || '',
       // REMOVED: currentPassword reset
       password: '', // CHANGED: from newPassword to password
@@ -45,7 +45,7 @@ const ProfilePage = () => {
   const handleSaveProfile = async () => {
     try {
       const payload = {
-        username: formData.displayName,
+        username: formData.username,
         email: formData.email,
         // SIMPLIFIED: Direct password update without current password
         ...(formData.password && { password: formData.password }), // CHANGED: field name and structure
@@ -90,10 +90,10 @@ const ProfilePage = () => {
         </Typography>
 
         <TextField
-          label="Display Name"
+          label="Username"
           variant="outlined"
-          name="displayName"
-          value={formData.displayName}
+          name="username"
+          value={formData.username}
           onChange={handleChange}
           sx={{ width: '400px', mb: 3 }}
         />
