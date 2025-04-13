@@ -17,6 +17,7 @@ const Matching = () => {
   const { goToHomePage, goToCollabPage } = pageNavigation();
   const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum | ''>(MatchingStatusEnum.WAITING);
   const [countdown, setCountdown] = useState<number | ''>('');
+  const [statusLoaded, setStatusLoaded] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>();
   const userId = user.id;
 
@@ -39,6 +40,7 @@ const Matching = () => {
       }
       setMatchStatus(data.status);
       setCountdown(data.timer);
+      setStatusLoaded(true);
     });
 
     // Set up an interval to emit status requests every second.
@@ -76,8 +78,8 @@ const Matching = () => {
   useEffect(() => {
     console.log(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
 
-    // When countdown reaches 0 and we're still WAITING, set status message to processing.
-    if (matchStatus === MatchingStatusEnum.WAITING && countdown === 0) {
+    // When countdown reaches 0, set status message to processing.
+    if (statusLoaded && matchStatus === MatchingStatusEnum.WAITING && countdown <= 0) {
       setStatusMessage('Processing');
       return;
     }
@@ -85,6 +87,9 @@ const Matching = () => {
     switch (matchStatus) {
       case MatchingStatusEnum.WAITING:
         setStatusMessage(countdown.toString());
+        break;
+      case MatchingStatusEnum.PROCESSING:
+        setStatusMessage(MatchingStatusEnum.PROCESSING);
         break;
       case MatchingStatusEnum.MATCHED:
         setStatusMessage('Match found! Redirecting...');
@@ -121,7 +126,13 @@ const Matching = () => {
           <h2>Matching... {matchStatus}</h2>
           <SearchIcon fontSize="large" />
           <div style={{ marginTop: '1rem' }}>{statusMessage}</div>
-          <Button variant="outlined" color="error" onClick={handleMatchCancelled} sx={{ mt: 2 }}>
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={!statusLoaded || matchStatus !== MatchingStatusEnum.WAITING}
+            onClick={handleMatchCancelled}
+            sx={{ mt: 2 }}
+          >
             Cancel Match
           </Button>
         </div>

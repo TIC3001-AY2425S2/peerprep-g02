@@ -1,71 +1,71 @@
 import MatchingStatusEnum from '../enum/MatchingStatusEnum.js';
 import {
+  atomicMatch,
   getMatchStatus,
-  isCategoryActive,
   isCategoryComplexityActive,
-  setMatchStatus,
+  setMatchStatusIfStatusWaiting,
 } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageSource from './MessageSource.js';
 
 /**
- * Creates a message processor for a given valid window and name.
- * Each processor will have its own waiting state.
+ * Creates a message processor. Each processor will have its own waiting state.
  */
-function createMessageProcessor(validWindow, processorName) {
+function createMessageProcessor() {
   let waitingUser = null;
+
+  // Use a delay factor so that we can favor the user's original complexity choice.
+  function computeMatchDelay(waitingDistance, incomingDistance) {
+    // Use the maximum distance as the delay factor.
+    return 100 * Math.max(waitingDistance, incomingDistance);
+  }
 
   async function shouldProcessMessage(message) {
     const { category, complexity } = message;
-    return (await isCategoryComplexityActive(category, complexity)) || (await isCategoryActive(category));
+    return await isCategoryComplexityActive(category, complexity);
   }
 
-  async function isUserCancelled(userId, sessionId) {
-    return (await getMatchStatus(userId, sessionId)) === MatchingStatusEnum.CANCELLED;
+  async function isUserWaiting(userId, sessionId) {
+    return (await getMatchStatus(userId, sessionId)) === MatchingStatusEnum.WAITING;
   }
 
-  async function attemptMatching(waitingUser, message, processorName) {
+  async function attemptMatching(waitingUser, message) {
+    const delay = computeMatchDelay(waitingUser.message.expansion, message.expansion);
+    console.log(`${new Date().toISOString()} MessageService: Delaying for ${delay}ms to account for better match.`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
     // Update both users to MATCHED and frontend should not allow users to cancel at this point onwards once successful.
-    await Promise.all([
-      setMatchStatus(waitingUser.message.userId, waitingUser.message.sessionId, MatchingStatusEnum.MATCHED),
-      setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.MATCHED),
-    ]);
+    if (
+      !(await atomicMatch(waitingUser.message.userId, waitingUser.message.sessionId, message.userId, message.sessionId))
+    ) {
+      return false;
+    }
     clearTimeout(waitingUser.timer);
 
     console.log(
-      `${new Date().toISOString()} MessageService: Matched users (${processorName}) in ${message.category}: ${waitingUser.message.userId} and ${message.userId}`,
+      `${new Date().toISOString()} MessageService: Matched users in ${message.category} ${message.complexity}: ${waitingUser.message.userId} and ${message.userId}`,
     );
 
     await MessageSource.sendMatchedPlayersMessage([waitingUser.message, message]);
+    return true;
   }
 
-  function setWaitingUser(message, validWindow, elapsed, processorName) {
+  function setWaitingUser(message, elapsed) {
     const waitingUser = { message, timer: null };
-    const remainingTime = validWindow - elapsed;
+    const remainingTime = MessageConfig.QUEUE_TIMEOUT * 1000 - elapsed;
 
     console.log(`${new Date().toISOString()} MessageService: Setting waiting user ${message.userId}`);
     waitingUser.timer = setTimeout(async () => {
       console.log(
-        `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${processorName} ${message.category} queue timed out.`,
+        `${new Date().toISOString()} MessageService: Waiting user ${message.userId} in ${message.category} ${message.complexity} queue timed out.`,
       );
       clearWaitingUser();
 
-      // If the processor is 'main', republish to a dead-letter queue only if not cancelled.
-      if (processorName === 'main') {
-        if (await isUserCancelled(message.userId)) {
-          console.log(
-            `${new Date().toISOString()} MessageService: User ${message.userId} cancelled during timeout, skipping further processing.`,
-          );
-          return;
-        }
-        await MessageSource.sendCategoryMessage(message);
-        return;
-      }
-      await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
+      await setMatchStatusIfStatusWaiting(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
     }, remainingTime);
 
     console.log(
-      `${new Date().toISOString()} MessageService: Stored waiting user (${processorName}) in ${message.category}: ${message.userId}`,
+      `${new Date().toISOString()} MessageService: Stored waiting user in ${message.category} ${message.complexity}: ${message.userId}`,
     );
 
     return waitingUser;
@@ -83,7 +83,7 @@ function createMessageProcessor(validWindow, processorName) {
       console.log(
         `${new Date().toISOString()} MessageService: Queue does not exists. Should not process ${message.userId}`,
       );
-      await setMatchStatus(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
+      await setMatchStatusIfStatusWaiting(message.userId, message.sessionId, MatchingStatusEnum.NO_MATCH);
       return;
     }
 
@@ -92,29 +92,28 @@ function createMessageProcessor(validWindow, processorName) {
 
     // If waiting user doesn't exist, set current user as waiting user.
     if (!waitingUser) {
-      waitingUser = setWaitingUser(message, validWindow, elapsed, processorName);
+      waitingUser = setWaitingUser(message, elapsed);
       return;
     }
 
     // Attempt to match waiting user with the current message.
-    // Scenario 1: Both users cancelled when attempt matching
-    // Scenario 2: Only waiting user cancelled when attempt matching
-    // Scenario 3: Only current user cancelled when attempt matching
-    const [waitingUserCancelled, currentUserCancelled] = await Promise.all([
-      isUserCancelled(waitingUser.message.userId, waitingUser.message.sessionId),
-      isUserCancelled(message.userId, message.sessionId),
+    // Scenario 1: Both users not waiting when attempt matching
+    // Scenario 2: Only waiting user waiting when attempt matching
+    // Scenario 3: Only current user waiting when attempt matching
+    const [waitingUserWaiting, currentUserWaiting] = await Promise.all([
+      isUserWaiting(waitingUser.message.userId, waitingUser.message.sessionId),
+      isUserWaiting(message.userId, message.sessionId),
     ]);
 
-    if (!waitingUserCancelled && !currentUserCancelled) {
-      await attemptMatching(waitingUser, message, processorName);
+    if (waitingUserWaiting && currentUserWaiting && (await attemptMatching(waitingUser, message))) {
       clearWaitingUser();
       return;
     }
 
     console.log(`${new Date().toISOString()} MessageService: Attempt to match failed. Someone has cancelled.`);
 
-    // Waiting user has cancelled, clear waiting user
-    if (waitingUserCancelled) {
+    // Waiting user not waiting, clear waiting user
+    if (!waitingUserWaiting) {
       clearTimeout(waitingUser.timer);
       console.log(
         `${new Date().toISOString()} MessageService: Waiting user ${waitingUser.message.userId} has CANCELLED, clearing waiting slot.`,
@@ -122,9 +121,9 @@ function createMessageProcessor(validWindow, processorName) {
       clearWaitingUser();
     }
 
-    // If current user not cancelled, set user to be the new waiting user.
-    if (!currentUserCancelled) {
-      waitingUser = setWaitingUser(message, validWindow, elapsed, processorName);
+    // If current user waiting, set user to be the new waiting user.
+    if (currentUserWaiting) {
+      waitingUser = setWaitingUser(message, elapsed);
       return;
     }
 
@@ -136,14 +135,9 @@ function createMessageProcessor(validWindow, processorName) {
 
 // Isolate the instances so each consumer will have their own waitingUser, so they don't end up sharing.
 function createNormalProcessor() {
-  return createMessageProcessor(MessageConfig.QUEUE_TIMEOUT * 1000, 'main');
-}
-
-function createDeadLetterProcessor() {
-  return createMessageProcessor(MessageConfig.DEAD_LETTER_QUEUE_TIMEOUT * 1000, 'dead-letter');
+  return createMessageProcessor();
 }
 
 export default {
   createNormalProcessor,
-  createDeadLetterProcessor,
 };

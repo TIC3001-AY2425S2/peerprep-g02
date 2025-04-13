@@ -33,5 +33,14 @@ const QuestionModelSchema = new Schema({
     default: Date.now,
     required: true,
   },
+  // isDeleted: {
+  //   type: Boolean,
+  //   default: false,
+  // },
 });
+
+// QuestionModelSchema.query.notDeleted = function () {
+//   return this.where({ isDeleted: false });
+// };
+
 export default mongoose.model('QuestionModel', QuestionModelSchema);

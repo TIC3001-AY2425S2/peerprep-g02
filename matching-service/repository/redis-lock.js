@@ -25,6 +25,7 @@ async function renewQueueUpdatesLock() {
 export async function ensureLeadership(onAcquired) {
   const acquired = await acquireQueueUpdatesLock();
   if (acquired) {
+    console.log(`${new Date().toISOString()} RedisLock: Lock acquired.`);
     // Start renewal so that we maintain leadership.
     startLockRenewal(() => ensureLeadership(onAcquired));
     onAcquired();
@@ -47,7 +48,12 @@ export async function subscribeForLockExpiration(onLockAcquired) {
       if (await acquireQueueUpdatesLock()) {
         console.log(`${new Date().toISOString()} RedisLock: Lock acquired after expiration.`);
         await subscriber.unsubscribe('__keyevent@0__:expired');
+        startLockRenewal(() => ensureLeadership(onLockAcquired));
         onLockAcquired();
+      } else {
+        console.log(
+          `${new Date().toISOString()} RedisLock: Lock not acquired. Continue to subscribe to lock expired events.`,
+        );
       }
     }
   });

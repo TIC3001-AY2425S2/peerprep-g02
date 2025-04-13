@@ -1,12 +1,9 @@
-import { isValidObjectId } from 'mongoose';
 import {
   findAllQuestions as _findAllQuestions,
   findDistinctCategory as _findDistinctCategory,
   findDistinctCategoryAndComplexity as _findDistinctCategoryAndComplexity,
   findDistinctComplexity as _findDistinctComplexity,
-  findQuestionById as _findQuestionById,
   findQuestionByTitle as _findQuestionByTitle,
-  findRandomQuestionByCategoryAndComplexity as _findRandomQuestionByCategoryAndComplexity,
 } from '../model/repository.js';
 import QuestionService from '../service/QuestionService.js';
 
@@ -39,22 +36,18 @@ export async function createQuestion(req, res) {
 }
 
 export async function getQuestion(req, res) {
+  const questionId = req.params.id;
   try {
-    const questionId = req.params.id;
-    if (!isValidObjectId(questionId)) {
-      return res.status(404).json({ message: `Question ${questionId} not found` });
-    }
-
-    const question = await _findQuestionById(questionId);
-    if (!question) {
-      return res.status(404).json({ message: `Question ${questionId} not found` });
-    } else {
-      console.error('someone got the question!');
-      return res.status(200).json({ message: `Found question`, data: question });
-    }
+    const question = await QuestionService.getQuestion(questionId);
+    return res.status(200).json({ message: `Found question`, data: question });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Unknown error when getting question!' });
+    if (err.message === `Question not found`) {
+      res.status(404).json({ message: `Question ${questionId} not found` });
+    } else {
+      res.status(500).json({ message: 'Unknown error when getting question!' });
+    }
+    return res;
   }
 }
 
@@ -63,10 +56,8 @@ export async function getRandomQuestionByCategoryAndComplexity(req, res) {
     const category = req.query.category;
     const complexity = req.query.complexity;
 
-    const question = await _findRandomQuestionByCategoryAndComplexity(category, complexity);
-    // Given that the category and complexity is chosen by user, we assume it will exist
-    // and therefore immediately return 1st element.
-    return res.status(200).json({ message: 'Found a random question', data: question[0] });
+    const question = await QuestionService.getRandomQuestion(category, complexity);
+    return res.status(200).json({ message: 'Found a random question', data: question });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Unknown error when getting random question!' });
@@ -80,7 +71,6 @@ export async function getQuestionByTitle(req, res) {
     if (!question) {
       return res.status(404).json({ message: `Question ${questionTitle} not found` });
     } else {
-      console.error('someone got the question!');
       return res.status(200).json({ message: `Found question`, data: question });
     }
   } catch (err) {

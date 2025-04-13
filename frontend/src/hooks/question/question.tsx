@@ -1,13 +1,12 @@
 import api from '../../api';
 import {
-  Question,
   QuestionCategoriesComplexitiesData,
   QuestionDeleteData,
   QuestionPatchData,
   QuestionPostData,
 } from '../../types/questions';
 
-export const createQuestion = async (data: QuestionPostData): Promise<Question> => {
+export const createQuestion = async (data: QuestionPostData): Promise<any> => {
   try {
     const response = await api.questions.create(data);
     return response.data;
@@ -17,7 +16,7 @@ export const createQuestion = async (data: QuestionPostData): Promise<Question> 
   }
 };
 
-export const getQuestion = async (ids?: String): Promise<Question[]> => {
+export const getQuestion = async (ids?: String): Promise<any[]> => {
   try {
     const response = ids ? await api.questions.get(ids) : await api.questions.get();
     return response.data.data;
@@ -27,17 +26,7 @@ export const getQuestion = async (ids?: String): Promise<Question[]> => {
   }
 };
 
-export const getQuestionByTitle = async (title: String): Promise<Question> => {
-  try {
-    const response = await api.questions.getByTitle(title);
-    return response.data.data;
-  } catch (error) {
-    console.error('Error getting question: ', error);
-    throw error;
-  }
-};
-
-export const updateQuestion = async (data: QuestionPatchData): Promise<Question> => {
+export const updateQuestion = async (data: QuestionPatchData): Promise<any> => {
   try {
     const response = await api.questions.update(data);
     return response.data;
@@ -47,7 +36,7 @@ export const updateQuestion = async (data: QuestionPatchData): Promise<Question>
   }
 };
 
-export const deleteQuestion = async (data: QuestionDeleteData): Promise<Question> => {
+export const deleteQuestion = async (data: QuestionDeleteData): Promise<any> => {
   try {
     const response = await api.questions.remove(data);
     return response.data;

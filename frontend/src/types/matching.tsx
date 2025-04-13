@@ -23,4 +23,5 @@ export enum MatchingStatusEnum {
   MATCHED = 'MATCHED',
   NO_MATCH = 'NO_MATCH',
   CANCELLED = 'CANCELLED',
+  PROCESSING = 'PROCESSING',
 }

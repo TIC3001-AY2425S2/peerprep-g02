@@ -7,7 +7,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { basicSetup, EditorView } from 'codemirror';
 import { format } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
@@ -18,6 +18,7 @@ import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate } from 'y-protoc
 import * as Y from 'yjs';
 import { useAuth } from '../../context/authcontext';
 import pageNavigation from '../../hooks/navigation/pageNavigation';
+import { getQuestion } from '../../hooks/question/question';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 
@@ -48,37 +49,41 @@ const Collab = () => {
   const [ydoc] = useState(() => new Y.Doc());
   const editorRef = useRef(null);
   const [editorView, setEditorView] = useState(null);
+  const [question, setQuestion] = useState(null);
   const awareness = new Awareness(ydoc);
   const [selectedLanguage, setSelectedLanguage] = useState('JavaScript');
   const languageCompartment = new Compartment();
   const languages = ['JavaScript', 'Java', 'Python', 'C++'];
 
   const [chatMessages, setChatMessages] = useState([]);
+  const [snapshotVersions, setSnapshotVersions] = useState([]);
+  const [selectedSnapshot, setSelectedSnapshot] = useState('');
 
   useEffect(() => {
     socketRef.current = io(BASE_URL, { path: '/collab/websocket', query: { room: collab.id } });
     const socket = socketRef.current;
     if (!socket.connected) {
-      console.log('Running connect');
+      console.log('Connecting socket...');
       socket.connect();
     }
 
     socket.on('connect', () => {
-      toast.success(`Connected to server with socket ID: ${socket.id}`);
+      toast.success(`Connected with socket ID: ${socket.id}`);
     });
 
     // Start of YJS related socket messages
     socket.on('yjs update', (update) => {
-      // Ensure update is a Uint8Array cause socket doesn't send as the type ydoc needs.
-      const binaryUpdate = update instanceof Uint8Array ? update : new Uint8Array(update);
-      Y.applyUpdate(ydoc, binaryUpdate);
+      const binaryUpdate = new Uint8Array(update);
+      Y.applyUpdate(ydoc, binaryUpdate, 'remote');
     });
 
     // Listen for local updates on the Y.Doc.
-    ydoc.on('update', (update) => {
+    ydoc.on('update', (update, origin) => {
+      if (origin === 'remote' || origin === 'loadSnapshot') {
+        return;
+      }
       socket.emit('yjs update', update);
     });
-
     const userColors = [
       { color: '#30bced', light: '#30bced33' },
       { color: '#6eeb83', light: '#6eeb8333' },
@@ -105,7 +110,7 @@ const Collab = () => {
     });
 
     socket.on('awareness', (encodedUpdate) => {
-      const binaryUpdate = encodedUpdate instanceof Uint8Array ? encodedUpdate : new Uint8Array(encodedUpdate);
+      const binaryUpdate = new Uint8Array(encodedUpdate);
       applyAwarenessUpdate(awareness, binaryUpdate, null);
     });
 
@@ -140,25 +145,35 @@ const Collab = () => {
 
     socket.on('chat message', (newMessage) => {
       // Append new messages to chat message array
-      console.log(newMessage);
       setChatMessages((prev) => [...prev, newMessage]);
+    });
+
+    socket.on('history snapshots', (snapshots) => {
+      setSnapshotVersions(snapshots);
+    });
+
+    socket.on('yjs load snapshot', (snapshot) => {
+      const binaryUpdate = new Uint8Array(snapshot);
+      Y.applyUpdate(ydoc, binaryUpdate, 'loadSnapshot');
     });
 
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
-      console.log('Running handleBeforeUnlock');
       socket.disconnect();
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Cleanup both the socket listeners and the interval on unmount.
     return () => {
       console.log('Running off connect and status');
       handleBeforeUnload();
       view.destroy();
       socket.off('connect');
       socket.off('yjs update');
+      socket.off('awareness');
+      socket.off('chat history');
+      socket.off('chat message');
+      socket.off('history snapshots');
+      socket.off('yjs load snapshot');
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
@@ -171,6 +186,22 @@ const Collab = () => {
       });
     }
   }, [selectedLanguage, editorView]);
+
+  useEffect(() => {
+    async function fetchQuestion() {
+      if (!collab || !collab.questionId) {
+        return;
+      }
+
+      try {
+        const data = await getQuestion(collab.questionId);
+        setQuestion(data);
+      } catch (error) {
+        console.error('Failed to fetch error: ', error);
+      }
+    }
+    fetchQuestion();
+  }, [collab]);
 
   const handleSendMessage = (messageText) => {
     const socket = socketRef.current;
@@ -199,6 +230,12 @@ const Collab = () => {
     });
   };
 
+  const handleSnapshotSelect = (event) => {
+    const selectedVersion = event.target.value;
+    setSelectedSnapshot(selectedVersion);
+    socketRef.current.emit('yjs load snapshot', selectedVersion);
+  };
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
       {/*<NavBar />*/}
@@ -223,7 +260,25 @@ const Collab = () => {
               </Select>
             </FormControl>
           </Box>
-
+          {/* Snapshot Dropdown */}
+          <Box sx={{ margin: '8px' }}>
+            <FormControl fullWidth>
+              <InputLabel id="snapshot-select-label">Snapshot Version</InputLabel>
+              <Select
+                labelId="snapshot-select-label"
+                id="snapshot-select"
+                value={selectedSnapshot}
+                label="Snapshot Version"
+                onChange={handleSnapshotSelect}
+              >
+                {snapshotVersions.map((snap) => (
+                  <MenuItem key={snap.version} value={snap.version}>
+                    Version {snap.version} – {format(new Date(snap.createdAt), 'dd/MM/yyyy HH:mm')}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           {/* Editor container */}
           <Box
             ref={editorRef}
@@ -236,7 +291,19 @@ const Collab = () => {
             }}
           />
           {/* Question details */}
-          <Box sx={{ border: '1px solid #ccc', mt: 2, height: '150px' }}>Question details.</Box>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              mt: 2,
+              height: '200px',
+              overflowY: 'auto',
+              whiteSpace: 'pre-wrap',
+              textAlign: 'left',
+            }}
+          >
+            <Typography variant="body1"> {question?.title || ''} </Typography>
+            <Typography variant="body2"> {question?.description || ''} </Typography>
+          </Box>
         </Grid>
 
         <Grid item xs={4}>
