@@ -7,8 +7,6 @@ import RedisRepository from '../repository/redis-repository.js';
 // Taken from this genius: https://discuss.yjs.dev/t/how-to-recover-to-the-specified-version/2301/4
 function revertChangesSinceSnapshot(doc, snapshotEncoded) {
   const snap = Y.decodeSnapshot(snapshotEncoded);
-  // This sometimes throws an error which i'm not fully sure why too.
-  // Maybe lack of understanding of YJS.
   const tempdoc = Y.createDocFromSnapshot(doc, snap);
 
   const currentStateVector = Y.encodeStateVector(doc);
@@ -59,7 +57,7 @@ export default function setupCollabSocket(server) {
     const room = socket.handshake.query.room;
     socket.join(room);
 
-    const ydoc = new Y.Doc();
+    let ydoc = new Y.Doc();
     ydoc.gc = false;
 
     // Try to load an existing ydoc from Redis
@@ -111,6 +109,12 @@ export default function setupCollabSocket(server) {
         const snapshotBuffer = Buffer.from(historyEntry.snapshot, 'base64');
         const snapshotUpdate = new Uint8Array(snapshotBuffer);
 
+        ydoc = new Y.Doc();
+        ydoc.gc = false;
+        const encodedYdoc = await RedisRepository.getCollabYdoc(room);
+        const encodedYdocBuffer = Buffer.from(encodedYdoc, 'base64');
+        Y.applyUpdate(ydoc, new Uint8Array(encodedYdocBuffer));
+
         try {
           revertChangesSinceSnapshot(ydoc, snapshotUpdate);
         } catch (error) {
@@ -130,10 +134,6 @@ export default function setupCollabSocket(server) {
       }
     });
 
-    // socket.onAny((event, ...args) => {
-    //   console.log(`Received event: "${event}" with data:`, args);
-    // });
-
     socket.on('awareness', (encodedUpdate) => {
       // Broadcast the awareness update to all other clients in the room
       socket.to(room).emit('awareness', encodedUpdate);
@@ -149,9 +149,17 @@ export default function setupCollabSocket(server) {
     });
 
     // Leave session
-    socket.on('leave collab', async (userId, callback) => {
+    socket.on('leave collab', async ({ userId, username }, callback) => {
       try {
         const collab = await CollabRepository.setInactiveCollabUser(userId);
+        const message = {
+          id: Date.now(),
+          sender: 'system',
+          text: `${username} has left the session.`,
+          timestamp: new Date().toISOString(),
+        };
+        await RedisRepository.addCollabChat(room, message);
+        socket.to(room).emit('chat message', message);
         callback(true);
       } catch (error) {
         console.log('CollabService: Error occurred while creating collab', error);
@@ -191,6 +199,8 @@ export default function setupCollabSocket(server) {
       // Store the retrieved ydoc in collab repository.
       await CollabRepository.updateCollab(room, ydocString);
       console.log(`Saved ydoc to Collab model for ${room}`);
+      const versions = await CollabRepository.getCollabHistoryVersions(room);
+      socket.to(room).emit('history snapshots', versions);
     });
   });
 

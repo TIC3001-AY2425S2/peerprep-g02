@@ -230,7 +230,8 @@ const Collab = () => {
   const handleLeaveSession = () => {
     const socket = socketRef.current;
     const userId = user.id;
-    socket.emit('leave collab', userId, (response) => {
+    const username = user.username;
+    socket.emit('leave collab', { userId, username }, (response) => {
       if (!response) {
         toast.error(`Error leaving session`);
         return;
