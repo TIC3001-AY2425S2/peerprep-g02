@@ -1,0 +1,21 @@
+name: Run Frontend Tests in Docker
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose version
+
+      - name: Build Docker test container
+        run: |
+          docker-compose -f .ci/frontend-test/provisioning/docker-compose.yml up --abort-on-container-exit --exit-code-from frontend-test

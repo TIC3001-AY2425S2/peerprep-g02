@@ -11,4 +11,4 @@ RUN npm install
 COPY ../../../frontend ./
 
 # Set default command to run tests
-CMD ["npm", "run", "test"]
+CMD ["npm", "run", "test:ci"]
