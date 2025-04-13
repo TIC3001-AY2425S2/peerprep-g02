@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  DB_CLOUD_URI: <CONNECTION_STRING>
+  DB_LOCAL_URI: mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+  ENV: LOCAL
+  JWT_SECRET: you-can-replace-this-with-your-own-secret
+  PORT: "8000"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: user-service-user-service-docker-env
+  name: user-service-docker-env

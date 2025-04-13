@@ -1,0 +1,22 @@
+services:
+  collab-service:
+    # Automatically build the image with latest tag
+    build: ./..
+    image: collab-service
+    container_name: collab-service
+    ports:
+      - "8003:8003"
+    env_file:
+      - ./../.docker.env
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8003/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: peerprep-g02

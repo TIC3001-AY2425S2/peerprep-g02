@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  declarations.d.ts: |
+    // Support for svg files
+    declare module '*.svg' {
+      import React = require('react');
+      export const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
+      const src: string;
+      export default src;
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: frontend
+  name: frontend-cm2

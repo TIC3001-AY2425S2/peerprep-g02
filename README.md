@@ -1,14 +1,106 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/-9a38Lm0)
 # TIC3001 Project
 
 ## User Service
 
 ### Quick Start
 
-1. In the `user-service` directory, create a copy of the `.env.sample` file and name it `.env`.
-2. Create a MongoDB Atlas Cluster and obtain the connection string.
-3. Add the connection string to the `.env` file under the variable `DB_CLOUD_URI`.
-4. Ensure you are in the `user-service` directory, then install project dependencies with `npm install`.
-5. Start the User Service with `npm start` or `npm run dev`.
-6. If the server starts successfully, you will see a "User service server listening on ..." message.
+1. In the `user-service` directory, create `.env` file with the following env variables:
+```
+# For PROD env
+DB_CLOUD_URI=<CONNECTION_STRING>
+# For LOCAL env
+DB_LOCAL_URI=mongodb://admin:password@127.0.0.1:8098/peerprep-g02?authSource=admin
+# For DOCKER env
+DB_DOCKER_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+PORT=8000
+# Possible values: PROD or LOCAL or DOCKER
+ENV=PROD
+
+# Secret for creating JWT signature
+JWT_SECRET=you-can-replace-this-with-your-own-secret
+```
+2. Install dependencies with `npm install`.
+3. Start the User Service with `npm start`. 
+4. If the server starts successfully, you will see a "User service server listening on http://localhost:8000" message.
 
 ### Complete User Service Guide: [User Service Guide](./user-service/README.md)
+
+## Question Service
+
+### Quick Start
+
+1. In the `question-service` directory, create `.env` file with the following env variables:
+```
+# For PROD env
+DB_CLOUD_URI=<CONNECTION_STRING>
+# For LOCAL env
+DB_LOCAL_URI=mongodb://admin:password@127.0.0.1:8098/peerprep-g02?authSource=admin
+# For DOCKER env
+DB_DOCKER_URI=mongodb://admin:password@mongodb:27017/peerprep-g02?authSource=admin
+PORT=8001
+# Possible values: PROD or LOCAL or DOCKER
+ENV=PROD
+
+# Secret for creating JWT signature
+JWT_SECRET=you-can-replace-this-with-your-own-secret
+```
+2. Install dependencies with `npm install`. 
+3. Start the Question Service with `npm start`. 
+4. If the server starts successfully, you will see a "Question service server listening on http://localhost:8001" message.
+
+### Complete Question Service Guide: [Question Service Guide](./question-service/README.md)
+
+## Frontend Service
+
+### Quick Start
+
+1. Navigate to `frontend` directory
+2. Install dependencies with `npm install`.
+3. Start the Frontend service with `npm start`.
+4. If the server starts successfully, you will see a "You can now view frontend in the browser." message.
+5. Navigate to http://localhost:3000
+
+# Docker
+[//]: # (TODO: Complete this readme for matching service and .docker.env)
+## Run (almost) everything at once
+1. From project root run `cd provisioning` then `docker compose up` to run everything at once.
+2. From project root `cd matching-service/provisioning` then `docker compose up` to start matching service 
+* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time)
+
+## Running services individually in docker
+1. From project root `cd provisioning/db/` then `docker compose up` to start local mongodb and rabbitmq
+2. From project root `cd user-service/provisioning` then `docker compose up` to start user service
+3. From project root `cd question-service/provisioning` then `docker compose up` to start question service
+4. From project root `cd matching-service/provisioning` then `docker compose up` to start matching service
+5. From project root `cd frontend/provisioning` then `docker compose up` to start frontend service
+* Add `-d` flag at the end if you want it to just "run in background". Logs can be obtained by using this command [here](#view-container-logs-in-real-time).
+
+## Mongodb express (UI to view models)
+1. Navigate to localhost:8099
+2. login with username: admin, password: pass
+
+## Useful docker commands
+### Build an image
+`docker build . -t <image_name:version or tag>` to run `Dockerfile` instructions and build an image according to the values specified `-t`
+### View all docker images
+`docker image ls`
+### Start/Stop containers
+`docker compose <up/down>` folder container `docker-compose.yml`.
+* You will lose all your data since the data isn't saved if you docker compose down. Use `ctrl+c` to "pause" the container
+* To reset, just `docker compose down` then `docker compose up` again.
+### Start containers with building image
+`docker compose up --build`
+### View all containers
+`docker container ls`
+* From here you can get container information such as container id 
+### View container logs in real time
+`docker logs -f <container_id>`
+### View docker network
+`docker network ls`
+### Enter into the container
+`docker exec -it <container_id> /bin/sh`
+### Encounter an issue?
+`docker container prune` and `docker image prune` and `docker system prune` and `docker network prune`
+### Removing an image
+`docker image rm <image_name>` or `docker image rm <image_name>:<tag>` if you need specificity

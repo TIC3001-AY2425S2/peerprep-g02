@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: redisinsight
+  name: redisinsight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redisinsight
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: redisinsight
+    spec:
+      containers:
+        - image: redislabs/redisinsight:latest
+          name: redisinsight
+          ports:
+            - containerPort: 5540
+              protocol: TCP
+      restartPolicy: Always

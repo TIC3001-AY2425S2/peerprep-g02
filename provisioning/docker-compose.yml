@@ -1,0 +1,104 @@
+services:
+  mongodb:
+    extends:
+      file: db/docker-compose.yml
+      service: mongodb
+
+  mongo-express:
+    extends:
+      file: db/docker-compose.yml
+      service: mongo-express
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  redis:
+    extends:
+      file: db/docker-compose.yml
+      service: redis
+
+  redisinsight:
+    extends:
+      file: db/docker-compose.yml
+      service: redisinsight
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  rabbitmq:
+    extends:
+      file: db/docker-compose.yml
+      service: rabbitmq
+
+  nginx-gateway:
+    extends:
+      file: ./../nginx/provisioning/docker-compose.yml
+      service: nginx-gateway
+
+  user-service:
+    extends:
+      file: ./../user-service/provisioning/docker-compose.yml
+      service: user-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  question-service:
+    extends:
+      file: ./../question-service/provisioning/docker-compose.yml
+      service: question-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  collab-service:
+    extends:
+      file: ./../collab-service/provisioning/docker-compose.yml
+      service: collab-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      nginx-gateway:
+        condition: service_healthy
+
+  matching-service:
+    extends:
+      file: ./../matching-service/provisioning/docker-compose.yml
+      service: matching-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      nginx-gateway:
+        condition: service_healthy
+      question-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    extends:
+      file: ./../frontend/provisioning/docker-compose.yml
+      service: frontend
+    depends_on:
+      nginx-gateway:
+        condition: service_healthy
+      question-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      matching-service:
+        condition: service_healthy
+      collab-service:
+        condition: service_healthy
+
+
+
+networks:
+  shared-network:
+    name: peerprep-g02
