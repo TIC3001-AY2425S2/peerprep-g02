@@ -16,7 +16,6 @@ client.interceptors.request.use(config => {
 
 export const clientApi = Object.freeze({
   get: client.get,
-  getByTitle: client.get,
   delete: client.delete,
   post: client.post,
   put: client.put,

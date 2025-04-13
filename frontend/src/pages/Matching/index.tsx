@@ -1,13 +1,13 @@
-import { 
-  Button, 
-  Container, 
-  Typography, 
-  CircularProgress, 
-  Box, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions 
+import {
+  Button,
+  Container,
+  Typography,
+  CircularProgress,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -20,10 +20,9 @@ import pageNavigation from '../../hooks/navigation/pageNavigation';
 import { MatchingStatusEnum } from '../../types/matching';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
-const REDIRECT_TIMEOUT = 3000;
+const REDIRECT_TIMEOUT = 3000; // 3 seconds countdown to redirect to homepage.
 
 const Matching = () => {
-  // Preserve state management from both versions
   const { user, sessionId, setCollab, removeSessionId } = useAuth();
   const { goToHomePage, goToCollabPage } = pageNavigation();
   const [matchStatus, setMatchStatus] = useState<MatchingStatusEnum>(MatchingStatusEnum.WAITING);
@@ -32,13 +31,10 @@ const Matching = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showTimeoutDialog, setShowTimeoutDialog] = useState(false);
   const userId = user.id;
-  const socketRef = useRef<Socket | null>(null);
 
-  // Combine WebSocket connection logic from both versions
   useEffect(() => {
-    const socket = io(BASE_URL, { 
+    const socket = io(BASE_URL, {
       path: '/matching/websocket',
-      transports: ['websocket']
     });
     socketRef.current = socket;
 
@@ -53,13 +49,13 @@ const Matching = () => {
     };
 
     const handleStatusUpdate = (data: { status: MatchingStatusEnum, timer: number }) => {
-      // Preserve real-time updates from current version
       if (data.status === MatchingStatusEnum.MATCHED) {
         socket.disconnect();
       }
       setMatchStatus(data.status);
       setCountdown(data.timer);
-    };
+      setStatusLoaded(true);
+    });
 
     socket
       .on('connect', handleConnect)
@@ -72,14 +68,17 @@ const Matching = () => {
       }
     }, 1000);
 
-    // Add cleanup from both versions
+    // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
+      console.log('Running handleBeforeUnlock');
       socket.disconnect();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // Cleanup both the socket listeners and the interval on unmount.
     return () => {
+      console.log('Running off connect and status');
       clearInterval(pollInterval);
       handleBeforeUnload();
       socket.off('connect', handleConnect);
@@ -89,21 +88,12 @@ const Matching = () => {
     };
   }, []);
 
-  // Combine timeout handling from both versions
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
-    if (matchStatus === MatchingStatusEnum.WAITING) {
-      timeout = setTimeout(() => {
-        cancelMatchmaking({ userId, sessionId });
-        setShowTimeoutDialog(true);
-      }, Number(process.env.MATCH_TIMEOUT || 30000));
-    }
+  const handleMatchCancelled = async () => {
+    await cancelMatchmaking({ userId, sessionId });
+    removeSessionId();
+    goToHomePage();
+  };
 
-    return () => clearTimeout(timeout);
-  }, [matchStatus]);
-
-  // Preserve UI effects from previous version
   useEffect(() => {
     const dotsInterval = setInterval(() => {
       setDots(prev => prev.length >= 3 ? '.' : prev + '.');
@@ -112,48 +102,62 @@ const Matching = () => {
     return () => clearInterval(dotsInterval);
   }, []);
 
-  // Enhanced status handler combining both versions
+  const handleTimeoutConfirm = () => {
+    setShowTimeoutDialog(false);
+    setStatusMessage('Match not found. Redirecting to homepage');
+    removeSessionId();
+    setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+  };
+
+  const handleCancelRequest = () => setShowConfirm(true);
+
+  const handleConfirmClose = async (confirmed: boolean) => {
+    setShowConfirm(false);
+    if (confirmed) {
+      setStatusMessage('Cancelled. Redirecting to homepage');
+      await cancelMatchmaking({ userId, sessionId });
+      removeSessionId();
+      setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+    }
+  };
+
   useEffect(() => {
+    console.log(`matchStatus changed: ${matchStatus} or countdown changed: ${countdown}`);
+
+    // When countdown reaches 0, set status message to processing.
+    if (statusLoaded && matchStatus === MatchingStatusEnum.WAITING && countdown <= 0) {
+      setStatusMessage('Processing');
+      return;
+    }
+
     switch (matchStatus) {
+      case MatchingStatusEnum.WAITING:
+        setStatusMessage(countdown.toString());
+        break;
+      case MatchingStatusEnum.PROCESSING:
+        setStatusMessage(MatchingStatusEnum.PROCESSING);
+        break;
       case MatchingStatusEnum.MATCHED:
+        setStatusMessage('Match found! Redirecting...');
+        // We can't set async to useEffect directly so define an async function here.
         (async () => {
           const collab = await getCollab({ userId });
           setCollab(collab.collab);
           removeSessionId();
-          setTimeout(goToCollabPage, REDIRECT_TIMEOUT);
+          setTimeout(() => goToCollabPage(), REDIRECT_TIMEOUT);
         })();
         break;
       case MatchingStatusEnum.NO_MATCH:
+        setShowTimeoutDialog(true);
+        break;
       case MatchingStatusEnum.CANCELLED:
+        break;
+      default:
         removeSessionId();
-        setTimeout(goToHomePage, REDIRECT_TIMEOUT);
+        setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
         break;
     }
-  }, [matchStatus]);
-
-  // Preserve dialog handlers from previous version
-  const handleCancelRequest = () => setShowConfirm(true);
-  
-  const handleConfirmClose = async (confirmed: boolean) => {
-    setShowConfirm(false);
-    if (confirmed) {
-      await cancelMatchmaking({ userId, sessionId });
-      setMatchStatus(MatchingStatusEnum.CANCELLED);
-    }
-  };
-
-  // Preserve time formatting from previous version
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Combine timeout confirmation logic
-  const handleTimeoutConfirm = () => {
-    setShowTimeoutDialog(false);
-    goToHomePage();
-  };
+  }, [matchStatus, countdown]);
 
   return (
     <Container disableGutters component="main" maxWidth={false}>
@@ -165,7 +169,7 @@ const Matching = () => {
         justifyContent: 'center',
         minHeight: '100vh',
         gap: 4,
-        filter: showTimeoutDialog ? 'blur(2px)' : 'none', 
+        filter: showTimeoutDialog ? 'blur(2px)' : 'none',
         transition: 'filter 0.3s ease'
       }}>
         {/* Combined status display */}
@@ -184,7 +188,7 @@ const Matching = () => {
         </Box>
 
         <CircularProgress size={80} thickness={4} />
-        
+
         {/* Combined cancel button functionality */}
         <Button
           variant="contained"
@@ -202,8 +206,8 @@ const Matching = () => {
           open={showTimeoutDialog}
           onClose={handleTimeoutConfirm}
           BackdropProps={{ style: { backgroundColor: 'rgba(0,0,0,0.4)' } }}
-          sx={{ 
-            '& .MuiPaper-root': { 
+          sx={{
+            '& .MuiPaper-root': {
               width: '30vw',
               minWidth: 300,
               maxWidth: 400,
@@ -221,7 +225,7 @@ const Matching = () => {
             </Typography>
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-            <Button 
+            <Button
               onClick={handleTimeoutConfirm}
               variant="contained"
               color="primary"
@@ -235,13 +239,13 @@ const Matching = () => {
         <Dialog
           open={showConfirm}
           onClose={() => handleConfirmClose(false)}
-          sx={{ 
-            '& .MuiPaper-root': { 
-              width: '20vw', 
+          sx={{
+            '& .MuiPaper-root': {
+              width: '20vw',
               height: '25vh',
               minWidth: 300,
-              minHeight: 150 
-            } 
+              minHeight: 150
+            }
           }}
         >
           <DialogTitle>Confirm Cancellation</DialogTitle>
