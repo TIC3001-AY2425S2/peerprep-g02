@@ -39,7 +39,7 @@ const Matching = () => {
     });
 
     const handleConnect = () => {
-      toast.success(`Connected to server with socket ID: ${socket.id}`);
+      console.log(`Connected to server with socket ID: ${socket.id}`);
       console.log('Connected:', socket.id);
     };
 

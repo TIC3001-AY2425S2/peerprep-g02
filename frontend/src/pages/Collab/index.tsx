@@ -68,7 +68,7 @@ const Collab = () => {
     }
 
     socket.on('connect', () => {
-      toast.success(`Connected with socket ID: ${socket.id}`);
+      console.log(`Connected with socket ID: ${socket.id}`);
     });
 
     // Start of YJS related socket messages
