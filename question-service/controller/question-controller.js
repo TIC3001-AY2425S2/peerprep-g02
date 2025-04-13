@@ -114,9 +114,7 @@ export async function updateQuestion(req, res) {
       res.status(400).json({ message: 'Category cannot be empty!' });
     } else if (err.message === 'Question title already exists') {
       res.status(409).json({ message: 'Question title already exists!' });
-    }
-
-    else {
+    } else {
       res.status(500).json({ message: 'Unknown error when updating question!' });
     }
   }
