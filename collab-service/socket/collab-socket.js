@@ -3,6 +3,32 @@ import * as Y from 'yjs';
 import CollabRepository from '../repository/collab-repository.js';
 import RedisRepository from '../repository/redis-repository.js';
 
+// Taken from this genius: https://discuss.yjs.dev/t/how-to-recover-to-the-specified-version/2301/4
+function revertChangesSinceSnapshot(doc, snapshotEncoded) {
+  const snap = Y.decodeSnapshot(snapshotEncoded);
+  const tempdoc = Y.createDocFromSnapshot(doc, snap);
+
+  const currentStateVector = Y.encodeStateVector(doc);
+  const snapshotStateVector = Y.encodeStateVector(tempdoc);
+
+  const changesSinceSnapshotUpdate = Y.encodeStateAsUpdate(doc, snapshotStateVector);
+  // const um = new Y.UndoManager([...tempdoc.share.values()]);
+  const textType = tempdoc.getText('codemirror');
+  const um = new Y.UndoManager(textType);
+  // console.log('1 before revert in revert function tempdoc: ', tempdoc.getText('codemirror').toString());
+  tempdoc.transact(() => {
+    Y.applyUpdate(tempdoc, changesSinceSnapshotUpdate);
+  });
+  // console.log('2 after revert in revert function tempdoc: ', tempdoc.getText('codemirror').toString());
+  um.undo();
+  // console.log('3 after revert in revert function tempdoc: ', tempdoc.getText('codemirror').toString());
+
+  const revertChangesSinceSnapshotUpdate = Y.encodeStateAsUpdate(tempdoc, currentStateVector);
+  // console.log('4 before revert in revert function tempdoc: ', doc.getText('codemirror').toString());
+  Y.applyUpdate(doc, revertChangesSinceSnapshotUpdate);
+  // console.log('5 after revert in revert function tempdoc: ', doc.getText('codemirror').toString());
+}
+
 // For more info can refer to: https://socket.io/docs/v4/tutorial/introduction
 // Look at ES Modules if it ever shows up.
 
@@ -31,6 +57,7 @@ export default function setupCollabSocket(server) {
     socket.join(room);
 
     const ydoc = new Y.Doc();
+    ydoc.gc = false;
 
     // Try to load an existing ydoc from Redis
     const encodedYdoc = await RedisRepository.getCollabYdoc(room);
@@ -47,6 +74,10 @@ export default function setupCollabSocket(server) {
     // Send the initial ydoc to the connected client
     socket.emit('yjs update', Y.encodeStateAsUpdate(ydoc));
 
+    // Send list of versions if any, to clients.
+    const versions = await CollabRepository.getCollabHistoryVersions(room);
+    socket.emit('history snapshots', versions);
+
     // Listen for updates from this client
     socket.on('yjs update', async (update) => {
       // Apply the incoming update to the Y.Doc
@@ -57,6 +88,35 @@ export default function setupCollabSocket(server) {
       const newYdocUpdate = Y.encodeStateAsUpdate(ydoc);
       const encodedNewYdocUpdate = Buffer.from(newYdocUpdate).toString('base64');
       await RedisRepository.setCollabYdoc(room, encodedNewYdocUpdate);
+
+      const changeCount = await RedisRepository.incrementCollabChangeCount(room);
+      // Every 50 updates, save a history snapshot.
+      if (changeCount % 50 === 0) {
+        const snapshot = Y.snapshot(ydoc);
+        const encodedSnapshot = Y.encodeSnapshot(snapshot);
+        const encodedSnapshotString = Buffer.from(encodedSnapshot).toString('base64');
+        await CollabRepository.createCollabHistory(room, encodedSnapshotString);
+        // Send the new versions to everyone including the one who triggered the update.
+        const versions = await CollabRepository.getCollabHistoryVersions(room);
+        io.in(room).emit('history snapshots', versions);
+      }
+    });
+
+    socket.on('yjs load snapshot', async (version) => {
+      const historyEntry = await CollabRepository.getCollabHistory(room, version);
+      if (historyEntry) {
+        const snapshotBuffer = Buffer.from(historyEntry.snapshot, 'base64');
+        const snapshotUpdate = new Uint8Array(snapshotBuffer);
+        revertChangesSinceSnapshot(ydoc, snapshotUpdate);
+        const updatedState = Y.encodeStateAsUpdate(ydoc);
+        const encodedUpdatedState = Buffer.from(updatedState).toString('base64');
+        await RedisRepository.setCollabYdoc(room, encodedUpdatedState);
+
+        io.in(room).emit('yjs load snapshot', updatedState);
+        console.log(`Loaded snapshot version ${version} for room ${room} and broadcasted to all clients.`);
+      } else {
+        console.log(`No snapshot found for room ${room} with version ${version}.`);
+      }
     });
 
     // socket.onAny((event, ...args) => {
@@ -91,9 +151,13 @@ export default function setupCollabSocket(server) {
     socket.on('disconnect', async () => {
       // Retrieve the ydoc stored in redis.
       console.log('CollabSocket: A user disconnected');
-      const ydoc = await RedisRepository.getCollabYdoc(room);
+      const ydocString = await RedisRepository.getCollabYdoc(room);
+      const snapshot = Y.snapshot(ydoc);
+      const encodedSnapshot = Y.encodeSnapshot(snapshot);
+      const encodedSnapshotString = Buffer.from(encodedSnapshot).toString('base64');
+      await CollabRepository.createCollabHistory(room, encodedSnapshotString);
       // Store the retrieved ydoc in collab repository.
-      await CollabRepository.updateCollab(room, ydoc);
+      await CollabRepository.updateCollab(room, ydocString);
       console.log(`Saved ydoc to Collab model for ${room}`);
     });
   });

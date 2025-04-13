@@ -57,7 +57,6 @@ export async function getRandomQuestionByCategoryAndComplexity(req, res) {
     const complexity = req.query.complexity;
 
     const question = await QuestionService.getRandomQuestion(category, complexity);
-    console.log('question: ', question);
     return res.status(200).json({ message: 'Found a random question', data: question });
   } catch (err) {
     console.error(err);

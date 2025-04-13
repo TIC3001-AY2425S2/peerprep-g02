@@ -158,7 +158,7 @@ async function getQuestion(questionId) {
 async function getRandomQuestion(category, complexity) {
   const questionFromModel = await QuestionRepository.findRandomQuestionByCategoryAndComplexity(category, complexity);
   if (questionFromModel && questionFromModel.length >= 1) {
-    return questionFromModel;
+    return questionFromModel[0];
   }
 
   const questionFromRedis = await RedisRepository.getRandomDeletedQuestion(category, complexity);

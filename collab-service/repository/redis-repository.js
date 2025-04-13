@@ -38,4 +38,8 @@ export async function setMatchStatusIfStatusWaiting(userId, sessionId, status) {
   });
 }
 
-export default { getCollabYdoc, setCollabYdoc, getCollabChat, addCollabChat };
+async function incrementCollabChangeCount(room) {
+  return await Redis.client.incr(`collab:${room}:changecount`);
+}
+
+export default { getCollabYdoc, setCollabYdoc, getCollabChat, addCollabChat, incrementCollabChangeCount };

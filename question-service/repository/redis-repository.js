@@ -28,7 +28,7 @@ async function setDeletedQuestion(question) {
   await Redis.client.set(`${DELETED_QUESTION_KEY}:${category}:${complexity}:${questionId}`, JSON.stringify(question));
 }
 
-export async function getRandomDeletedQuestion(category, complexity) {
+async function getRandomDeletedQuestion(category, complexity) {
   // Retrieve all keys that match the prefix.
   const keys = await Redis.client.keys(`${DELETED_QUESTION_KEY}:${category}:${complexity}:*`);
   if (!keys || keys.length === 0) {

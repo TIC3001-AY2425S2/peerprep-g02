@@ -16,14 +16,6 @@ export async function findQuestionByTitle(title) {
   return QuestionModel.findOne({ title });
 }
 
-export async function findQuestionByCategory(category) {
-  return QuestionModel.find({ category });
-}
-
-export async function findQuestionByComplexity(complexity) {
-  return QuestionModel.find({ complexity });
-}
-
 export async function findQuestionById(questionId) {
   return QuestionModel.findById(questionId);
 }

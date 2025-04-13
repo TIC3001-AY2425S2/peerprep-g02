@@ -56,31 +56,34 @@ const Collab = () => {
   const languages = ['JavaScript', 'Java', 'Python', 'C++'];
 
   const [chatMessages, setChatMessages] = useState([]);
+  const [snapshotVersions, setSnapshotVersions] = useState([]);
+  const [selectedSnapshot, setSelectedSnapshot] = useState('');
 
   useEffect(() => {
     socketRef.current = io(BASE_URL, { path: '/collab/websocket', query: { room: collab.id } });
     const socket = socketRef.current;
     if (!socket.connected) {
-      console.log('Running connect');
+      console.log('Connecting socket...');
       socket.connect();
     }
 
     socket.on('connect', () => {
-      toast.success(`Connected to server with socket ID: ${socket.id}`);
+      toast.success(`Connected with socket ID: ${socket.id}`);
     });
 
     // Start of YJS related socket messages
     socket.on('yjs update', (update) => {
-      // Ensure update is a Uint8Array cause socket doesn't send as the type ydoc needs.
-      const binaryUpdate = update instanceof Uint8Array ? update : new Uint8Array(update);
-      Y.applyUpdate(ydoc, binaryUpdate);
+      const binaryUpdate = new Uint8Array(update);
+      Y.applyUpdate(ydoc, binaryUpdate, 'remote');
     });
 
     // Listen for local updates on the Y.Doc.
-    ydoc.on('update', (update) => {
+    ydoc.on('update', (update, origin) => {
+      if (origin === 'remote' || origin === 'loadSnapshot') {
+        return;
+      }
       socket.emit('yjs update', update);
     });
-
     const userColors = [
       { color: '#30bced', light: '#30bced33' },
       { color: '#6eeb83', light: '#6eeb8333' },
@@ -107,7 +110,7 @@ const Collab = () => {
     });
 
     socket.on('awareness', (encodedUpdate) => {
-      const binaryUpdate = encodedUpdate instanceof Uint8Array ? encodedUpdate : new Uint8Array(encodedUpdate);
+      const binaryUpdate = new Uint8Array(encodedUpdate);
       applyAwarenessUpdate(awareness, binaryUpdate, null);
     });
 
@@ -142,25 +145,35 @@ const Collab = () => {
 
     socket.on('chat message', (newMessage) => {
       // Append new messages to chat message array
-      console.log(newMessage);
       setChatMessages((prev) => [...prev, newMessage]);
+    });
+
+    socket.on('history snapshots', (snapshots) => {
+      setSnapshotVersions(snapshots);
+    });
+
+    socket.on('yjs load snapshot', (snapshot) => {
+      const binaryUpdate = new Uint8Array(snapshot);
+      Y.applyUpdate(ydoc, binaryUpdate, 'loadSnapshot');
     });
 
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
-      console.log('Running handleBeforeUnlock');
       socket.disconnect();
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Cleanup both the socket listeners and the interval on unmount.
     return () => {
       console.log('Running off connect and status');
       handleBeforeUnload();
       view.destroy();
       socket.off('connect');
       socket.off('yjs update');
+      socket.off('awareness');
+      socket.off('chat history');
+      socket.off('chat message');
+      socket.off('history snapshots');
+      socket.off('yjs load snapshot');
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
@@ -217,6 +230,12 @@ const Collab = () => {
     });
   };
 
+  const handleSnapshotSelect = (event) => {
+    const selectedVersion = event.target.value;
+    setSelectedSnapshot(selectedVersion);
+    socketRef.current.emit('yjs load snapshot', selectedVersion);
+  };
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
       {/*<NavBar />*/}
@@ -241,7 +260,25 @@ const Collab = () => {
               </Select>
             </FormControl>
           </Box>
-
+          {/* Snapshot Dropdown */}
+          <Box sx={{ margin: '8px' }}>
+            <FormControl fullWidth>
+              <InputLabel id="snapshot-select-label">Snapshot Version</InputLabel>
+              <Select
+                labelId="snapshot-select-label"
+                id="snapshot-select"
+                value={selectedSnapshot}
+                label="Snapshot Version"
+                onChange={handleSnapshotSelect}
+              >
+                {snapshotVersions.map((snap) => (
+                  <MenuItem key={snap.version} value={snap.version}>
+                    Version {snap.version} – {format(new Date(snap.createdAt), 'dd/MM/yyyy HH:mm')}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           {/* Editor container */}
           <Box
             ref={editorRef}
