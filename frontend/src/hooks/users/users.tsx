@@ -12,3 +12,23 @@ export const createUser = async (data: UsersPostData): Promise<UsersPostResponse
     throw error;
   }
 };
+export const updateProfile = async (id: string, data: any): Promise<UsersPostResponseData> => {
+  try {
+    const response = await api.users.update(id, data);
+    toast.success(response.data.message);
+    return response.data.data;
+  } catch (error) {
+    console.error('Update failed:', error);
+    throw error;
+  }
+};
+
+export const deleteAccount = async (id: string): Promise<void> => {
+  try {
+    await api.users.remove(id);
+    toast.success('Account deleted successfully');
+  } catch (error) {
+    console.error('Deletion failed:', error);
+    throw error;
+  }
+};

@@ -9,12 +9,13 @@ import * as React from 'react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import NavBar from '../../../components/navbar';
+import { useAuth } from '../../../context/authcontext';
 import { login } from '../../../hooks/auth/auth';
 import pageNavigation from '../../../hooks/navigation/pageNavigation';
-import { setAccessToken, setUser } from '../../../localStorage';
 import { AuthPostData } from '../../../types/auth';
 
 const Login = () => {
+  const { loginAuth } = useAuth();
   const { goToHomePage } = pageNavigation();
   const [formData, setFormData] = useState<AuthPostData>({
     password: '',
@@ -31,8 +32,7 @@ const Login = () => {
 
     try {
       const user = await login(formData);
-      setAccessToken(user.accessToken);
-      setUser(user);
+      loginAuth(user.accessToken, user);
       goToHomePage();
     } catch (error) {
       console.log(error);

@@ -24,7 +24,7 @@ export default function setupMatchmakingSocket(server) {
     // Server can receive the message listening on socket hello:
     // socket.on('hello', (arg) => console.log(arg)); // prints 'world'
 
-    console.log('A user connected');
+    console.log('MatchingSocket: A user connected');
 
     socket.on('matchmaking status', async (socketId, user) => {
       // console.log(`Received message from ${socketId}, content: ${JSON.stringify(user)}`);
@@ -37,7 +37,7 @@ export default function setupMatchmakingSocket(server) {
     });
 
     socket.on('disconnect', async () => {
-      console.log('A user disconnected');
+      console.log('MatchingSocket: A user disconnected');
     });
   });
 

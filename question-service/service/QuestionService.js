@@ -1,7 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import * as QuestionRepository from '../model/repository.js';
 import { findDistinctCategoryAndComplexity } from '../model/repository.js';
-import RedisQuestionRepository from '../repository/redis-repository.js';
+import { default as RedisQuestionRepository, default as RedisRepository } from '../repository/redis-repository.js';
 import MessageSource from './MessageSource.js';
 
 async function sendQueueUpdate(type, category, complexity) {
@@ -75,6 +75,7 @@ async function deleteQuestion(questionId) {
     }
 
     const deletedQuestion = await QuestionRepository.deleteQuestionById(questionId);
+    await RedisRepository.setDeletedQuestion(deletedQuestion);
     // await session.commitTransaction();
     return deletedQuestion;
   } catch (err) {
@@ -85,9 +86,14 @@ async function deleteQuestion(questionId) {
   }
 }
 
-async function editQuestion(questionId, title,  description, category, complexity) {
+async function editQuestion(questionId, title, description, category, complexity) {
   if (!isValidObjectId(questionId)) {
     throw new Error(`Question ${questionId} not found`);
+  }
+
+  const existingQuestion = await QuestionRepository.findQuestionByTitle(title);
+  if (existingQuestion && existingQuestion.id !== questionId) {
+    throw new Error('Question title already exists');
   }
 
   const question = await QuestionRepository.findQuestionById(questionId);
@@ -98,7 +104,7 @@ async function editQuestion(questionId, title,  description, category, complexit
 
     // check if existing queues should be deleted
     const originalCategories = question.category;
-    const removedCategories = originalCategories.filter(element => !category.includes(element));
+    const removedCategories = originalCategories.filter((element) => !category.includes(element));
     const categoriesToDelete = (
       await Promise.all(
         removedCategories.map(async (category) => {
@@ -119,13 +125,54 @@ async function editQuestion(questionId, title,  description, category, complexit
     }
 
     // update question
-    const editedQuestion =
-        await QuestionRepository.updateQuestionById(questionId, title, description, category, complexity);
+    const editedQuestion = await QuestionRepository.updateQuestionById(
+      questionId,
+      title,
+      description,
+      category,
+      complexity,
+    );
 
     return editedQuestion;
   } catch (err) {
     throw err;
   }
+}
+
+async function getQuestion(questionId) {
+  if (!isValidObjectId(questionId)) {
+    throw new Error(`Question not found`);
+  }
+
+  // Check the primary data source.
+  const questionFromModel = await QuestionRepository.findQuestionById(questionId);
+  if (questionFromModel) {
+    return questionFromModel;
+  }
+
+  // Check Redis if primary data source returns no results. It may be deleted.
+  const questionFromRedis = await RedisRepository.getDeletedQuestion(questionId);
+  if (questionFromRedis) {
+    console.log('QuestionService: Retrieved question from redis');
+    return questionFromRedis;
+  }
+
+  throw new Error(`Question not found`);
+}
+
+async function getRandomQuestion(category, complexity) {
+  const questionFromModel = await QuestionRepository.findRandomQuestionByCategoryAndComplexity(category, complexity);
+  if (questionFromModel && questionFromModel.length >= 1) {
+    return questionFromModel[0];
+  }
+
+  const questionFromRedis = await RedisRepository.getRandomDeletedQuestion(category, complexity);
+  if (questionFromRedis) {
+    console.log('QuestionService: Retrieved question from redis');
+    return questionFromRedis;
+  }
+
+  throw new Error(`Question not found`);
 }
 
 async function populateDistinctCategoryComplexity() {
@@ -142,4 +189,11 @@ async function populateDistinctCategoryComplexity() {
   }
 }
 
-export default { createQuestion, deleteQuestion, editQuestion, populateDistinctCategoryComplexity };
+export default {
+  createQuestion,
+  deleteQuestion,
+  editQuestion,
+  getQuestion,
+  getRandomQuestion,
+  populateDistinctCategoryComplexity,
+};

@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../../context/authcontext';
 import pageNavigation from '../../../hooks/navigation/pageNavigation';
-import { logout } from '../../../localStorage';
 
 const Logout = (): any => {
+  const { logoutAuth } = useAuth();
   const { goToLandingPage } = pageNavigation();
 
   useEffect(() => {
-    logout();
+    logoutAuth();
     goToLandingPage();
     toast.success('Successfully logged out.');
   }, []);

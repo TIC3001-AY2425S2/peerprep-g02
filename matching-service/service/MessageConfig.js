@@ -4,21 +4,37 @@ import UuidUtils from '../utils/UuidUtils.js';
 const RABBITMQ_URL = process.env.RABBITMQ_LOCAL_URI || 'amqp://admin:pass@localhost:5672';
 const EXCHANGE = '';
 const FANOUT_EXCHANGE = 'create-queue-exchange';
-const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 20;
-const DEAD_LETTER_QUEUE_TIMEOUT = process.env.DEAD_LETTER_QUEUE_TIMEOUT || 10;
+const QUEUE_TIMEOUT = process.env.QUEUE_TIMEOUT || 30;
 const MATCHED_PLAYERS_QUEUE_NAME = 'matched-players';
 const UPDATES_QUEUE_NAME = 'queue-updates';
 
-let connection = null;
-let channel = null;
+// Natural ordering to complexities
+const COMPLEXITY_ORDER = ['easy', 'medium', 'hard'];
+
+function getExpansionDelay(step) {
+  const totalDelayMs = QUEUE_TIMEOUT * 1000;
+
+  // For step 0, there is no previous delay.
+  if (step === 0) return totalDelayMs * (Math.log(1) / Math.log(COMPLEXITY_ORDER.length + 1)); // which is 0
+
+  // Calculate the absolute delay for the current and previous steps.
+  const delayForCurrentStep = totalDelayMs * (Math.log(step + 1) / Math.log(COMPLEXITY_ORDER.length + 1));
+  const delayForPreviousStep = totalDelayMs * (Math.log(step) / Math.log(COMPLEXITY_ORDER.length + 1));
+
+  // Return the delta.
+  return delayForCurrentStep - delayForPreviousStep;
+}
+
+let channelPromise = null;
 
 async function getChannel() {
-  // Reuse an existing channel or creates a new one if none exists.
-  if (!connection) {
-    connection = await amqp.connect(RABBITMQ_URL);
-    channel = await connection.createConfirmChannel();
+  if (!channelPromise) {
+    channelPromise = (async () => {
+      const connection = await amqp.connect(RABBITMQ_URL);
+      return await connection.createConfirmChannel();
+    })();
   }
-  return channel;
+  return channelPromise;
 }
 
 function generateShortQueueName() {
@@ -32,28 +48,10 @@ function getQueueName(category, complexity) {
   return complexity ? `${category}-${complexity}` : `${category}`;
 }
 
-function getQueueConfiguration(category) {
+function getQueueConfiguration() {
   return {
     durable: true,
     messageTtl: QUEUE_TIMEOUT * 1000,
-    // Use default exchange with category routing key
-    deadLetterExchange: '',
-    arguments: {
-      'x-dead-letter-routing-key': category,
-    },
-  };
-}
-
-function getDeadLetterQueueConfiguration() {
-  return {
-    durable: true,
-    messageTtl: DEAD_LETTER_QUEUE_TIMEOUT * 1000,
-  };
-}
-
-function getMatchedPlayersQueueConfiguration() {
-  return {
-    durable: true,
   };
 }
 
@@ -67,17 +65,16 @@ function getQueueUpdatesConfiguration() {
 }
 
 export default {
+  COMPLEXITY_ORDER,
   EXCHANGE,
   FANOUT_EXCHANGE,
   QUEUE_TIMEOUT,
-  DEAD_LETTER_QUEUE_TIMEOUT,
   MATCHED_PLAYERS_QUEUE_NAME,
   UPDATES_QUEUE_NAME,
   getChannel,
   getQueueName,
   getQueueConfiguration,
-  getDeadLetterQueueConfiguration,
-  getMatchedPlayersQueueConfiguration,
   getQueueUpdatesConfiguration,
   generateShortQueueName,
+  getExpansionDelay,
 };

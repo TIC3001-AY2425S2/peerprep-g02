@@ -21,8 +21,7 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 # Services url
 QUESTION_SVC_GATEWAY_URL=http://localhost:8080/questions
 
-QUEUE_TIMEOUT=20
-DEAD_LETTER_QUEUE_TIMEOUT=10
+QUEUE_TIMEOUT=30
 ```
 2. Install dependencies with `npm install`.
 3. Start the Question Service with `npm start`.
@@ -47,8 +46,7 @@ JWT_SECRET=you-can-replace-this-with-your-own-secret
 # Services url
 QUESTION_SVC_GATEWAY_URL=http://nginx-gateway:8080/questions
 
-QUEUE_TIMEOUT=20
-DEAD_LETTER_QUEUE_TIMEOUT=10
+QUEUE_TIMEOUT=30
 ```
 2. From project root `cd match-service/provisioning` then `docker compose up` to start matching service
 
@@ -56,5 +54,9 @@ DEAD_LETTER_QUEUE_TIMEOUT=10
 1. Retrieve all existing unique category + complexity combinations.
 2. Create queues for all of these combinations and additional queue for each category.
 3. Whenever a player queues for a category + complexity, send a message containing the player matchmaking details to that queue. 
-4. If another player chooses the same combination, we now have 2 players matchmaking details being sent into 1 queue and can now match them up.
-5. If a queue continues to only have a single player in it, the player is then brought to the category queue where players of different complexities but same category will match each other. 
+4. Recursively expand the player's original chosen category + complexity to nearby complexities
+5. For example, strings-medium will expand to strings-easy and strings-hard at the same time. strings-easy will expand to strings-medium then strings-hard.
+6. The time before an expansion follows a logarithmic function curve.
+7. When a match between 2 players occur, there is a delay based on the max expansion of both players to account for better match.
+8. For example, player 1 chooses strings-easy and expands to medium and hard. 3 players come in to queue for all 3 difficulties separately. 
+9. A match would occur in all 3 queues but the player 1 who chooses strings-easy will have the least amount delay in that queue since that is the original chosen queue. 

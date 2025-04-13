@@ -1,5 +1,4 @@
 import RedisLock from '../repository/redis-lock.js';
-import { isCategoryActive } from '../repository/redis-repository.js';
 import MessageConfig from './MessageConfig.js';
 import MessageService from './MessageService.js';
 import MessageSource from './MessageSource.js';
@@ -13,7 +12,7 @@ async function startQueueConsumer(category, complexity) {
   const queueName = MessageConfig.getQueueName(category, complexity);
 
   const channel = await MessageConfig.getChannel();
-  await channel.assertQueue(queueName, MessageConfig.getQueueConfiguration(category));
+  await channel.assertQueue(queueName, MessageConfig.getQueueConfiguration());
   const processor = MessageService.createNormalProcessor();
 
   channel.consume(
@@ -50,75 +49,6 @@ async function startQueueConsumer(category, complexity) {
 }
 
 /**
- * Starts a consumer for the dead-letter queue for a given category.
- * Also creates a consumer to process dead-letter messages.
- */
-async function startDeadLetterConsumer(category) {
-  const channel = await MessageConfig.getChannel();
-
-  const deadLetterQueueName = MessageConfig.getQueueName(category);
-  await channel.assertQueue(deadLetterQueueName, MessageConfig.getDeadLetterQueueConfiguration());
-
-  const processor = MessageService.createDeadLetterProcessor();
-
-  channel.consume(
-    deadLetterQueueName,
-    async (message) => {
-      if (message) {
-        const messageContent = JSON.parse(message.content.toString());
-        if (messageContent.isShutdown === true) {
-          console.log(
-            `${new Date().toISOString()} MessageSink: Shutdown kill signal received on ${deadLetterQueueName}.`,
-          );
-          channel.deleteQueue(deadLetterQueueName);
-          console.log(`${new Date().toISOString()} MessageSink: Queue ${deadLetterQueueName} deleted successfully.`);
-          return;
-        }
-
-        console.log(
-          `${new Date().toISOString()} MessageSink (DeadLetter): Received message for user ${messageContent.userId}`,
-        );
-        await processor(messageContent);
-      }
-    },
-    { noAck: true },
-  );
-
-  console.log(
-    `${new Date().toISOString()} MessageSink: Dead-letter consumer listening on queue ${deadLetterQueueName}`,
-  );
-}
-
-/**
- * Starts a consumer for the matched players processing.
- * We want to leave the consumers to only be responsible for matching
- * and leave the processing to another dedicated consumer.
- */
-async function startMatchedPlayersConsumer() {
-  const channel = await MessageConfig.getChannel();
-
-  const queueName = MessageConfig.MATCHED_PLAYERS_QUEUE_NAME;
-  await channel.assertQueue(queueName, MessageConfig.getMatchedPlayersQueueConfiguration());
-
-  channel.consume(
-    queueName,
-    async (message) => {
-      if (message) {
-        const messageContent = JSON.parse(message.content.toString());
-
-        const userIds = messageContent.players.map((player) => player.userId).join(', ');
-        console.log(`${new Date().toISOString()} MessageSink (Matched players): Received message for users ${userIds}`);
-
-        await MessageService.processMatchedPlayers(messageContent);
-      }
-    },
-    { noAck: true },
-  );
-
-  console.log(`${new Date().toISOString()} MessageSink: Matched players consumer listening on queue ${queueName}`);
-}
-
-/**
  * Creates and starts a consumer for queue create/delete events during question create/delete flow.
  * This queue-updates queue is declared exclusive and only 1 consumer can receive messages for it.
  * So when scaling up, we want to ensure that the other containers instantiate a consumer for it.
@@ -147,19 +77,8 @@ export async function startQueueUpdatesConsumer() {
             case 'delete':
               // We only need to check if the category exists since the question service already determined we must delete
               // these queues. Question service also removes the entry from redis, so we can just check with redis.
-              const filteredCategoryPromises = messageContent.category.map(async (cat) => {
-                const exists = await isCategoryActive(cat);
-                return exists ? null : cat;
-              });
-
-              const filteredCategory = (await Promise.all(filteredCategoryPromises)).filter(Boolean);
-
               messageContent.category.forEach((cat) => {
                 operations.push(MessageSource.sendKillSignal(cat, messageContent.complexity));
-              });
-
-              filteredCategory.forEach((cat) => {
-                operations.push(MessageSource.sendKillSignal(cat));
               });
               break;
           }
@@ -203,13 +122,7 @@ async function startCreateEventConsumer() {
           startQueueConsumer(cat, messageContent.complexity),
         );
 
-        // Start the dead-letter consumer for each category in categoryQueues, if any.
-        const deadLetterConsumers =
-          messageContent.categoryQueues.length > 0
-            ? messageContent.categoryQueues.map((cat) => startDeadLetterConsumer(cat))
-            : [];
-
-        await Promise.all([...queueConsumers, ...deadLetterConsumers]);
+        await Promise.all([...queueConsumers]);
 
         console.log(`${new Date().toISOString()} MessageSink: Finished creating new queues in ${queueName}`);
         channel.ack(msg);
@@ -232,10 +145,8 @@ async function startAllConsumers() {
 
   const consumerPromises = categoryComplexityList.flatMap(({ category, complexities }) => [
     ...complexities.map((complexity) => startQueueConsumer(category, complexity)),
-    startDeadLetterConsumer(category),
   ]);
 
-  consumerPromises.push(startMatchedPlayersConsumer());
   consumerPromises.push(startQueueUpdatesConsumer());
   consumerPromises.push(startCreateEventConsumer());
 

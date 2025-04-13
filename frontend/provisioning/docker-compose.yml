@@ -16,6 +16,8 @@ services:
       - ./../.docker.env
     networks:
       - shared-network
+    environment:         
+      - WATCHPACK_POLLING=true
 
 networks:
   shared-network:

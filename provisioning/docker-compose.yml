@@ -53,6 +53,20 @@ services:
       redis:
         condition: service_healthy
 
+  collab-service:
+    extends:
+      file: ./../collab-service/provisioning/docker-compose.yml
+      service: collab-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      nginx-gateway:
+        condition: service_healthy
+
   matching-service:
     extends:
       file: ./../matching-service/provisioning/docker-compose.yml
@@ -80,6 +94,9 @@ services:
         condition: service_healthy
       matching-service:
         condition: service_healthy
+      collab-service:
+        condition: service_healthy
+
 
 
 networks:

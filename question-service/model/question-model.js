@@ -15,6 +15,7 @@ const QuestionModelSchema = new Schema({
   category: {
     type: [String],
     required: true,
+    validate: [(arr) => arr.every((str) => str.trim() !== ''), 'Category cannot be empty.'],
     set: (arr) => arr.map((str) => str.trim().toLowerCase()),
   },
   complexity: {
@@ -33,5 +34,14 @@ const QuestionModelSchema = new Schema({
     default: Date.now,
     required: true,
   },
+  // isDeleted: {
+  //   type: Boolean,
+  //   default: false,
+  // },
 });
+
+// QuestionModelSchema.query.notDeleted = function () {
+//   return this.where({ isDeleted: false });
+// };
+
 export default mongoose.model('QuestionModel', QuestionModelSchema);

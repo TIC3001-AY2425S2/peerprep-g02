@@ -1,6 +1,7 @@
 import { Box, Button, Container, Pagination, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import NavBar from '../../../components/navbar';
+import { useAuth } from '../../../context/authcontext';
 import { getQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 import QuestionList from './ManageQuestionlist';
@@ -12,6 +13,9 @@ const ManageQuestionsView = () => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
+  // Assume user role from auth context (add actual implementation)
+  const { isAdmin } = useAuth();
+
   // Load questions on component mount
   useEffect(() => {
     getQuestion()
@@ -19,13 +23,11 @@ const ManageQuestionsView = () => {
       .catch((err) => console.error('Error fetching questions:', err));
   }, []);
 
-  // Handler when a new question is added
   const handleQuestionAdded = (newQuestion: Question) => {
     setQuestions((prev) => [...prev, newQuestion]);
     setSelectedQuestion(newQuestion);
   };
 
-  // Handler when a question is updated
   const handleQuestionUpdated = (updatedQuestion: Question) => {
     setQuestions((prev) => prev.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q)));
     setSelectedQuestion(updatedQuestion);
@@ -51,11 +53,12 @@ const ManageQuestionsView = () => {
           height: 'calc(100vh - 128px)',
         }}
       >
-        {/* left container */}
+        {/* Left container - Retain previous design */}
         <Paper
           sx={{
             width: '30%',
-            height: '100%',
+            height: 'auto',
+            minHeight: '700px',
             p: 2,
             display: 'flex',
             flexDirection: 'column',
@@ -71,9 +74,12 @@ const ManageQuestionsView = () => {
             }}
           >
             <Typography variant="h6">Question List</Typography>
-            <Button variant="contained" size="small" onClick={() => setSelectedQuestion(null)}>
-              Add New
-            </Button>
+            {/* Conditionally show Add button */}
+            {isAdmin && (
+              <Button variant="contained" size="small" onClick={() => setSelectedQuestion(null)}>
+                Add New
+              </Button>
+            )}
           </Box>
 
           <Box sx={{ flex: 1, overflow: 'auto' }}>
@@ -84,7 +90,7 @@ const ManageQuestionsView = () => {
             />
           </Box>
 
-          {/* page component */}
+          {/* Pagination */}
           <Box
             sx={{
               pt: 2,
@@ -103,11 +109,12 @@ const ManageQuestionsView = () => {
           </Box>
         </Paper>
 
-        {/* right container */}
+        {/* Right container - Retain previous design */}
         <Box
           sx={{
             width: '67%',
             height: '100%',
+            minHeight: '700px',
             p: 3,
             bgcolor: 'background.paper',
             boxShadow: 3,
@@ -115,9 +122,11 @@ const ManageQuestionsView = () => {
           }}
         >
           <QuestionForm
-            onSubmit={selectedQuestion ? handleQuestionUpdated : handleQuestionAdded}
-            onDelete={handleQuestionDeleted}
+            isAdmin={isAdmin}
+            onSubmit={isAdmin ? (selectedQuestion ? handleQuestionUpdated : handleQuestionAdded) : undefined}
+            onDelete={isAdmin ? handleQuestionDeleted : undefined}
             initialData={selectedQuestion || undefined}
+            //readOnly={!isAdmin} // Pass readOnly prop to form
           />
         </Box>
       </Box>

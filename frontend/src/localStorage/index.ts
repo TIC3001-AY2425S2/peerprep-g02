@@ -1,36 +1,86 @@
-export function hasAccessToken(): boolean {
+function hasAccessToken() {
   const token = localStorage.getItem('accessToken');
+  console.log(token !== null && token.trim() !== '');
   return token !== null && token.trim() !== '';
 }
 
-export function setAccessToken(accessToken) {
+function getAccessToken() {
+  return localStorage.getItem('accessToken');
+}
+
+function setAccessToken(accessToken) {
   localStorage.setItem('accessToken', accessToken);
 }
 
-export function getUser() {
+function getUser() {
   const user = localStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 }
 
-export function setUser(user) {
+function setUser(user) {
   localStorage.setItem('user', JSON.stringify(user));
 }
 
-export function isAdmin() {
+function isAdmin() {
   const user = getUser();
   return user ? user.isAdmin : false;
 }
 
-export function logout() {
+function logout() {
   localStorage.removeItem('sessionId');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('user');
+  localStorage.removeItem('collab');
 }
 
-export function setSessionId(sessionId: string) {
+function setSessionId(sessionId) {
   localStorage.setItem('sessionId', sessionId);
 }
 
-export function getSessionId() {
+function getSessionId() {
   return localStorage.getItem('sessionId');
 }
+
+function hasCollab() {
+  const collab = localStorage.getItem('collab');
+  return collab !== null && collab.trim() !== '';
+}
+
+function getCollab() {
+  const collab = localStorage.getItem('collab');
+  return collab ? JSON.parse(collab) : null;
+}
+
+function setCollab(collab) {
+  const collabToStore = {
+    ...collab,
+    id: collab.id?.toString(),
+    questionId: collab.questionId?.toString(),
+  };
+  localStorage.setItem('collab', JSON.stringify(collabToStore));
+}
+
+function removeCollab() {
+  localStorage.removeItem('collab');
+}
+
+function removeSessionId() {
+  localStorage.removeItem('sessionId');
+}
+
+export default {
+  hasAccessToken,
+  getAccessToken,
+  setAccessToken,
+  getUser,
+  setUser,
+  isAdmin,
+  logout,
+  setSessionId,
+  getSessionId,
+  hasCollab,
+  getCollab,
+  setCollab,
+  removeCollab,
+  removeSessionId,
+};

@@ -10,6 +10,10 @@ upstream matching-service {
     server ${MATCHING_SERVICE_URL};
 }
 
+upstream collab-service {
+    server ${COLLAB_SERVICE_URL};
+}
+
 server {
     listen 8080;
     server_name localhost;
@@ -34,6 +38,12 @@ server {
     }
 
     location /users/ {
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' '*' always;
+            add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type, Accept, Authorization' always;
+            return 204;
+        }
         auth_request /auth/verify-token;
         proxy_pass http://user-service;
     }
@@ -78,6 +88,20 @@ server {
     }
     location /matching/websocket/ {
         proxy_pass http://matching-service;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+
+    location /collab/ {
+        proxy_pass http://collab-service;
+    }
+    location = /collab {
+        proxy_pass http://collab-service;
+    }
+    location /collab/websocket/ {
+        proxy_pass http://collab-service;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
