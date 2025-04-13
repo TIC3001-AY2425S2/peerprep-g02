@@ -16,16 +16,8 @@ async function getChannel() {
   return channelPromise;
 }
 
-function getQueueUpdatesConfiguration() {
-  return {
-    durable: true,
-    messageTtl: 5 * 1000, // 5 seconds message timeout
-  };
-}
-
 export default {
   EXCHANGE,
   UPDATES_QUEUE_NAME,
   getChannel,
-  getQueueUpdatesConfiguration,
 };

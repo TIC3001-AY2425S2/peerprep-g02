@@ -1,13 +1,11 @@
 import { Box, Button, Container, Pagination, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import NavBar from '../../../components/navbar';
+import { useAuth } from '../../../context/authcontext';
 import { getQuestion } from '../../../hooks/question/question';
 import { Question } from '../../../types/questions';
 import QuestionList from './ManageQuestionlist';
 import QuestionForm from './QuestionForm';
-import { useAuth } from '../../../context/authcontext';
-
-
 
 const ManageQuestionsView = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -16,7 +14,7 @@ const ManageQuestionsView = () => {
   const pageSize = 10;
 
   // Assume user role from auth context (add actual implementation)
-  const { isAdmin } = useAuth(); 
+  const { isAdmin } = useAuth();
 
   // Load questions on component mount
   useEffect(() => {

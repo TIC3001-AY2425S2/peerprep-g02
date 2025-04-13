@@ -1,17 +1,17 @@
 import {
-  Button,
-  Container,
-  Typography,
-  CircularProgress,
   Box,
+  Button,
+  CircularProgress,
+  Container,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
-  DialogActions
+  DialogTitle,
+  Typography,
 } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { io } from 'socket.io-client';
 import NavBar from '../../components/navbar';
 import { useAuth } from '../../context/authcontext';
 import { getCollab } from '../../hooks/collab/collab';
@@ -29,6 +29,7 @@ const Matching = () => {
   const [countdown, setCountdown] = useState<number | ''>('');
   const [dots, setDots] = useState<string>('.');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [statusLoaded, setStatusLoaded] = useState(false);
   const [showTimeoutDialog, setShowTimeoutDialog] = useState(false);
   const userId = user.id;
 
@@ -36,7 +37,6 @@ const Matching = () => {
     const socket = io(BASE_URL, {
       path: '/matching/websocket',
     });
-    socketRef.current = socket;
 
     const handleConnect = () => {
       toast.success(`Connected to server with socket ID: ${socket.id}`);
@@ -48,14 +48,14 @@ const Matching = () => {
       toast.error('Failed to connect to matching service');
     };
 
-    const handleStatusUpdate = (data: { status: MatchingStatusEnum, timer: number }) => {
+    const handleStatusUpdate = (data: { status: MatchingStatusEnum; timer: number }) => {
       if (data.status === MatchingStatusEnum.MATCHED) {
         socket.disconnect();
       }
       setMatchStatus(data.status);
       setCountdown(data.timer);
       setStatusLoaded(true);
-    });
+    };
 
     socket
       .on('connect', handleConnect)
@@ -88,25 +88,26 @@ const Matching = () => {
     };
   }, []);
 
-  const handleMatchCancelled = async () => {
-    await cancelMatchmaking({ userId, sessionId });
-    removeSessionId();
-    goToHomePage();
-  };
-
   useEffect(() => {
     const dotsInterval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '.' : prev + '.');
+      setDots((prev) => (prev.length >= 3 ? '.' : prev + '.'));
     }, 500);
 
     return () => clearInterval(dotsInterval);
   }, []);
 
+  const formatTime = (seconds: number) => {
+    if (seconds <= 0) return 'Processing...';
+
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleTimeoutConfirm = () => {
     setShowTimeoutDialog(false);
-    setStatusMessage('Match not found. Redirecting to homepage');
     removeSessionId();
-    setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+    goToHomePage();
   };
 
   const handleCancelRequest = () => setShowConfirm(true);
@@ -114,10 +115,9 @@ const Matching = () => {
   const handleConfirmClose = async (confirmed: boolean) => {
     setShowConfirm(false);
     if (confirmed) {
-      setStatusMessage('Cancelled. Redirecting to homepage');
       await cancelMatchmaking({ userId, sessionId });
       removeSessionId();
-      setTimeout(() => goToHomePage(), REDIRECT_TIMEOUT);
+      goToHomePage();
     }
   };
 
@@ -126,19 +126,15 @@ const Matching = () => {
 
     // When countdown reaches 0, set status message to processing.
     if (statusLoaded && matchStatus === MatchingStatusEnum.WAITING && countdown <= 0) {
-      setStatusMessage('Processing');
       return;
     }
 
     switch (matchStatus) {
       case MatchingStatusEnum.WAITING:
-        setStatusMessage(countdown.toString());
         break;
       case MatchingStatusEnum.PROCESSING:
-        setStatusMessage(MatchingStatusEnum.PROCESSING);
         break;
       case MatchingStatusEnum.MATCHED:
-        setStatusMessage('Match found! Redirecting...');
         // We can't set async to useEffect directly so define an async function here.
         (async () => {
           const collab = await getCollab({ userId });
@@ -162,16 +158,18 @@ const Matching = () => {
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: 4,
-        filter: showTimeoutDialog ? 'blur(2px)' : 'none',
-        transition: 'filter 0.3s ease'
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 4,
+          filter: showTimeoutDialog ? 'blur(2px)' : 'none',
+          transition: 'filter 0.3s ease',
+        }}
+      >
         {/* Combined status display */}
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="h2" component="div" sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -212,25 +210,16 @@ const Matching = () => {
               minWidth: 300,
               maxWidth: 400,
               textAlign: 'center',
-              py: 3
-            }
+              py: 3,
+            },
           }}
         >
-          <DialogTitle sx={{ fontSize: '1.5rem' }}>
-            ⏰ Matching Timeout
-          </DialogTitle>
+          <DialogTitle sx={{ fontSize: '1.5rem' }}>⏰ Matching Timeout</DialogTitle>
           <DialogContent>
-            <Typography variant="body1">
-              Sorry!! No match found, please try again later.
-            </Typography>
+            <Typography variant="body1">Sorry!! No match found, please try again later.</Typography>
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-            <Button
-              onClick={handleTimeoutConfirm}
-              variant="contained"
-              color="primary"
-              sx={{ width: 120 }}
-            >
+            <Button onClick={handleTimeoutConfirm} variant="contained" color="primary" sx={{ width: 120 }}>
               OK
             </Button>
           </DialogActions>
@@ -244,8 +233,8 @@ const Matching = () => {
               width: '20vw',
               height: '25vh',
               minWidth: 300,
-              minHeight: 150
-            }
+              minHeight: 150,
+            },
           }}
         >
           <DialogTitle>Confirm Cancellation</DialogTitle>
@@ -254,7 +243,9 @@ const Matching = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => handleConfirmClose(false)}>No</Button>
-            <Button onClick={() => handleConfirmClose(true)} color="error">Yes</Button>
+            <Button onClick={() => handleConfirmClose(true)} color="error">
+              Yes
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

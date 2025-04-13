@@ -67,52 +67,56 @@ const Home = () => {
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
-      }}>
-        <Paper sx={{
-          width: '50vw',
-          height: '35vh',
-          backgroundColor: '#ffffff',
-          borderRadius: 2,
-          p: 4,
+      <Box
+        sx={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '1.5rem',
-        }}>
-          {/* Header section - previous version design */}
-          <Box sx={{
-            height: '30%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#f0f2f5',
+        }}
+      >
+        <Paper
+          sx={{
+            width: '50vw',
+            height: '35vh',
+            backgroundColor: '#ffffff',
+            borderRadius: 2,
+            p: 4,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderBottom: 1,
-            borderColor: 'divider'
-          }}>
+            flexDirection: 'column',
+            gap: '1.5rem',
+          }}
+        >
+          {/* Header section - previous version design */}
+          <Box
+            sx={{
+              height: '30%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottom: 1,
+              borderColor: 'divider',
+            }}
+          >
             <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
               Start Matching
             </Typography>
           </Box>
 
           {/* Form section - previous version layout with current version functionality */}
-          <Box sx={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            px: '5%',
-          }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: '5%',
+            }}
+          >
             <FormControl sx={{ flex: '0 0 30%' }}>
               <InputLabel>Category</InputLabel>
-              <Select
-                value={selectedCategory}
-                onChange={handleCategoryChange}
-                label="Category"
-              >
+              <Select value={selectedCategory} onChange={handleCategoryChange} label="Category">
                 {categories.map((category) => (
                   <MenuItem key={category} value={category}>
                     {toPascalCase(category)}
@@ -125,11 +129,7 @@ const Home = () => {
 
             <FormControl sx={{ flex: '0 0 30%' }} disabled={!selectedCategory}>
               <InputLabel>Complexity</InputLabel>
-              <Select
-                value={selectedComplexity}
-                onChange={handleComplexityChange}
-                label="Complexity"
-              >
+              <Select value={selectedComplexity} onChange={handleComplexityChange} label="Complexity">
                 {filteredComplexities.map((complexity) => (
                   <MenuItem key={complexity} value={complexity}>
                     {toPascalCase(complexity)}
@@ -146,7 +146,7 @@ const Home = () => {
                 flex: '0 0 20%',
                 height: 56,
                 bgcolor: 'black',
-                '&:hover': { bgcolor: 'grey.800' }
+                '&:hover': { bgcolor: 'grey.800' },
               }}
               onClick={handleMatchClick}
               disabled={!selectedCategory || !selectedComplexity}

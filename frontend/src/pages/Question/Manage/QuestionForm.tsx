@@ -9,7 +9,7 @@ interface QuestionFormProps {
   onSubmit: (formData: any) => void;
   onDelete?: (deletedQuestion: any) => void;
   initialData?: Question;
-  isAdmin?: boolean; // Added admin permission flag
+  isAdmin?: boolean;
 }
 
 const QuestionForm = ({ onSubmit, onDelete, initialData, isAdmin = false }: QuestionFormProps) => {
@@ -87,7 +87,6 @@ const QuestionForm = ({ onSubmit, onDelete, initialData, isAdmin = false }: Ques
 
   // Determine if fields should be disabled
   const isDisabled = !isAdmin;
-
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>

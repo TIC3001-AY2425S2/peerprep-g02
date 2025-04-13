@@ -1,10 +1,21 @@
 // frontend/src/pages/account/profile/index.tsx
-import { Avatar, Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { clientApi } from '../../../api/client';
 import NavBar from '../../../components/navbar';
 import { useAuth } from '../../../context/authcontext';
-import { clientApi } from '../../../api/client';
 import LocalStorage from '../../../localStorage';
 
 const ProfilePage = () => {
@@ -28,7 +39,7 @@ const ProfilePage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSaveProfile = async () => {
@@ -37,7 +48,7 @@ const ProfilePage = () => {
         username: formData.displayName,
         email: formData.email,
         // SIMPLIFIED: Direct password update without current password
-        ...(formData.password && { password: formData.password }) // CHANGED: field name and structure
+        ...(formData.password && { password: formData.password }), // CHANGED: field name and structure
       };
 
       // CHANGED: PUT → PATCH to match backend route
@@ -62,17 +73,21 @@ const ProfilePage = () => {
   return (
     <Container disableGutters component="main" maxWidth={false}>
       <NavBar />
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        padding: 4 
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: '100vh',
+          padding: 4,
+        }}
+      >
         <Avatar sx={{ m: 2, bgcolor: 'secondary.main', width: 80, height: 80 }}>
           {user?.username?.[0]?.toUpperCase()}
         </Avatar>
-        <Typography variant="h4" gutterBottom>Edit Profile</Typography>
+        <Typography variant="h4" gutterBottom>
+          Edit Profile
+        </Typography>
 
         <TextField
           label="Display Name"
@@ -105,21 +120,11 @@ const ProfilePage = () => {
         />
 
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            size="large"
-            onClick={handleSaveProfile}
-          >
+          <Button variant="contained" color="primary" size="large" onClick={handleSaveProfile}>
             Save Profile
           </Button>
 
-          <Button 
-            variant="contained" 
-            color="error" 
-            size="large"
-            onClick={() => setOpenDeleteDialog(true)}
-          >
+          <Button variant="contained" color="error" size="large" onClick={() => setOpenDeleteDialog(true)}>
             Delete Account
           </Button>
         </Box>
