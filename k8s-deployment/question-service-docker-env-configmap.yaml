@@ -6,6 +6,7 @@ data:
   JWT_SECRET: you-can-replace-this-with-your-own-secret
   PORT: "8001"
   REDIS_LOCAL_URL: redis://redis:6379
+  RABBITMQ_LOCAL_URI: amqp://admin:password@rabbitmq:5672
 kind: ConfigMap
 metadata:
   labels:
