@@ -157,6 +157,18 @@ const Collab = () => {
       Y.applyUpdate(ydoc, binaryUpdate, 'loadSnapshot');
     });
 
+    socket.on('yjs load snapshot error', (errorMessage) => {
+      toast.error(errorMessage);
+    });
+
+    socket.on('execution result', (result) => {
+      toast.info(`Execution result: ${result}`);
+    });
+
+    socket.on('execution error', (errorMessage) => {
+      toast.error(`Execution error: ${errorMessage}`);
+    });
+
     // When User refreshes or closes/navigates away from the page we disconnect the socket.
     const handleBeforeUnload = () => {
       socket.disconnect();
@@ -236,6 +248,10 @@ const Collab = () => {
     socketRef.current.emit('yjs load snapshot', selectedVersion);
   };
 
+  const handleExecuteCode = () => {
+    socketRef.current.emit('execute code');
+  };
+
   return (
     <Container disableGutters component="main" maxWidth={false}>
       {/*<NavBar />*/}
@@ -290,6 +306,12 @@ const Collab = () => {
               overflow: 'auto',
             }}
           />
+          {/* Code execution */}
+          <Box sx={{ margin: '8px', display: 'flex', gap: '8px' }}>
+            <Button variant="contained" color="primary" onClick={handleExecuteCode}>
+              Run Code
+            </Button>
+          </Box>
           {/* Question details */}
           <Box
             sx={{

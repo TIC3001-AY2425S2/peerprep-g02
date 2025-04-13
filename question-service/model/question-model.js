@@ -15,7 +15,7 @@ const QuestionModelSchema = new Schema({
   category: {
     type: [String],
     required: true,
-    validate: [(arr) => arr.every(str => str.trim() !== ''), 'Category cannot be empty.'],
+    validate: [(arr) => arr.every((str) => str.trim() !== ''), 'Category cannot be empty.'],
     set: (arr) => arr.map((str) => str.trim().toLowerCase()),
   },
   complexity: {

@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import * as vm from 'vm';
 import * as Y from 'yjs';
 import CollabRepository from '../repository/collab-repository.js';
 import RedisRepository from '../repository/redis-repository.js';
@@ -6,6 +7,8 @@ import RedisRepository from '../repository/redis-repository.js';
 // Taken from this genius: https://discuss.yjs.dev/t/how-to-recover-to-the-specified-version/2301/4
 function revertChangesSinceSnapshot(doc, snapshotEncoded) {
   const snap = Y.decodeSnapshot(snapshotEncoded);
+  // This sometimes throws an error which i'm not fully sure why too.
+  // Maybe lack of understanding of YJS.
   const tempdoc = Y.createDocFromSnapshot(doc, snap);
 
   const currentStateVector = Y.encodeStateVector(doc);
@@ -107,7 +110,15 @@ export default function setupCollabSocket(server) {
       if (historyEntry) {
         const snapshotBuffer = Buffer.from(historyEntry.snapshot, 'base64');
         const snapshotUpdate = new Uint8Array(snapshotBuffer);
-        revertChangesSinceSnapshot(ydoc, snapshotUpdate);
+
+        try {
+          revertChangesSinceSnapshot(ydoc, snapshotUpdate);
+        } catch (error) {
+          console.error(`Error reverting snapshot for room ${room} version ${version}:`, error);
+          socket.emit('yjs load snapshot error', 'Error reverting snapshot. Please try again.');
+          return;
+        }
+
         const updatedState = Y.encodeStateAsUpdate(ydoc);
         const encodedUpdatedState = Buffer.from(updatedState).toString('base64');
         await RedisRepository.setCollabYdoc(room, encodedUpdatedState);
@@ -145,6 +156,27 @@ export default function setupCollabSocket(server) {
       } catch (error) {
         console.log('CollabService: Error occurred while creating collab', error);
         callback(false);
+      }
+    });
+
+    socket.on('execute code', async () => {
+      try {
+        const ytext = ydoc.getText('codemirror');
+        const code = ytext.toString();
+        console.log(`Executing code from room ${room}:`, code);
+
+        const sandbox = { console: console };
+
+        const context = vm.createContext(sandbox);
+        const script = new vm.Script(code);
+        const executionOptions = { timeout: 5000 };
+
+        const result = script.runInContext(context, executionOptions);
+        console.log(`Execution result: ${result}`);
+        io.in(room).emit('execution result', result);
+      } catch (error) {
+        console.error(`Error executing code for room ${room}:`, error);
+        socket.emit('execution error', 'Error executing code. Please try again.');
       }
     });
 
