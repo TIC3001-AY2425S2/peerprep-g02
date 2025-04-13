@@ -30,9 +30,6 @@ spec:
         - name: wait-for-rabbitmq
           image: busybox
           command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done;']
-        - name: wait-for-redis
-          image: busybox
-          command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
       containers:
         - env:
             - name: DB_CLOUD_URI
