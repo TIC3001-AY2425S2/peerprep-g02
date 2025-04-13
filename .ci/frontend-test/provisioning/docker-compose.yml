@@ -1,0 +1,14 @@
+services:
+  frontend-test:
+    build:
+      context: ../../../
+      dockerfile: .ci/frontend-test/Dockerfile
+    image: frontend-test
+    container_name: frontend-test
+    networks:
+      - shared-network
+    environment:
+      NODE_ENV: test
+networks:
+  shared-network:
+    name: peerprep-g02

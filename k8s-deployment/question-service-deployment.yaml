@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: question-service
+  name: question-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: question-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f provisioning\docker-compose.yml -o k8s-deployment
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: question-service
+    spec:
+      initContainers:
+        - name: wait-for-redis
+          image: busybox
+          command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
+        - name: wait-for-mongodb
+          image: busybox
+          command: ['sh', '-c', 'until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done;']
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done;']
+      containers:
+        - env:
+            - name: DB_CLOUD_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_CLOUD_URI
+                  name: question-service-docker-env
+            - name: DB_LOCAL_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_LOCAL_URI
+                  name: question-service-docker-env
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  key: ENV
+                  name: question-service-docker-env
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: JWT_SECRET
+                  name: question-service-docker-env
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: PORT
+                  name: question-service-docker-env
+            - name: REDIS_LOCAL_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_LOCAL_URL
+                  name: question-service-docker-env
+            - name: RABBITMQ_LOCAL_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: RABBITMQ_LOCAL_URI
+                  name: question-service-docker-env
+          image: question-service
+          imagePullPolicy: Never
+          livenessProbe:
+            exec:
+              command:
+                - "wget"
+                - "-q"
+                - "--spider"
+                - "http://localhost:8001/health"
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 10
+          name: question-service
+          ports:
+            - containerPort: 8001
+              protocol: TCP
+      restartPolicy: Always
