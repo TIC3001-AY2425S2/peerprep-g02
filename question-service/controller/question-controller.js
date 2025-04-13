@@ -23,7 +23,7 @@ export async function createQuestion(req, res) {
       res.status(409).json({ message: err.message });
     } else if (err.message === 'Missing required fields') {
       res.status(400).json({ message: err.message });
-    } else if (err.message === 'QuestionModel validation failed: category: Category array must contain at least one element.') {
+    } else if (err.message === 'QuestionModel validation failed: category: Category cannot be empty.') {
       res.status(500).json({ message: 'Category cannot be empty' });
     } else if (
       err.message === 'Error in rabbitmq create queue' ||
@@ -110,8 +110,8 @@ export async function updateQuestion(req, res) {
       res.status(500).json({ message: 'Title field cannot be empty!' });
     } else if (err.message === 'Validation failed: description: Path `description` is required.') {
       res.status(500).json({ message: 'Description field cannot be empty!' });
-    } else if (err.message === 'Validation failed: category: Category array must contain at least one element.') {
-      res.status(500).json({ message: 'Category field cannot be empty!' });
+    } else if (err.message === 'Validation failed: category: Category cannot be empty.') {
+      res.status(500).json({ message: 'Category cannot be empty!' });
     } else {
       res.status(500).json({ message: 'Unknown error when updating question!' });
     }
