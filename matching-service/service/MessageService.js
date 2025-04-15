@@ -50,7 +50,7 @@ function createMessageProcessor() {
     return true;
   }
 
-  function setWaitingUser(message, elapsed) {
+  async function setWaitingUser(message, elapsed) {
     const waitingUser = { message, timer: null };
     const remainingTime = MessageConfig.QUEUE_TIMEOUT * 1000 - elapsed;
 
@@ -92,7 +92,7 @@ function createMessageProcessor() {
 
     // If waiting user doesn't exist, set current user as waiting user.
     if (!waitingUser) {
-      waitingUser = setWaitingUser(message, elapsed);
+      waitingUser = await setWaitingUser(message, elapsed);
       return;
     }
 
@@ -123,7 +123,7 @@ function createMessageProcessor() {
 
     // If current user waiting, set user to be the new waiting user.
     if (currentUserWaiting) {
-      waitingUser = setWaitingUser(message, elapsed);
+      waitingUser = await setWaitingUser(message, elapsed);
       return;
     }
 

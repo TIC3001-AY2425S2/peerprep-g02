@@ -5,8 +5,7 @@ const Schema = mongoose.Schema;
 const CollabUserModelSchema = new Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'UserModel',
+      type: String,
       required: true,
     },
     collabId: {

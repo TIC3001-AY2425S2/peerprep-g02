@@ -14,6 +14,7 @@ async function startQueueConsumer(category, complexity) {
   const channel = await MessageConfig.getChannel();
   await channel.assertQueue(queueName, MessageConfig.getQueueConfiguration());
   const processor = MessageService.createNormalProcessor();
+  channel.prefetch(1);
 
   channel.consume(
     queueName,
@@ -39,10 +40,9 @@ async function startQueueConsumer(category, complexity) {
           `${new Date().toISOString()} MessageSink: Received message for user ${messageContent.userId} on queue ${queueName}`,
         );
         await processor(messageContent);
+        channel.ack(message);
       }
-      // No ack since we don't really want to requeue the message.
     },
-    { noAck: true },
   );
 
   console.log(`${new Date().toISOString()} MessageSink: Listening on queue ${queueName}`);
@@ -84,9 +84,9 @@ export async function startQueueUpdatesConsumer() {
           }
 
           await Promise.all(operations);
+          channel.ack(message);
         }
       },
-      { noAck: true },
     );
 
     console.log(`${new Date().toISOString()} MessageSink: Queue updates listening on queue ${queueName}`);

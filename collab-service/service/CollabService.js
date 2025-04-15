@@ -13,7 +13,7 @@ async function getCollab(userId) {
 async function createCollab(players, questionId) {
   try {
     const collab = await CollabRepository.createCollab(players, questionId);
-    console.log(`CollabService: Created collab ${collab}`);
+    // console.log(`CollabService: Created collab ${collab}`);
   } catch (error) {
     console.log('CollabService: Error occurred while creating collab', error);
   }
